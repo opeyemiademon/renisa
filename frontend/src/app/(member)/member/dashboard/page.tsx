@@ -26,7 +26,7 @@ export default function MemberDashboardPage() {
 
   const { data: electionsResult } = useQuery({
     queryKey: ['active-elections'],
-    queryFn: () => getAllElections({ limit: 50 }),
+    queryFn: () => getAllElections(),
   })
 
   const { data: idCardRequests } = useQuery({
@@ -37,7 +37,7 @@ export default function MemberDashboardPage() {
 
   const allPayments: any[] = (payments && payments.length > 0) ? payments : SAMPLE_MEMBER_PAYMENTS
   const recentPayments = allPayments.slice(0, 5)
-  const allElections = (electionsResult?.data && electionsResult.data.length > 0) ? electionsResult.data : SAMPLE_MEMBER_ELECTIONS
+  const allElections = SAMPLE_MEMBER_ELECTIONS;//(electionsResult?.data && electionsResult.data.length > 0) ? electionsResult.data : SAMPLE_MEMBER_ELECTIONS
   const activeElections = allElections.filter((e: any) => e.status === 'active')
   const latestIDCard = idCardRequests?.[0] || SAMPLE_MEMBER_ID_CARD_REQUESTS[0] as any
 

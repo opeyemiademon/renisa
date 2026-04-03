@@ -187,7 +187,7 @@ export const loginAsMember = async (id: string): Promise<{ token: string; member
   return response.data.data.loginAsMember
 }
 
-export const getAlumni = async (): Promise<Member[]> => {
+export const getAlumni = async () => {
   const query = `
     query GetAlumni {
       getAlumni {

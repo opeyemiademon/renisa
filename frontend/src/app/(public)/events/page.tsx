@@ -20,19 +20,18 @@ const eventTypes = [
 export default function EventsPage() {
   const [selectedType, setSelectedType] = useState('')
   const sentinelRef = useRef<HTMLDivElement>(null)
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey: ['events', selectedType],
     queryFn: ({ pageParam = 1 }) =>
-      getAllEvents({ eventType: selectedType || undefined, status: 'published', page: pageParam as number, limit: 12 }),
-    getNextPageParam: (lastPage) =>
+      getAllEvents({ eventType: selectedType || undefined, status: 'published' }),
+    getNextPageParam: (lastPage:any) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     initialPageParam: 1,
-  })
+  }) 
 
-  const apiEvents = data?.pages.flatMap((p) => p.data) ?? []
+  const apiEvents = data?.pages.flatMap((p:any) => p.data) ?? []
   const events = apiEvents.length > 0 ? apiEvents : (selectedType === '' ? SAMPLE_EVENTS : [])
-  const canLoadMore = hasNextPage && apiEvents.length > 0
+  const canLoadMore = true;//hasNextPage && apiEvents.length > 0
 
   // Auto-load when sentinel scrolls into view
   useEffect(() => {

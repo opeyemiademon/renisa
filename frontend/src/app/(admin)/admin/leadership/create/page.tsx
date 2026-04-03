@@ -13,12 +13,13 @@ import { Select } from '@/components/shared/Select'
 import { NIGERIAN_STATES } from '@/lib/nigerianStates'
 import { buildImageUrl } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { Suspense } from "react";
 
-export default function CreateLeadershipMemberPage() {
+const CreateLeadershipMemberPage =()=> {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  // Pre-select group from URL (passed by leadership list page)
+
   const preselectedGroupId = searchParams.get('groupId') || ''
 
   const [memberId, setMemberId] = useState('')
@@ -229,4 +230,18 @@ export default function CreateLeadershipMemberPage() {
       </div>
     </div>
   )
+}
+function SearchFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-pulse text-muted-foreground">Loading ...</div>
+    </div>
+  );
+}
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchFallback />}>
+      <CreateLeadershipMemberPage />
+    </Suspense>
+  );
 }

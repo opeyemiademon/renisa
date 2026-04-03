@@ -10,7 +10,7 @@ export const getGallery = async (params?: {
   album?: string
   year?: number
   search?: string
-}): Promise<GalleryItem[]> => {
+}) => {
   const query = `
     query GetGallery($albumName: String, $year: Int) {
       getAllGallery(albumName: $albumName, year: $year) {

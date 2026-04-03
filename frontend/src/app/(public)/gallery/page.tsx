@@ -17,9 +17,10 @@ export default function GalleryPage() {
 
   const { data: albums } = useQuery({ queryKey: ['gallery-albums'], queryFn: getGalleryAlbums })
   const { data: apiYears } = useQuery({ queryKey: ['gallery-years'], queryFn: getGalleryYears })
+  
   const { data: galleryData, isLoading } = useQuery({
     queryKey: ['gallery', selectedAlbum, selectedYear, page],
-    queryFn: () => getGallery({ albumName: selectedAlbum || undefined, year: selectedYear, page, limit: 36 }),
+    queryFn: () => getGallery({ albumName: selectedAlbum || undefined, year: selectedYear}),
   })
 
   const apiItems = galleryData?.data || []

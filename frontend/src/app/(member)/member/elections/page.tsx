@@ -13,12 +13,12 @@ import { SAMPLE_MEMBER_ELECTIONS } from '@/lib/sampleData'
 export default function MemberElectionsPage() {
   const { data: electionsData, isLoading } = useQuery({
     queryKey: ['all-elections'],
-    queryFn: () => getAllElections({ limit: 100 }),
+    queryFn: () => getAllElections(),
   })
 
   if (isLoading) return <PageLoader />
 
-  const elections = (electionsData?.data && electionsData.data.length > 0) ? electionsData.data : SAMPLE_MEMBER_ELECTIONS as any[]
+  const elections = SAMPLE_MEMBER_ELECTIONS;//(electionsData?.data && electionsData.data.length > 0) ? electionsData.data : SAMPLE_MEMBER_ELECTIONS as any[]
   const activeElections = elections.filter((e) => e.status === 'active')
   const upcomingElections = elections.filter((e) => e.status === 'upcoming')
   const closedElections = elections.filter((e) => e.status === 'closed' || e.status === 'results_declared')

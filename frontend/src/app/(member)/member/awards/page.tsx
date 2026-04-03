@@ -10,10 +10,10 @@ import { SAMPLE_MEMBER_AWARDS } from '@/lib/sampleData'
 export default function MemberAwardsPage() {
   const { data: awardsData, isLoading } = useQuery({
     queryKey: ['awards-voting'],
-    queryFn: () => getAllAwards({ votingEnabled: true, limit: 50 }),
+    queryFn: () => getAllAwards({ votingEnabled: true }),
   })
 
-  const awards = (awardsData?.data && awardsData.data.length > 0) ? awardsData.data : SAMPLE_MEMBER_AWARDS as any[]
+  const awards = SAMPLE_MEMBER_AWARDS as any[];//(awardsData?.data && awardsData.data.length > 0) ? awardsData.data : SAMPLE_MEMBER_AWARDS as any[]
 
   if (isLoading) return <PageLoader />
 

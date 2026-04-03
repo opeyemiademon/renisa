@@ -20,7 +20,7 @@ export default function AwardeesPage() {
 
   const { data: awardsData, isLoading } = useQuery({
     queryKey: ['awards', selectedYear, selectedCategory],
-    queryFn: () => getAllAwards({ year: selectedYear, categoryId: selectedCategory || undefined, limit: 50 }),
+    queryFn: () => getAllAwards(),
   })
   const { data: categories } = useQuery({ queryKey: ['award-categories'], queryFn: getAwardCategories })
 

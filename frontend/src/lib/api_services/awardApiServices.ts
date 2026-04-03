@@ -12,7 +12,7 @@ export const getAllAwards = async (params?: {
   categoryId?: string
   votingEnabled?: boolean
   search?: string
-}): Promise<Award[]> => {
+}) => {
   const query = `
     query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean) {
       getAllAwards(year: $year, categoryId: $categoryId, votingEnabled: $votingEnabled) {

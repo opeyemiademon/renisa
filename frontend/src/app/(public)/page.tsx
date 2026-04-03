@@ -169,8 +169,8 @@ export default function HomePage() {
   })
   const { data: executivesData } = useQuery({ queryKey: ['executives-preview'], queryFn: getAllExecutives })
   const { data: eventsData } = useQuery({ queryKey: ['featured-events'], queryFn: getFeaturedEvents })
-  const { data: galleryData } = useQuery({ queryKey: ['gallery-preview'], queryFn: () => getGallery({ limit: 6 }) })
-  const { data: awardsData } = useQuery({ queryKey: ['awards-preview'], queryFn: () => getAllAwards({ limit: 3 }) })
+  const { data: galleryData } = useQuery({ queryKey: ['gallery-preview'], queryFn: () => getGallery() })
+  const { data: awardsData } = useQuery({ queryKey: ['awards-preview'], queryFn: () => getAllAwards() })
 
   // ── Derived values from queries ──
   const heroSlides = slidesData && slidesData.length > 0 ? slidesData : FALLBACK_SLIDES
@@ -671,7 +671,7 @@ Nigeria’s rich sporting heritage.
 
           {/* Masonry-style grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {displayGallery.map((item, i) => (
+            {displayGallery.map((item:any, i:number) => (
               <Link key={item.id} href="/gallery">
                 <div className={`rounded-xl overflow-hidden bg-gray-100 cursor-pointer group ${i === 0 ? 'md:row-span-2' : ''}`}>
                   <div className="relative overflow-hidden">

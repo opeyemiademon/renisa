@@ -25,7 +25,7 @@ export default function AlumniPage() {
   const { data: alumniData, isLoading: alumniLoading } = useQuery({
     queryKey: ['alumni', search, selectedSport, selectedState, page],
     queryFn: () =>
-      getAlumni({ search, sport: selectedSport || undefined, state: selectedState || undefined, page, limit: 12 }),
+      getAlumni(),
   })
 
   return (
@@ -115,7 +115,7 @@ export default function AlumniPage() {
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                {(alumniData && alumniData.data.length > 0 ? alumniData.data : (!search && !selectedSport && !selectedState ? SAMPLE_ALUMNI as any[] : [])).map((member: any) => (
+                {(alumniData && alumniData?.data.length > 0 ? alumniData.data : (!search && !selectedSport && !selectedState ? SAMPLE_ALUMNI as any[] : [])).map((member: any) => (
                   <Link key={member.id} href={`/alumni/${member.id}`}>
                     <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:border-[#d4a017]/50 hover:shadow-lg transition-all cursor-pointer group">
                       <div className="w-20 h-20 mx-auto rounded-full overflow-hidden bg-[#1a6b3a] mb-3 border-2 border-[#d4a017]/30 group-hover:border-[#d4a017] transition-colors">
@@ -138,7 +138,7 @@ export default function AlumniPage() {
                   </Link>
                 ))}
               </div>
-              {alumniData && page < alumniData.totalPages && (
+              {alumniData && page < alumniData?.totalPages && (
                 <div className="text-center mt-8">
                   <button
                     onClick={() => setPage((p) => p + 1)}
