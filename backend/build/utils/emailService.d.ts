@@ -1,0 +1,7 @@
+export declare const sendEmail: (to: string, subject: string, html: string) => Promise<boolean>;
+export declare const sendBulkEmail: (recipients: string[], subject: string, html: string) => Promise<void>;
+export declare const welcomeTemplate: (name: string, memberNumber: string) => string;
+export declare const paymentReceiptTemplate: (name: string, amount: number, type: string, ref: string) => string;
+export declare const idCardStatusTemplate: (name: string, status: string, reason?: string) => string;
+export declare const donationInvoiceTemplate: (donorName: string, invoiceNumber: string, amount: number, paymentLink: string) => string;
+//# sourceMappingURL=emailService.d.ts.map

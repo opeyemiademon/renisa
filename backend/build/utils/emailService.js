@@ -1,0 +1,138 @@
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
+dotenv.config();
+const resend = new Resend(process.env.RESEND_API_KEY || '');
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@myschoolsms.cloud';
+const FROM_NAME = process.env.FROM_NAME || 'RENISA';
+export const sendEmail = async (to, subject, html) => {
+    try {
+        const { error } = await resend.emails.send({
+            from: `${FROM_NAME} <${FROM_EMAIL}>`,
+            to,
+            subject,
+            html,
+        });
+        if (error) {
+            console.error('Email send error:', error);
+            return false;
+        }
+        return true;
+    }
+    catch (err) {
+        console.error('Email service error:', err);
+        return false;
+    }
+};
+export const sendBulkEmail = async (recipients, subject, html) => {
+    const batchSize = 100;
+    for (let i = 0; i < recipients.length; i += batchSize) {
+        const batch = recipients.slice(i, i + batchSize);
+        await Promise.allSettled(batch.map(to => sendEmail(to, subject, html)));
+    }
+};
+export const welcomeTemplate = (name, memberNumber) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Welcome to RENISA</title></head>
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background:#1a6b3a; padding:30px; text-align:center;">
+      <h1 style="color:#d4a017; margin:0;">RENISA</h1>
+      <p style="color:#fff; margin:5px 0 0;">Retired Nigerian Women & Men Sports Association</p>
+    </div>
+    <div style="padding:30px;">
+      <h2 style="color:#1a6b3a;">Welcome, ${name}!</h2>
+      <p>Your membership registration has been received. Your membership number is:</p>
+      <div style="background:#f0f8f0; border:2px solid #1a6b3a; border-radius:6px; padding:15px; text-align:center; margin:20px 0;">
+        <strong style="font-size:24px; color:#1a6b3a; letter-spacing:2px;">${memberNumber}</strong>
+      </div>
+      <p>Please keep this number safe as you will need it for future reference.</p>
+      <p>You can now log in to the member portal to access your dashboard and all member services.</p>
+    </div>
+    <div style="background:#1a6b3a; padding:20px; text-align:center;">
+      <p style="color:#fff; margin:0; font-size:12px;">© ${new Date().getFullYear()} RENISA. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+export const paymentReceiptTemplate = (name, amount, type, ref) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Payment Receipt - RENISA</title></head>
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background:#1a6b3a; padding:30px; text-align:center;">
+      <h1 style="color:#d4a017; margin:0;">RENISA</h1>
+      <p style="color:#fff; margin:5px 0 0;">Payment Receipt</p>
+    </div>
+    <div style="padding:30px;">
+      <h2 style="color:#1a6b3a;">Payment Confirmed</h2>
+      <p>Dear ${name}, your payment has been successfully processed.</p>
+      <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+        <tr><td style="padding:10px; border-bottom:1px solid #eee; color:#666;">Payment Type</td><td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">${type}</td></tr>
+        <tr><td style="padding:10px; border-bottom:1px solid #eee; color:#666;">Amount</td><td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold; color:#1a6b3a;">₦${amount.toLocaleString()}</td></tr>
+        <tr><td style="padding:10px; border-bottom:1px solid #eee; color:#666;">Reference</td><td style="padding:10px; border-bottom:1px solid #eee;">${ref}</td></tr>
+        <tr><td style="padding:10px; color:#666;">Date</td><td style="padding:10px;">${new Date().toLocaleDateString('en-NG', { dateStyle: 'long' })}</td></tr>
+      </table>
+    </div>
+    <div style="background:#1a6b3a; padding:20px; text-align:center;">
+      <p style="color:#fff; margin:0; font-size:12px;">© ${new Date().getFullYear()} RENISA. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+export const idCardStatusTemplate = (name, status, reason) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>ID Card Status - RENISA</title></head>
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background:#1a6b3a; padding:30px; text-align:center;">
+      <h1 style="color:#d4a017; margin:0;">RENISA</h1>
+      <p style="color:#fff; margin:5px 0 0;">ID Card Request Update</p>
+    </div>
+    <div style="padding:30px;">
+      <h2 style="color:#1a6b3a;">ID Card Request ${status === 'approved' ? 'Approved' : 'Update'}</h2>
+      <p>Dear ${name},</p>
+      <p>Your ID card request has been <strong style="color:${status === 'approved' ? '#1a6b3a' : status === 'rejected' ? '#c0392b' : '#d4a017'}">${status}</strong>.</p>
+      ${reason ? `<div style="background:#fff3f3; border-left:4px solid #c0392b; padding:15px; margin:15px 0;"><strong>Reason:</strong> ${reason}</div>` : ''}
+      ${status === 'approved' ? '<p>You can now log in to the member portal to download your ID card.</p>' : ''}
+    </div>
+    <div style="background:#1a6b3a; padding:20px; text-align:center;">
+      <p style="color:#fff; margin:0; font-size:12px;">© ${new Date().getFullYear()} RENISA. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+export const donationInvoiceTemplate = (donorName, invoiceNumber, amount, paymentLink) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Donation Invoice - RENISA</title></head>
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background:#1a6b3a; padding:30px; text-align:center;">
+      <h1 style="color:#d4a017; margin:0;">RENISA</h1>
+      <p style="color:#fff; margin:5px 0 0;">Donation Invoice</p>
+    </div>
+    <div style="padding:30px;">
+      <h2 style="color:#1a6b3a;">Invoice #${invoiceNumber}</h2>
+      <p>Dear ${donorName}, thank you for your generous support.</p>
+      <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+        <tr><td style="padding:10px; border-bottom:1px solid #eee; color:#666;">Invoice Number</td><td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">${invoiceNumber}</td></tr>
+        <tr><td style="padding:10px; border-bottom:1px solid #eee; color:#666;">Amount Due</td><td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold; color:#1a6b3a;">₦${amount.toLocaleString()}</td></tr>
+      </table>
+      <div style="text-align:center; margin:25px 0;">
+        <a href="${paymentLink}" style="background:#d4a017; color:#fff; padding:15px 30px; text-decoration:none; border-radius:5px; font-size:16px; font-weight:bold;">Pay Now</a>
+      </div>
+    </div>
+    <div style="background:#1a6b3a; padding:20px; text-align:center;">
+      <p style="color:#fff; margin:0; font-size:12px;">© ${new Date().getFullYear()} RENISA. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+//# sourceMappingURL=emailService.js.map

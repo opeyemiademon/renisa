@@ -1,0 +1,219 @@
+'use client'
+
+import { useState } from 'react'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import { Monitor, Package, ArrowLeft, ArrowRight, Eye, CheckCircle } from 'lucide-react'
+import { getIDCardSettings, requestIDCard, initiateIDCardPayment } from '@/lib/api_services/idCardApiServices'
+import { FileUpload } from '@/components/shared/FileUpload'
+import { Button } from '@/components/shared/Button'
+import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
+import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
+import { useAppSelector } from '@/hooks/redux'
+import { formatCurrency } from '@/lib/utils'
+import toast from 'react-hot-toast'
+
+const STEPS = ['Choose Type', 'Upload Photo', 'Preview', 'Pay']
+
+export default function IDCardRequestPage() {
+  const { member } = useAppSelector((s) => s.auth)
+  const router = useRouter()
+  const [step, setStep] = useState(0)
+  const [cardType, setCardType] = useState<'online' | 'physical'>('online')
+  const [photo, setPhoto] = useState(member?.profilePicture || '')
+  const [requestId, setRequestId] = useState('')
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['id-card-settings'],
+    queryFn: getIDCardSettings,
+  })
+
+  const requestMutation = useMutation({
+    mutationFn: () => requestIDCard({ requestType: cardType, photo }),
+    onSuccess: (data) => {
+      setRequestId(data.id)
+      setStep(3)
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to create request'),
+  })
+
+  const payMutation = useMutation({
+    mutationFn: () => initiateIDCardPayment(requestId),
+    onSuccess: (data) => {
+      window.location.href = data.authorizationUrl
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to initiate payment'),
+  })
+
+  if (!member) return null
+
+  const fee = cardType === 'online' ? settings?.onlineFee : settings?.physicalFee
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <div className="flex items-center gap-3">
+        <button onClick={() => step > 0 ? setStep(step - 1) : router.push('/member/id-card')} className="p-2 rounded-lg hover:bg-gray-100">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h2 className="text-xl font-semibold text-gray-900">Request ID Card</h2>
+      </div>
+
+      {/* Progress */}
+      <div className="flex items-center gap-2">
+        {STEPS.map((label, i) => (
+          <div key={i} className="flex items-center">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold ${
+              step > i ? 'bg-[#1a6b3a] text-white' :
+              step === i ? 'bg-[#d4a017] text-white' :
+              'bg-gray-100 text-gray-400'
+            }`}>
+              {step > i ? <CheckCircle className="w-4 h-4" /> : i + 1}
+            </div>
+            <span className={`text-xs ml-1.5 hidden sm:inline ${step === i ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
+              {label}
+            </span>
+            {i < STEPS.length - 1 && <div className={`w-6 h-0.5 ml-2 ${step > i ? 'bg-[#1a6b3a]' : 'bg-gray-200'}`} />}
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        {/* Step 0: Choose Type */}
+        {step === 0 && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 mb-4">Select ID Card Type</h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                {
+                  type: 'online' as const,
+                  icon: <Monitor className="w-8 h-8" />,
+                  title: 'Online (Digital)',
+                  desc: 'Download as PDF instantly after approval',
+                  fee: settings?.onlineFee,
+                },
+                {
+                  type: 'physical' as const,
+                  icon: <Package className="w-8 h-8" />,
+                  title: 'Physical Card',
+                  desc: 'Printed card delivered to your address',
+                  fee: settings?.physicalFee,
+                },
+              ].map((option) => (
+                <label
+                  key={option.type}
+                  className={`flex flex-col p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                    cardType === option.type ? 'border-[#1a6b3a] bg-[#1a6b3a]/5' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    value={option.type}
+                    checked={cardType === option.type}
+                    onChange={() => setCardType(option.type)}
+                    className="hidden"
+                  />
+                  <div className={`mb-3 ${cardType === option.type ? 'text-[#1a6b3a]' : 'text-gray-400'}`}>
+                    {option.icon}
+                  </div>
+                  <h4 className="font-bold text-gray-900">{option.title}</h4>
+                  <p className="text-gray-500 text-sm mt-1">{option.desc}</p>
+                  {option.fee && (
+                    <p className="text-[#1a6b3a] font-bold text-lg mt-3">{formatCurrency(option.fee)}</p>
+                  )}
+                </label>
+              ))}
+            </div>
+            <Button onClick={() => setStep(1)} iconRight={<ArrowRight className="w-4 h-4" />} className="w-full">
+              Continue
+            </Button>
+          </div>
+        )}
+
+        {/* Step 1: Upload Photo */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900">Upload Photo for ID Card</h3>
+            <p className="text-gray-500 text-sm">Upload a clear, recent passport-style photo (white or plain background preferred)</p>
+            <FileUpload
+              value={photo}
+              onChange={setPhoto}
+              accept="image/*"
+              label="ID Card Photo"
+            />
+            <Button
+              onClick={() => {
+                if (!photo) return toast.error('Please upload a photo')
+                setStep(2)
+              }}
+              iconRight={<ArrowRight className="w-4 h-4" />}
+              className="w-full"
+            >
+              Preview Card
+            </Button>
+          </div>
+        )}
+
+        {/* Step 2: Preview */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-[#1a6b3a]" />
+              Preview Your ID Card
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <div>
+                <p className="text-xs text-gray-400 text-center mb-2">Front</p>
+                <IDCardFrontPreview member={member} photoUrl={photo} />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 text-center mb-2">Back</p>
+                <IDCardBackPreview member={member} />
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 border text-sm">
+              <div className="flex justify-between mb-1">
+                <span className="text-gray-500">Card Type</span>
+                <span className="font-medium capitalize">{cardType}</span>
+              </div>
+              <div className="flex justify-between font-bold text-base border-t border-gray-200 pt-2 mt-2">
+                <span>Total Fee</span>
+                <span className="text-[#1a6b3a]">{fee ? formatCurrency(fee) : '—'}</span>
+              </div>
+            </div>
+            <Button
+              onClick={() => requestMutation.mutate()}
+              loading={requestMutation.isPending}
+              className="w-full"
+              size="lg"
+            >
+              Submit &amp; Proceed to Payment
+            </Button>
+          </div>
+        )}
+
+        {/* Step 3: Pay */}
+        {step === 3 && (
+          <div className="text-center space-y-4">
+            <CheckCircle className="w-16 h-16 text-[#1a6b3a] mx-auto" />
+            <h3 className="text-xl font-bold text-gray-900">Request Created!</h3>
+            <p className="text-gray-500">Your ID card request has been submitted. Complete payment to process it.</p>
+            <div className="bg-gray-50 rounded-lg p-4 border text-sm">
+              <div className="flex justify-between font-bold text-base">
+                <span>Amount Due</span>
+                <span className="text-[#1a6b3a]">{fee ? formatCurrency(fee) : '—'}</span>
+              </div>
+            </div>
+            <Button
+              onClick={() => payMutation.mutate()}
+              loading={payMutation.isPending}
+              className="w-full"
+              size="lg"
+            >
+              Pay with Paystack
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
