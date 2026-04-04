@@ -4,9 +4,7 @@ const donationTypeResolvers = {
     Query: {
         getAllDonationTypes: async (_, { isActive }) => {
             const filter = {};
-            if (isActive !== undefined)
-                filter.isActive = isActive;
-            return await DonationType.find(filter).sort({ sortOrder: 1, name: 1 });
+            return await DonationType.find().sort({ sortOrder: 1, name: 1 });
         },
         getDonationType: async (_, { id }) => {
             return await DonationType.findById(id);

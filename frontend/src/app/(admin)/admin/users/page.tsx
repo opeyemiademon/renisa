@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { getAllUsers, deleteAdminUser, updateAdminUser } from '@/lib/api_services/userApiServices'
 import { Button } from '@/components/shared/Button'
 import toast from 'react-hot-toast'
+import { formatDate } from '@/lib/utils'
 
 export default function UsersPage() {
   const queryClient = useQueryClient()
@@ -133,7 +134,7 @@ export default function UsersPage() {
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
+                      {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">

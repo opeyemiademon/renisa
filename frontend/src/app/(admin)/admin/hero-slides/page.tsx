@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical, Image as ImageIcon, ExternalLink } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical, Image as ImageIcon, ExternalLink, Camera, X } from 'lucide-react'
 import {
   getHeroSlides,
   createHeroSlide,
@@ -14,8 +14,11 @@ import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { Modal } from '@/components/shared/Modal'
 import { ConfirmModal } from '@/components/shared/ConfirmModal'
-import { FileUpload } from '@/components/shared/FileUpload'
+import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { HeroSlide } from '@/types'
+import { uploadFile } from '@/lib/api_services/uploadApiService'
+import { buildImageUrl } from '@/lib/utils'
+import { fileToBase64 } from '@/lib/fileUpload'
 import toast from 'react-hot-toast'
 
 interface SlideForm {
@@ -23,6 +26,7 @@ interface SlideForm {
   subtitle: string
   caption: string
   imageUrl: string
+  photoBase64?: string
   tag: string
   ctaText: string
   ctaLink: string
@@ -47,6 +51,7 @@ export default function HeroSlidesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [form, setForm] = useState<SlideForm>(emptyForm)
   const [dragOver, setDragOver] = useState<string | null>(null)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
 
   const setField = (f: keyof SlideForm, v: any) => setForm((p) => ({ ...p, [f]: v }))
 
@@ -128,6 +133,17 @@ export default function HeroSlidesPage() {
       isActive: slide.isActive,
     })
     setShowModal(true)
+  }
+
+  const handleCapture = async (file: File) => {
+    try {
+      const base64 = await fileToBase64(file)
+      setForm((prev) => ({ ...prev, photoBase64: base64, imageUrl: URL.createObjectURL(file) }))
+      toast.success('Photo captured successfully!')
+    } catch (error) {
+      toast.error('Failed to process photo')
+    }
+    setShowPhotoModal(false)
   }
 
   const handleSubmit = () => editId ? updateMutation.mutate() : createMutation.mutate()
@@ -311,12 +327,37 @@ export default function HeroSlidesPage() {
         size="md"
       >
         <div className="space-y-4">
-          {/* Image upload */}
-          <FileUpload
-            label="Background Image"
-            value={form.imageUrl}
-            onChange={(url) => setField('imageUrl', url)}
-          />
+          {/* Image capture / preview */}
+          <div>
+            <span className="block text-sm font-medium text-gray-700 mb-1.5">Background Image</span>
+            
+            {form.imageUrl ? (
+              <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={form.imageUrl.startsWith('blob:') ? form.imageUrl : buildImageUrl(form.imageUrl)}
+                  alt="Preview"
+                  className="w-full h-40 object-cover"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setField('imageUrl', '')}
+                  className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-red-50 text-red-500 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowPhotoModal(true)}
+                className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center gap-3 hover:border-[#1a6b3a]/50 hover:bg-gray-50 transition-colors"
+              >
+                <Camera className="w-10 h-10 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">Take or Upload Photo</p>
+              </button>
+            )}
+          </div>
 
           {/* Image URL override (Unsplash etc.) */}
           <div>
@@ -330,14 +371,6 @@ export default function HeroSlidesPage() {
               onChange={(e) => setField('imageUrl', e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6b3a]/30"
             />
-            {form.imageUrl && (
-              <img
-                src={form.imageUrl}
-                alt="Preview"
-                className="mt-2 w-full h-32 object-cover rounded-lg border border-gray-200"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
-              />
-            )}
           </div>
 
           <Input
@@ -414,6 +447,13 @@ export default function HeroSlidesPage() {
           </div>
         </div>
       </Modal>
+
+      <PhotoCaptureModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onCapture={handleCapture}
+        title="Slide Background Image"
+      />
 
       {/* Delete confirm */}
       <ConfirmModal

@@ -1,8 +1,7 @@
 import Communication from './communication.model.js';
 import Member from '../member/member.model.js';
 import { requireAdminAuth, AuthContext } from '../../middleware/auth.js';
-import { sendBulkEmail } from '../../utils/emailService.js';
-import { sendBulkSMS } from '../../utils/smsService.js';
+import { sendBulkEmail, bulkEmailTemplate } from '../../utils/emailService.js';
 
 const communicationResolvers = {
   Query: {
@@ -27,58 +26,51 @@ const communicationResolvers = {
   Mutation: {
     sendCommunication: async (_: any, { data }: { data: any }, context: AuthContext) => {
       requireAdminAuth(context);
-      const { subject, message, type, recipients, specificMembers } = data;
+      const { subject, message, recipients, filterState, specificMembers } = data;
+
+      // Build member query
+      let memberQuery: Record<string, any> = {};
+      if (recipients === 'active') {
+        memberQuery.membershipStatus = 'active';
+      } else if (recipients === 'state') {
+        if (!filterState) throw new Error('State is required when recipients is "state"');
+        memberQuery.state = filterState;
+      } else if (recipients === 'specific') {
+        if (!specificMembers?.length) throw new Error('No specific members selected');
+        memberQuery._id = { $in: specificMembers };
+      }
+
+      const members = await Member.find(memberQuery, 'email firstName lastName').lean() as any[];
 
       const comm = await Communication.create({
         subject,
         message,
-        type,
+        type: 'email',
         recipients,
-        specificMembers: specificMembers || [],
+        filterState: filterState || undefined,
+        specificMembers: recipients === 'specific' ? specificMembers : [],
         status: 'pending',
         sentBy: context.admin!.id,
       });
 
-      // Gather members
-      let members: any[] = [];
-      if (recipients === 'all') {
-        members = await Member.find({}, 'email phone').lean();
-      } else if (recipients === 'active') {
-        members = await Member.find({ membershipStatus: 'active' }, 'email phone').lean();
-      } else if (recipients === 'specific' && specificMembers?.length) {
-        members = await Member.find({ _id: { $in: specificMembers } }, 'email phone').lean();
-      }
-
+      const emails = members.map((m: any) => m.email).filter(Boolean);
       let sentCount = 0;
       let failedCount = 0;
 
-      if (type === 'email' || type === 'both') {
-        const emails = members.map((m: any) => m.email).filter(Boolean);
-        try {
-          await sendBulkEmail(emails, subject, `<div style="font-family:Arial,sans-serif;"><p>${message}</p></div>`);
-          sentCount += emails.length;
-        } catch {
-          failedCount += emails.length;
-        }
-      }
-
-      if (type === 'sms' || type === 'both') {
-        const phones = members.map((m: any) => m.phone).filter(Boolean);
-        try {
-          await sendBulkSMS(phones, message);
-          sentCount += phones.length;
-        } catch {
-          failedCount += phones.length;
-        }
+      try {
+        await sendBulkEmail(emails, subject, bulkEmailTemplate(subject, message));
+        sentCount = emails.length;
+      } catch {
+        failedCount = emails.length;
       }
 
       const updated = await Communication.findByIdAndUpdate(
         comm._id,
-        { status: 'sent', sentCount, failedCount, sentAt: new Date() },
+        { status: sentCount > 0 ? 'sent' : 'failed', sentCount, failedCount, sentAt: new Date() },
         { new: true }
       );
 
-      return { success: true, message: `Communication sent to ${sentCount} recipients`, data: updated };
+      return { success: true, message: `Email sent to ${sentCount} recipient(s)`, data: updated };
     },
   },
 };

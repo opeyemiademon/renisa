@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 declare const Award: mongoose.Model<{
     year: number;
-    status: "voting" | "nominated" | "awarded";
+    status: "nominated" | "voting" | "awarded";
     memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
@@ -11,7 +11,7 @@ declare const Award: mongoose.Model<{
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     year: number;
-    status: "voting" | "nominated" | "awarded";
+    status: "nominated" | "voting" | "awarded";
     memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
@@ -23,7 +23,7 @@ declare const Award: mongoose.Model<{
     timestamps: true;
 }> & {
     year: number;
-    status: "voting" | "nominated" | "awarded";
+    status: "nominated" | "voting" | "awarded";
     memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
@@ -39,7 +39,7 @@ declare const Award: mongoose.Model<{
     timestamps: true;
 }, {
     year: number;
-    status: "voting" | "nominated" | "awarded";
+    status: "nominated" | "voting" | "awarded";
     memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
@@ -49,7 +49,7 @@ declare const Award: mongoose.Model<{
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     year: number;
-    status: "voting" | "nominated" | "awarded";
+    status: "nominated" | "voting" | "awarded";
     memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
@@ -61,7 +61,7 @@ declare const Award: mongoose.Model<{
     timestamps: true;
 }>> & mongoose.FlatRecord<{
     year: number;
-    status: "voting" | "nominated" | "awarded";
+    status: "nominated" | "voting" | "awarded";
     memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;

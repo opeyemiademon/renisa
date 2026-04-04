@@ -3,12 +3,14 @@ import { gql } from 'graphql-tag';
 const idCardSettingsTypeDefs = gql`
   type IDCardSettings {
     id: ID!
-    onlineFee: Float!
-    physicalFee: Float!
+    onlineFee: Float
+    physicalFee: Float
     currency: String!
     isEnabled: Boolean!
     requiresApproval: Boolean!
     validityYears: Int!
+    headerText: String
+    footerText: String
     updatedBy: AdminUser
     updatedAt: String!
   }
@@ -26,6 +28,8 @@ const idCardSettingsTypeDefs = gql`
     isEnabled: Boolean
     requiresApproval: Boolean
     validityYears: Int
+    headerText: String
+    footerText: String
   }
 
   extend type Query {

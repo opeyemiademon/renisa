@@ -1,78 +1,10 @@
 import { AuthContext } from '../../middleware/auth.js';
 declare const electionResolvers: {
     Query: {
-        getAllElections: (_: any, __: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
-            status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-            title: string;
-            description?: string | null | undefined;
-            createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-            nominationStartDate?: NativeDate | null | undefined;
-            nominationEndDate?: NativeDate | null | undefined;
-            votingStartDate?: NativeDate | null | undefined;
-            votingEndDate?: NativeDate | null | undefined;
-            eligibilityCriteria?: {
-                minimumMembershipYears: number;
-                paymentYears: number[];
-                mustBeActive: boolean;
-            } | null | undefined;
-        } & import("mongoose").DefaultTimestampProps, {}, {
-            timestamps: true;
-        }> & {
-            status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-            title: string;
-            description?: string | null | undefined;
-            createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-            nominationStartDate?: NativeDate | null | undefined;
-            nominationEndDate?: NativeDate | null | undefined;
-            votingStartDate?: NativeDate | null | undefined;
-            votingEndDate?: NativeDate | null | undefined;
-            eligibilityCriteria?: {
-                minimumMembershipYears: number;
-                paymentYears: number[];
-                mustBeActive: boolean;
-            } | null | undefined;
-        } & import("mongoose").DefaultTimestampProps & {
-            _id: import("mongoose").Types.ObjectId;
-        } & {
-            __v: number;
-        })[]>;
+        getAllElections: (_: any, __: any, context: AuthContext) => Promise<any>;
         getElection: (_: any, { id }: {
             id: string;
-        }) => Promise<(import("mongoose").Document<unknown, {}, {
-            status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-            title: string;
-            description?: string | null | undefined;
-            createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-            nominationStartDate?: NativeDate | null | undefined;
-            nominationEndDate?: NativeDate | null | undefined;
-            votingStartDate?: NativeDate | null | undefined;
-            votingEndDate?: NativeDate | null | undefined;
-            eligibilityCriteria?: {
-                minimumMembershipYears: number;
-                paymentYears: number[];
-                mustBeActive: boolean;
-            } | null | undefined;
-        } & import("mongoose").DefaultTimestampProps, {}, {
-            timestamps: true;
-        }> & {
-            status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-            title: string;
-            description?: string | null | undefined;
-            createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-            nominationStartDate?: NativeDate | null | undefined;
-            nominationEndDate?: NativeDate | null | undefined;
-            votingStartDate?: NativeDate | null | undefined;
-            votingEndDate?: NativeDate | null | undefined;
-            eligibilityCriteria?: {
-                minimumMembershipYears: number;
-                paymentYears: number[];
-                mustBeActive: boolean;
-            } | null | undefined;
-        } & import("mongoose").DefaultTimestampProps & {
-            _id: import("mongoose").Types.ObjectId;
-        } & {
-            __v: number;
-        }) | null>;
+        }) => Promise<any>;
     };
     Mutation: {
         createElection: (_: any, { data }: {
@@ -80,119 +12,22 @@ declare const electionResolvers: {
         }, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
-            data: import("mongoose").Document<unknown, {}, {
-                status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-                title: string;
-                description?: string | null | undefined;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                nominationStartDate?: NativeDate | null | undefined;
-                nominationEndDate?: NativeDate | null | undefined;
-                votingStartDate?: NativeDate | null | undefined;
-                votingEndDate?: NativeDate | null | undefined;
-                eligibilityCriteria?: {
-                    minimumMembershipYears: number;
-                    paymentYears: number[];
-                    mustBeActive: boolean;
-                } | null | undefined;
-            } & import("mongoose").DefaultTimestampProps, {}, {
-                timestamps: true;
-            }> & {
-                status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-                title: string;
-                description?: string | null | undefined;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                nominationStartDate?: NativeDate | null | undefined;
-                nominationEndDate?: NativeDate | null | undefined;
-                votingStartDate?: NativeDate | null | undefined;
-                votingEndDate?: NativeDate | null | undefined;
-                eligibilityCriteria?: {
-                    minimumMembershipYears: number;
-                    paymentYears: number[];
-                    mustBeActive: boolean;
-                } | null | undefined;
-            } & import("mongoose").DefaultTimestampProps & {
-                _id: import("mongoose").Types.ObjectId;
-            } & {
-                __v: number;
-            };
+            data: any;
         }>;
         updateElection: (_: any, { id, data }: any, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
-            data: import("mongoose").Document<unknown, {}, {
-                status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-                title: string;
-                description?: string | null | undefined;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                nominationStartDate?: NativeDate | null | undefined;
-                nominationEndDate?: NativeDate | null | undefined;
-                votingStartDate?: NativeDate | null | undefined;
-                votingEndDate?: NativeDate | null | undefined;
-                eligibilityCriteria?: {
-                    minimumMembershipYears: number;
-                    paymentYears: number[];
-                    mustBeActive: boolean;
-                } | null | undefined;
-            } & import("mongoose").DefaultTimestampProps, {}, {
-                timestamps: true;
-            }> & {
-                status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-                title: string;
-                description?: string | null | undefined;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                nominationStartDate?: NativeDate | null | undefined;
-                nominationEndDate?: NativeDate | null | undefined;
-                votingStartDate?: NativeDate | null | undefined;
-                votingEndDate?: NativeDate | null | undefined;
-                eligibilityCriteria?: {
-                    minimumMembershipYears: number;
-                    paymentYears: number[];
-                    mustBeActive: boolean;
-                } | null | undefined;
-            } & import("mongoose").DefaultTimestampProps & {
-                _id: import("mongoose").Types.ObjectId;
-            } & {
-                __v: number;
-            };
+            data: any;
         }>;
         updateElectionStatus: (_: any, { id, status }: any, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
-            data: import("mongoose").Document<unknown, {}, {
-                status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-                title: string;
-                description?: string | null | undefined;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                nominationStartDate?: NativeDate | null | undefined;
-                nominationEndDate?: NativeDate | null | undefined;
-                votingStartDate?: NativeDate | null | undefined;
-                votingEndDate?: NativeDate | null | undefined;
-                eligibilityCriteria?: {
-                    minimumMembershipYears: number;
-                    paymentYears: number[];
-                    mustBeActive: boolean;
-                } | null | undefined;
-            } & import("mongoose").DefaultTimestampProps, {}, {
-                timestamps: true;
-            }> & {
-                status: "setup" | "nomination" | "voting" | "completed" | "cancelled";
-                title: string;
-                description?: string | null | undefined;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                nominationStartDate?: NativeDate | null | undefined;
-                nominationEndDate?: NativeDate | null | undefined;
-                votingStartDate?: NativeDate | null | undefined;
-                votingEndDate?: NativeDate | null | undefined;
-                eligibilityCriteria?: {
-                    minimumMembershipYears: number;
-                    paymentYears: number[];
-                    mustBeActive: boolean;
-                } | null | undefined;
-            } & import("mongoose").DefaultTimestampProps & {
-                _id: import("mongoose").Types.ObjectId;
-            } & {
-                __v: number;
-            };
+            data: any;
+        }>;
+        addElectoralPosition: (_: any, { electionId, data }: any, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: any;
         }>;
         deleteElection: (_: any, { id }: {
             id: string;

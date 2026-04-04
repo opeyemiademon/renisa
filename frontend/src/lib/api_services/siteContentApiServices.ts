@@ -5,7 +5,7 @@ export const getSiteContent = async (section: string): Promise<SiteContent> => {
   const query = `
     query GetSiteContent($section: String!) {
       getSiteContent(section: $section) {
-        id section title content metadata updatedAt
+        id section title content metadata 
       }
     }
   `
@@ -18,7 +18,7 @@ export const getAllSiteContent = async (): Promise<SiteContent[]> => {
   const query = `
     query GetAllSiteContent {
       getAllSiteContent {
-        id section title content metadata updatedAt
+        id section title content metadata 
       }
     }
   `
@@ -29,12 +29,12 @@ export const getAllSiteContent = async (): Promise<SiteContent[]> => {
 
 export const updateSiteContent = async (
   section: string,
-  data: { title?: string; content: string; metadata?: Record<string, string> }
+  data: Record<string, string>
 ): Promise<SiteContent> => {
   const mutation = `
-    mutation UpdateSiteContent($section: String!, $data: UpdateSiteContentInput!) {
+    mutation UpdateSiteContent($section: String!, $data: JSON!) {
       updateSiteContent(section: $section, data: $data) {
-        id section title content metadata updatedAt
+       success message
       }
     }
   `

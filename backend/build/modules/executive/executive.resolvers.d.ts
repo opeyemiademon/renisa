@@ -10,8 +10,8 @@ declare const executiveResolvers: {
         getAllExecutives: (_: any, { isActive }: any) => Promise<(import("mongoose").Document<unknown, {}, {
             name: string;
             isActive: boolean;
-            position: string;
             order: number;
+            position: string;
             profilePicture?: string | null | undefined;
             bio?: string | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -21,8 +21,8 @@ declare const executiveResolvers: {
         }> & {
             name: string;
             isActive: boolean;
-            position: string;
             order: number;
+            position: string;
             profilePicture?: string | null | undefined;
             bio?: string | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -37,8 +37,8 @@ declare const executiveResolvers: {
         }) => Promise<(import("mongoose").Document<unknown, {}, {
             name: string;
             isActive: boolean;
-            position: string;
             order: number;
+            position: string;
             profilePicture?: string | null | undefined;
             bio?: string | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -48,8 +48,8 @@ declare const executiveResolvers: {
         }> & {
             name: string;
             isActive: boolean;
-            position: string;
             order: number;
+            position: string;
             profilePicture?: string | null | undefined;
             bio?: string | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -69,8 +69,8 @@ declare const executiveResolvers: {
             data: (import("mongoose").Document<unknown, {}, {
                 name: string;
                 isActive: boolean;
-                position: string;
                 order: number;
+                position: string;
                 profilePicture?: string | null | undefined;
                 bio?: string | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -80,8 +80,8 @@ declare const executiveResolvers: {
             }> & {
                 name: string;
                 isActive: boolean;
-                position: string;
                 order: number;
+                position: string;
                 profilePicture?: string | null | undefined;
                 bio?: string | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -98,8 +98,8 @@ declare const executiveResolvers: {
             data: import("mongoose").Document<unknown, {}, {
                 name: string;
                 isActive: boolean;
-                position: string;
                 order: number;
+                position: string;
                 profilePicture?: string | null | undefined;
                 bio?: string | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
@@ -109,8 +109,8 @@ declare const executiveResolvers: {
             }> & {
                 name: string;
                 isActive: boolean;
-                position: string;
                 order: number;
+                position: string;
                 profilePicture?: string | null | undefined;
                 bio?: string | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;

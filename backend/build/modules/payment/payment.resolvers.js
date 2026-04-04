@@ -5,6 +5,7 @@ import PaymentType from '../paymentType/paymentType.model.js';
 import Member from '../member/member.model.js';
 import { requireMemberAuth, requireAdminAuth } from '../../middleware/auth.js';
 import { sendEmail, paymentReceiptTemplate } from '../../utils/emailService.js';
+import { createNotification } from '../../utils/createNotification.js';
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
 const paymentResolvers = {
@@ -127,6 +128,7 @@ const paymentResolvers = {
                     const member = updated.memberId;
                     const type = updated.paymentTypeId;
                     sendEmail(member.email, 'Payment Receipt - RENISA', paymentReceiptTemplate(`${member.firstName} ${member.lastName}`, updated.amount, type?.name || 'Payment', reference)).catch(console.error);
+                    createNotification('new_payment', 'New Payment Received', `${member.firstName} ${member.lastName} paid ₦${updated.amount.toLocaleString()} for ${type?.name || 'Payment'}.`, updated._id.toString(), 'Payment');
                 }
                 return { success: isSuccessful, message: isSuccessful ? 'Payment verified' : 'Payment failed', data: updated };
             }
@@ -161,6 +163,10 @@ const paymentResolvers = {
             const populated = await Payment.findById(payment._id)
                 .populate('memberId', 'firstName lastName memberNumber email')
                 .populate('paymentTypeId', 'name amount');
+            const m = populated?.memberId;
+            const pt = populated?.paymentTypeId;
+            if (m)
+                createNotification('new_payment', 'Payment Recorded', `Admin recorded ₦${data.amount.toLocaleString()} payment for ${m.firstName} ${m.lastName} — ${pt?.name || 'Payment'}.`, payment._id.toString(), 'Payment');
             return { success: true, message: 'Payment recorded successfully', data: populated };
         },
     },

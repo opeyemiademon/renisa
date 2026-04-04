@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Save, ChevronDown, FileText, Globe } from 'lucide-react'
+import { Save, ChevronDown, Globe, Camera, X } from 'lucide-react'
 import { getAllSiteContent, updateSiteContent } from '@/lib/api_services/siteContentApiServices'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { RichTextEditor } from '@/components/shared/RichTextEditor'
-import { FileUpload } from '@/components/shared/FileUpload'
+import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
+import { uploadFile } from '@/lib/api_services/uploadApiService'
+import { buildImageUrl } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 const CMS_SECTIONS = [
@@ -72,6 +74,9 @@ function CMSSection({ section, content, onSave }: { section: typeof CMS_SECTIONS
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<Record<string, string>>({})
   const [dirty, setDirty] = useState(false)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
+  const [currentImageField, setCurrentImageField] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     const initial: Record<string, string> = {}
@@ -81,6 +86,27 @@ function CMSSection({ section, content, onSave }: { section: typeof CMS_SECTIONS
   }, [content, section])
 
   const setField = (k: string, v: string) => { setForm((p) => ({ ...p, [k]: v })); setDirty(true) }
+
+  const handleCapture = async (file: File) => {
+    setShowPhotoModal(false)
+    setUploading(true)
+    try {
+      const result = await uploadFile(file)
+      if (currentImageField) {
+        setField(currentImageField, result.url)
+      }
+    } catch {
+      toast.error('Failed to upload image')
+    } finally {
+      setUploading(false)
+      setCurrentImageField(null)
+    }
+  }
+
+  const openPhotoModal = (fieldKey: string) => {
+    setCurrentImageField(fieldKey)
+    setShowPhotoModal(true)
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -104,11 +130,42 @@ function CMSSection({ section, content, onSave }: { section: typeof CMS_SECTIONS
                     onChange={(v) => setField(field.key, v)}
                   />
                 ) : field.type === 'image' ? (
-                  <FileUpload
-                    label={field.label}
-                    value={form[field.key] || ''}
-                    onChange={(url) => setField(field.key, url)}
-                  />
+                  <div>
+                    <span className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</span>
+                    {form[field.key] ? (
+                      <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={buildImageUrl(form[field.key])}
+                          alt={field.label}
+                          className="w-full h-40 object-cover"
+                          onError={(e) => (e.currentTarget.style.display = 'none')}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setField(field.key, '')}
+                          className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-red-50 text-red-500 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => openPhotoModal(field.key)}
+                        disabled={uploading}
+                        className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center gap-3 hover:border-[#1a6b3a]/50 hover:bg-gray-50 transition-colors"
+                      >
+                        {uploading && currentImageField === field.key ? (
+                          <p className="text-sm text-gray-500">Uploading...</p>
+                        ) : (
+                          <>
+                            <Camera className="w-10 h-10 text-gray-300" />
+                            <p className="text-sm font-medium text-gray-700">Take or Upload Photo</p>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <Input
                     label={field.label}
@@ -131,6 +188,13 @@ function CMSSection({ section, content, onSave }: { section: typeof CMS_SECTIONS
           </div>
         </div>
       )}
+      
+      <PhotoCaptureModal
+        isOpen={showPhotoModal}
+        onClose={() => { setShowPhotoModal(false); setCurrentImageField(null) }}
+        onCapture={handleCapture}
+        title="Upload Image"
+      />
     </div>
   )
 }

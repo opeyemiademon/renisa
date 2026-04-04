@@ -8,6 +8,8 @@ declare const idCardSettingsResolvers: {
             isEnabled: boolean;
             requiresApproval: boolean;
             validityYears: number;
+            headerText?: string | null | undefined;
+            footerText?: string | null | undefined;
             updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -18,6 +20,8 @@ declare const idCardSettingsResolvers: {
             isEnabled: boolean;
             requiresApproval: boolean;
             validityYears: number;
+            headerText?: string | null | undefined;
+            footerText?: string | null | undefined;
             updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -38,6 +42,8 @@ declare const idCardSettingsResolvers: {
                 isEnabled: boolean;
                 requiresApproval: boolean;
                 validityYears: number;
+                headerText?: string | null | undefined;
+                footerText?: string | null | undefined;
                 updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -48,6 +54,8 @@ declare const idCardSettingsResolvers: {
                 isEnabled: boolean;
                 requiresApproval: boolean;
                 validityYears: number;
+                headerText?: string | null | undefined;
+                footerText?: string | null | undefined;
                 updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;

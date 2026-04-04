@@ -5,9 +5,9 @@ declare const Gallery: mongoose.Model<{
     isFeatured: boolean;
     imageUrl: string;
     description?: string | null | undefined;
-    eventDate?: NativeDate | null | undefined;
     thumbnailUrl?: string | null | undefined;
     albumName?: string | null | undefined;
+    eventDate?: NativeDate | null | undefined;
     uploadedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     year: number;
@@ -15,9 +15,9 @@ declare const Gallery: mongoose.Model<{
     isFeatured: boolean;
     imageUrl: string;
     description?: string | null | undefined;
-    eventDate?: NativeDate | null | undefined;
     thumbnailUrl?: string | null | undefined;
     albumName?: string | null | undefined;
+    eventDate?: NativeDate | null | undefined;
     uploadedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
@@ -27,9 +27,9 @@ declare const Gallery: mongoose.Model<{
     isFeatured: boolean;
     imageUrl: string;
     description?: string | null | undefined;
-    eventDate?: NativeDate | null | undefined;
     thumbnailUrl?: string | null | undefined;
     albumName?: string | null | undefined;
+    eventDate?: NativeDate | null | undefined;
     uploadedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
@@ -43,9 +43,9 @@ declare const Gallery: mongoose.Model<{
     isFeatured: boolean;
     imageUrl: string;
     description?: string | null | undefined;
-    eventDate?: NativeDate | null | undefined;
     thumbnailUrl?: string | null | undefined;
     albumName?: string | null | undefined;
+    eventDate?: NativeDate | null | undefined;
     uploadedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     year: number;
@@ -53,9 +53,9 @@ declare const Gallery: mongoose.Model<{
     isFeatured: boolean;
     imageUrl: string;
     description?: string | null | undefined;
-    eventDate?: NativeDate | null | undefined;
     thumbnailUrl?: string | null | undefined;
     albumName?: string | null | undefined;
+    eventDate?: NativeDate | null | undefined;
     uploadedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
@@ -65,9 +65,9 @@ declare const Gallery: mongoose.Model<{
     isFeatured: boolean;
     imageUrl: string;
     description?: string | null | undefined;
-    eventDate?: NativeDate | null | undefined;
     thumbnailUrl?: string | null | undefined;
     albumName?: string | null | undefined;
+    eventDate?: NativeDate | null | undefined;
     uploadedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;

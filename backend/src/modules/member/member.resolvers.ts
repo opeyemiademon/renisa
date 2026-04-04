@@ -6,6 +6,7 @@ import { TOKEN_SECRET, TOKEN_EXPIRY, STATIC_BASE_URL } from '../../utils/constan
 import { requireMemberAuth, requireAdminAuth, AuthContext } from '../../middleware/auth.js';
 import { sendEmail, welcomeTemplate } from '../../utils/emailService.js';
 import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
+import { createNotification } from '../../utils/createNotification.js';
 
 const generateMemberNumber = async (): Promise<string> => {
   const year = new Date().getFullYear();
@@ -222,7 +223,7 @@ const memberResolvers = {
       });
 
       sendEmail(email, 'Welcome to RENISA', welcomeTemplate(`${rest.firstName} ${rest.lastName}`, memberNumber)).catch(console.error);
-
+      createNotification('new_member', 'New Member Registered', `${rest.firstName} ${rest.lastName} (${memberNumber}) has joined as a new member.`, member._id.toString(), 'Member');
 
       return { success: true, message: 'Member registered successfully', data: member };
     },

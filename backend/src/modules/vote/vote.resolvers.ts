@@ -4,12 +4,22 @@ import Candidate from '../candidate/candidate.model.js';
 import Payment from '../payment/payment.model.js';
 import Member from '../member/member.model.js';
 import mongoose from 'mongoose';
-import { requireMemberAuth, requireAdminAuth, AuthContext } from '../../middleware/auth.js';
+import { requireMemberAuth, AuthContext } from '../../middleware/auth.js';
 
 const voteResolvers = {
   Query: {
     getElectionResults: async (_: any, { electionId }: any, context: AuthContext) => {
       if (!context.isAuthenticated) throw new Error('Authentication required');
+
+      // Load the election to get embedded positions (for title lookup)
+      const election = await Election.findById(electionId);
+      if (!election) throw new Error('Election not found');
+
+      const positionMap = new Map<string, string>();
+      for (const pos of election.positions as any[]) {
+        positionMap.set(pos._id.toString(), pos.title);
+      }
+
       const results = await Vote.aggregate([
         { $match: { electionId: new mongoose.Types.ObjectId(electionId) } },
         {
@@ -31,19 +41,9 @@ const voteResolvers = {
         },
         { $unwind: { path: '$member', preserveNullAndEmptyArrays: true } },
         {
-          $lookup: {
-            from: 'electoralpositions',
-            localField: 'positionId',
-            foreignField: '_id',
-            as: 'position',
-          },
-        },
-        { $unwind: '$position' },
-        {
           $group: {
             _id: { candidateId: '$candidateId', positionId: '$positionId' },
             candidateName: { $first: { $concat: ['$member.firstName', ' ', '$member.lastName'] } },
-            positionTitle: { $first: '$position.title' },
             voteCount: { $sum: 1 },
           },
         },
@@ -54,7 +54,7 @@ const voteResolvers = {
         candidateId: r._id.candidateId.toString(),
         candidateName: r.candidateName || 'Unknown',
         positionId: r._id.positionId.toString(),
-        positionTitle: r.positionTitle,
+        positionTitle: positionMap.get(r._id.positionId.toString()) || 'Unknown Position',
         voteCount: r.voteCount,
       }));
     },
@@ -73,7 +73,7 @@ const voteResolvers = {
 
       const election = await Election.findById(electionId);
       if (!election) throw new Error('Election not found');
-      if (election.status !== 'voting') throw new Error('Voting is not currently open');
+      if (election.status !== 'active') throw new Error('Voting is not currently open');
 
       const now = new Date();
       if (election.votingStartDate && now < new Date(election.votingStartDate)) {
@@ -86,31 +86,25 @@ const voteResolvers = {
       const member = await Member.findById(memberId);
       if (!member) throw new Error('Member not found');
 
-      const criteria = election.eligibilityCriteria;
-      if (criteria) {
-        if (criteria.mustBeActive && member.membershipStatus !== 'active') {
-          throw new Error('Only active members can vote');
+      if (election.eligibilityMinYears && election.eligibilityMinYears > 0) {
+        const memberYear = (member as any).membershipYear || new Date().getFullYear();
+        const yearsAsMember = new Date().getFullYear() - memberYear;
+        if (yearsAsMember < election.eligibilityMinYears) {
+          throw new Error(`You must have been a member for at least ${election.eligibilityMinYears} year(s) to vote`);
         }
-        if (criteria.minimumMembershipYears && criteria.minimumMembershipYears > 0) {
-          const memberYear = member.membershipYear || new Date().getFullYear();
-          const yearsAsMember = new Date().getFullYear() - memberYear;
-          if (yearsAsMember < criteria.minimumMembershipYears) {
-            throw new Error(`You must have been a member for at least ${criteria.minimumMembershipYears} year(s) to vote`);
-          }
-        }
-        if (criteria.paymentYears && criteria.paymentYears.length > 0) {
-          for (const year of criteria.paymentYears) {
-            const paid = await Payment.findOne({ memberId, year, status: 'successful' });
-            if (!paid) throw new Error(`You must have paid dues for ${year} to be eligible to vote`);
-          }
-        }
+      }
+
+      if (election.requiresDuesPayment) {
+        const currentYear = new Date().getFullYear();
+        const paid = await Payment.findOne({ memberId, year: currentYear, status: 'successful' });
+        if (!paid) throw new Error(`You must have paid dues for ${currentYear} to be eligible to vote`);
       }
 
       const existing = await Vote.findOne({ electionId, positionId, voterId: memberId });
       if (existing) throw new Error('You have already voted for this position');
 
-      const candidate = await Candidate.findOne({ _id: candidateId, electionId, positionId, isApproved: true });
-      if (!candidate) throw new Error('Candidate not found or not approved');
+      const candidate = await Candidate.findOne({ _id: candidateId, electionId, positionId });
+      if (!candidate) throw new Error('Candidate not found');
 
       const vote = await Vote.create({
         electionId,

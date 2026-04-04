@@ -1,14 +1,34 @@
 import Award from './award.model.js';
 import AwardVote from '../awardVote/awardVote.model.js';
+import mongoose from 'mongoose';
 import { requireAdminAuth, AuthContext } from '../../middleware/auth.js';
 
 const populate = (q: any) =>
   q
-    .populate('categoryId', 'name icon')
+    .populate('categoryId', 'name icon pollActive votingStartDate votingEndDate')
     .populate('memberId', 'firstName lastName profilePicture memberNumber');
 
 const awardResolvers = {
   Award: {
+    // Derive from linked member
+    recipientName: (parent: any) => {
+      const m = parent.memberId;
+      if (m && typeof m === 'object') return `${m.firstName} ${m.lastName}`;
+      return '';
+    },
+    recipientPhoto: (parent: any) => {
+      const m = parent.memberId;
+      if (m && typeof m === 'object') return m.profilePicture || null;
+      return parent.image || null;
+    },
+    // Derive title from category
+    title: (parent: any) => {
+      const c = parent.categoryId;
+      if (c && typeof c === 'object') return c.name;
+      return '';
+    },
+    category: (parent: any) => parent.categoryId,
+    member: (parent: any) => parent.memberId,
     totalVotes: async (parent: any) => {
       try {
         return await AwardVote.countDocuments({ awardId: parent._id });
@@ -19,13 +39,27 @@ const awardResolvers = {
   },
 
   Query: {
-    getAllAwards: async (_: any, { year, status, categoryId, votingEnabled }: any) => {
+    getAllAwards: async (_: any, { year, status, categoryId, votingEnabled, memberName }: any) => {
       const filter: any = {};
       if (year) filter.year = year;
       if (status) filter.status = status;
       if (categoryId) filter.categoryId = categoryId;
       if (votingEnabled !== undefined) filter.votingEnabled = votingEnabled;
-      return Award.find(filter).sort({ year: -1, createdAt: -1 }).populate('categoryId', 'name description').populate('memberId', 'firstName lastName profilePicture memberNumber');
+
+      // Filter by member name: find matching member IDs first
+      if (memberName && memberName.trim()) {
+        const Member = mongoose.model('Member');
+        const nameRegex = new RegExp(memberName.trim(), 'i');
+        const members = await Member.find({
+          $or: [
+            { firstName: nameRegex },
+            { lastName: nameRegex },
+          ],
+        }).select('_id');
+        filter.memberId = { $in: members.map((m: any) => m._id) };
+      }
+
+      return populate(Award.find(filter)).sort({ year: -1, createdAt: -1 });
     },
 
     getAward: async (_: any, { id }: { id: string }) => {

@@ -11,22 +11,22 @@ const DONATION_FIELDS = `
 
 export const getDonationTypes = async (activeOnly = true): Promise<DonationType[]> => {
   const query = `
-    query GetDonationTypes($activeOnly: Boolean) {
-      getDonationTypes(activeOnly: $activeOnly) {
-        id name description donationMode icon isActive createdAt updatedAt
+    query GetDonationTypes {
+      getAllDonationTypes {
+        id name description donationMode icon isActive createdAt 
       }
     }
   `
   const response = await graphqlClient.post('', { query, variables: { activeOnly } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.getDonationTypes
+  return response.data.data.getAllDonationTypes
 }
 
 export const createDonationType = async (data: object): Promise<DonationType> => {
   const mutation = `
     mutation CreateDonationType($data: CreateDonationTypeInput!) {
       createDonationType(data: $data) {
-        id name description donationMode icon isActive createdAt updatedAt
+        success message
       }
     }
   `
@@ -39,7 +39,7 @@ export const updateDonationType = async (id: string, data: object): Promise<Dona
   const mutation = `
     mutation UpdateDonationType($id: ID!, $data: UpdateDonationTypeInput!) {
       updateDonationType(id: $id, data: $data) {
-        id name description donationMode icon isActive createdAt updatedAt
+       success message
       }
     }
   `

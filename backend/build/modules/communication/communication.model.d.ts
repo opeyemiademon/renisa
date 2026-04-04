@@ -4,10 +4,11 @@ declare const Communication: mongoose.Model<{
     message: string;
     subject: string;
     status: "pending" | "failed" | "sent";
-    recipients: "active" | "all" | "specific";
+    recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
     failedCount: number;
+    filterState?: string | null | undefined;
     sentBy?: mongoose.Types.ObjectId | null | undefined;
     sentAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -15,10 +16,11 @@ declare const Communication: mongoose.Model<{
     message: string;
     subject: string;
     status: "pending" | "failed" | "sent";
-    recipients: "active" | "all" | "specific";
+    recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
     failedCount: number;
+    filterState?: string | null | undefined;
     sentBy?: mongoose.Types.ObjectId | null | undefined;
     sentAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
@@ -28,10 +30,11 @@ declare const Communication: mongoose.Model<{
     message: string;
     subject: string;
     status: "pending" | "failed" | "sent";
-    recipients: "active" | "all" | "specific";
+    recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
     failedCount: number;
+    filterState?: string | null | undefined;
     sentBy?: mongoose.Types.ObjectId | null | undefined;
     sentAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps & {
@@ -45,10 +48,11 @@ declare const Communication: mongoose.Model<{
     message: string;
     subject: string;
     status: "pending" | "failed" | "sent";
-    recipients: "active" | "all" | "specific";
+    recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
     failedCount: number;
+    filterState?: string | null | undefined;
     sentBy?: mongoose.Types.ObjectId | null | undefined;
     sentAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -56,10 +60,11 @@ declare const Communication: mongoose.Model<{
     message: string;
     subject: string;
     status: "pending" | "failed" | "sent";
-    recipients: "active" | "all" | "specific";
+    recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
     failedCount: number;
+    filterState?: string | null | undefined;
     sentBy?: mongoose.Types.ObjectId | null | undefined;
     sentAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
@@ -69,10 +74,11 @@ declare const Communication: mongoose.Model<{
     message: string;
     subject: string;
     status: "pending" | "failed" | "sent";
-    recipients: "active" | "all" | "specific";
+    recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
     failedCount: number;
+    filterState?: string | null | undefined;
     sentBy?: mongoose.Types.ObjectId | null | undefined;
     sentAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps> & {

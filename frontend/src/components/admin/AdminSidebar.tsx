@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, UserPlus, Hash, GraduationCap,
   CreditCard, ListChecks, Vote, Crown, Network, Trophy, Heart,
   IdCard, Settings, Calendar, Image, FileText, MessageSquare,
-  ChevronDown, LogOut, Banknote, Gift, UserCog
+  ChevronDown, LogOut, Banknote, Gift, UserCog, Medal, Bell
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -50,8 +50,9 @@ const navItems: NavItem[] = [
     children: [
       { label: 'Executives', href: '/admin/executives', icon: Crown },
       { label: 'Leadership', href: '/admin/leadership', icon: Network },
-      { label: 'Awards', href: '/admin/awards', icon: Trophy, ignorePathPrefixes: ['/admin/awards/categories'] },
+      { label: 'Awards', href: '/admin/awards', icon: Trophy, ignorePathPrefixes: ['/admin/awards/categories', '/admin/awards/winners'] },
       { label: 'Award Categories', href: '/admin/awards/categories', icon: ListChecks },
+      { label: 'Award Winners', href: '/admin/awards/winners', icon: Medal },
       { label: 'Donations', href: '/admin/donations', icon: Heart },
       { label: 'Donation Types', href: '/admin/donations/types', icon: Gift },
     ],
@@ -75,6 +76,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: 'Communications', href: '/admin/communications', icon: MessageSquare },
+  { label: 'Notifications', href: '/admin/notifications', icon: Bell },
   {
     label: 'System',
     icon: Settings,
@@ -120,7 +122,11 @@ function NavItemComponent({ item, depth = 0, siblingPrefixes = [] }: { item: Nav
         {open && (
           <div className="ml-4 mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
             {item.children.map((child, childIndex) => {
-              const siblings = childHrefs.filter((_, i) => i !== childIndex)
+              // exclude siblings that are a path-prefix of this child's own href
+              // (e.g. don't let /admin/awards block /admin/awards/categories)
+              const siblings = childHrefs.filter(
+                (h, i) => i !== childIndex && !child.href?.startsWith(h + '/')
+              )
               return <NavItemComponent key={child.href} item={child} depth={depth + 1} siblingPrefixes={siblings} />
             })}
           </div>

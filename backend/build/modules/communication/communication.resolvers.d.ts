@@ -7,10 +7,11 @@ declare const communicationResolvers: {
                 message: string;
                 subject: string;
                 status: "pending" | "failed" | "sent";
-                recipients: "active" | "all" | "specific";
+                recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
                 failedCount: number;
+                filterState?: string | null | undefined;
                 sentBy?: import("mongoose").Types.ObjectId | null | undefined;
                 sentAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
@@ -20,10 +21,11 @@ declare const communicationResolvers: {
                 message: string;
                 subject: string;
                 status: "pending" | "failed" | "sent";
-                recipients: "active" | "all" | "specific";
+                recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
                 failedCount: number;
+                filterState?: string | null | undefined;
                 sentBy?: import("mongoose").Types.ObjectId | null | undefined;
                 sentAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
@@ -42,10 +44,11 @@ declare const communicationResolvers: {
             message: string;
             subject: string;
             status: "pending" | "failed" | "sent";
-            recipients: "active" | "all" | "specific";
+            recipients: "state" | "active" | "all" | "specific";
             specificMembers: import("mongoose").Types.ObjectId[];
             sentCount: number;
             failedCount: number;
+            filterState?: string | null | undefined;
             sentBy?: import("mongoose").Types.ObjectId | null | undefined;
             sentAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
@@ -55,10 +58,11 @@ declare const communicationResolvers: {
             message: string;
             subject: string;
             status: "pending" | "failed" | "sent";
-            recipients: "active" | "all" | "specific";
+            recipients: "state" | "active" | "all" | "specific";
             specificMembers: import("mongoose").Types.ObjectId[];
             sentCount: number;
             failedCount: number;
+            filterState?: string | null | undefined;
             sentBy?: import("mongoose").Types.ObjectId | null | undefined;
             sentAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
@@ -78,10 +82,11 @@ declare const communicationResolvers: {
                 message: string;
                 subject: string;
                 status: "pending" | "failed" | "sent";
-                recipients: "active" | "all" | "specific";
+                recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
                 failedCount: number;
+                filterState?: string | null | undefined;
                 sentBy?: import("mongoose").Types.ObjectId | null | undefined;
                 sentAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
@@ -91,10 +96,11 @@ declare const communicationResolvers: {
                 message: string;
                 subject: string;
                 status: "pending" | "failed" | "sent";
-                recipients: "active" | "all" | "specific";
+                recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
                 failedCount: number;
+                filterState?: string | null | undefined;
                 sentBy?: import("mongoose").Types.ObjectId | null | undefined;
                 sentAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {

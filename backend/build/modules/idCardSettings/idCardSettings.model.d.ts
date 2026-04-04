@@ -6,6 +6,8 @@ declare const IDCardSettings: mongoose.Model<{
     isEnabled: boolean;
     requiresApproval: boolean;
     validityYears: number;
+    headerText?: string | null | undefined;
+    footerText?: string | null | undefined;
     updatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     currency: string;
@@ -14,6 +16,8 @@ declare const IDCardSettings: mongoose.Model<{
     isEnabled: boolean;
     requiresApproval: boolean;
     validityYears: number;
+    headerText?: string | null | undefined;
+    footerText?: string | null | undefined;
     updatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
@@ -24,6 +28,8 @@ declare const IDCardSettings: mongoose.Model<{
     isEnabled: boolean;
     requiresApproval: boolean;
     validityYears: number;
+    headerText?: string | null | undefined;
+    footerText?: string | null | undefined;
     updatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
@@ -38,6 +44,8 @@ declare const IDCardSettings: mongoose.Model<{
     isEnabled: boolean;
     requiresApproval: boolean;
     validityYears: number;
+    headerText?: string | null | undefined;
+    footerText?: string | null | undefined;
     updatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     currency: string;
@@ -46,6 +54,8 @@ declare const IDCardSettings: mongoose.Model<{
     isEnabled: boolean;
     requiresApproval: boolean;
     validityYears: number;
+    headerText?: string | null | undefined;
+    footerText?: string | null | undefined;
     updatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
@@ -56,6 +66,8 @@ declare const IDCardSettings: mongoose.Model<{
     isEnabled: boolean;
     requiresApproval: boolean;
     validityYears: number;
+    headerText?: string | null | undefined;
+    footerText?: string | null | undefined;
     updatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;

@@ -15,12 +15,12 @@ import toast from 'react-hot-toast'
 interface DonationTypeForm {
   name: string
   description: string
-  donationType: string
+  donationMode: string
   isActive: boolean
 }
 
 const emptyForm: DonationTypeForm = {
-  name: '', description: '', donationType: 'monetary', isActive: true,
+  name: '', description: '', donationMode: 'monetary', isActive: true,
 }
 
 export default function DonationTypesPage() {
@@ -72,7 +72,7 @@ export default function DonationTypesPage() {
 
   const openEdit = (dt: any) => {
     setEditId(dt.id)
-    setForm({ name: dt.name, description: dt.description || '', donationType: dt.donationType || 'monetary', isActive: dt.isActive !== false })
+    setForm({ name: dt.name, description: dt.description || '', donationMode: dt.donationType || 'monetary', isActive: dt.isActive !== false })
     setShowModal(true)
   }
 
@@ -113,7 +113,7 @@ export default function DonationTypesPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-900">{dt.name}</h3>
                     <Badge variant={dt.isActive ? 'active' : 'inactive'}>{dt.isActive ? 'Active' : 'Inactive'}</Badge>
-                    <span className="text-xs text-gray-400 capitalize">{dt.donationType}</span>
+                    <span className="text-xs text-gray-400 capitalize">{dt.donationMode}</span>
                   </div>
                   {dt.description && <p className="text-gray-500 text-sm mt-0.5">{dt.description}</p>}
                 </div>
@@ -144,8 +144,8 @@ export default function DonationTypesPage() {
           <Input label="Name" placeholder="e.g. Equipment Donation" value={form.name} onChange={(e) => setField('name', e.target.value)} />
           <Select
             label="Type"
-            value={form.donationType}
-            onChange={(e) => setField('donationType', e.target.value)}
+            value={form.donationMode}
+            onChange={(e) => setField('donationMode', e.target.value)}
             options={[
               { value: 'monetary', label: 'Monetary (Cash/Transfer)' },
               { value: 'physical', label: 'Physical (Items/Goods)' },

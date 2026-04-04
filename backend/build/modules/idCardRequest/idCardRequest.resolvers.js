@@ -8,6 +8,7 @@ import { requireMemberAuth, requireAdminAuth } from '../../middleware/auth.js';
 import { generateIDCard } from '../../utils/idCardGenerator.js';
 import { sendEmail, idCardStatusTemplate } from '../../utils/emailService.js';
 import { UPLOAD_FOLDERS } from '../../utils/constants.js';
+import { createNotification } from '../../utils/createNotification.js';
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
 const idCardRequestResolvers = {
@@ -58,6 +59,9 @@ const idCardRequestResolvers = {
                 paymentStatus: 'pending',
                 adminStatus: 'pending',
             });
+            const memberDoc = await Member.findById(context.member.id).select('firstName lastName').lean();
+            const name = memberDoc ? `${memberDoc.firstName} ${memberDoc.lastName}` : 'A member';
+            createNotification('id_card_request', 'New ID Card Request', `${name} has submitted a new ${data.requestType} ID card request.`, request._id.toString(), 'IDCardRequest');
             return { success: true, message: 'ID card request submitted', data: request };
         },
         initiateIDCardPayment: async (_, { requestId }, context) => {

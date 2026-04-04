@@ -34,6 +34,33 @@ export const sendBulkEmail = async (recipients: string[], subject: string, html:
   }
 };
 
+export const bulkEmailTemplate = (subject: string, body: string): string => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>${subject}</title></head>
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background:#1a6b3a; padding:28px 30px; text-align:center;">
+      <h1 style="color:#d4a017; margin:0; font-size:28px; letter-spacing:1px;">RENISA</h1>
+      <p style="color:#ffffff; margin:6px 0 0; font-size:13px;">Retired Nigerian Women &amp; Men Sports Association</p>
+    </div>
+    <div style="padding:32px 30px;">
+      <h2 style="color:#1a6b3a; margin-top:0; font-size:20px;">${subject}</h2>
+      <div style="color:#374151; font-size:15px; line-height:1.7;">
+        ${body}
+      </div>
+    </div>
+    <div style="background:#f0f8f0; border-top:1px solid #d1fae5; padding:20px 30px; text-align:center;">
+      <p style="color:#6b7280; margin:0; font-size:12px;">
+        © ${new Date().getFullYear()} RENISA. All rights reserved.<br/>
+        This message was sent to you as a RENISA member.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
 export const welcomeTemplate = (name: string, memberNumber: string): string => `
 <!DOCTYPE html>
 <html>

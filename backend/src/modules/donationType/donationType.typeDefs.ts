@@ -39,7 +39,7 @@ const donationTypeTypeDefs = gql`
   }
 
   extend type Query {
-    getAllDonationTypes(isActive: Boolean): [DonationType!]!
+    getAllDonationTypes: [DonationType!]!
     getDonationType(id: ID!): DonationType
   }
 

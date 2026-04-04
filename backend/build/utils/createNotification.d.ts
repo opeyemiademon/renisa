@@ -1,0 +1,2 @@
+export declare const createNotification: (type: "new_member" | "new_payment" | "id_card_request", title: string, message: string, refId?: string, refModel?: string) => Promise<void>;
+//# sourceMappingURL=createNotification.d.ts.map

@@ -5,6 +5,9 @@ const awardCategorySchema = new Schema({
     description: { type: String, trim: true },
     icon: { type: String },
     isActive: { type: Boolean, default: true },
+    pollActive: { type: Boolean, default: false },
+    votingStartDate: { type: Date },
+    votingEndDate: { type: Date },
     createdBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
 }, { timestamps: true });
 const AwardCategory = mongoose.model('AwardCategory', awardCategorySchema);

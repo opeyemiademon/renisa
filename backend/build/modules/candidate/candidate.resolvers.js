@@ -7,22 +7,31 @@ import Member from '../member/member.model.js';
 import { requireMemberAuth, requireAdminAuth } from '../../middleware/auth.js';
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
+const populateCandidate = (q) => q
+    .populate('memberId', 'firstName lastName profilePicture memberNumber')
+    .populate('positionId', 'title formFee maxCandidates')
+    .populate('electionId', 'title status');
 const candidateResolvers = {
+    Candidate: {
+        member: (parent) => parent.memberId,
+        position: (parent) => parent.positionId,
+        status: (parent) => {
+            if (parent.isApproved)
+                return 'approved';
+            if (parent.formPaymentStatus === 'paid')
+                return 'pending';
+            return 'unpaid';
+        },
+    },
     Query: {
         getCandidates: async (_, { electionId, positionId }) => {
             const filter = { electionId };
             if (positionId)
                 filter.positionId = positionId;
-            return await Candidate.find(filter)
-                .populate('memberId', 'firstName lastName profilePicture')
-                .populate('positionId', 'title')
-                .sort({ createdAt: 1 });
+            return await populateCandidate(Candidate.find(filter).sort({ createdAt: 1 }));
         },
         getCandidate: async (_, { id }) => {
-            return await Candidate.findById(id)
-                .populate('memberId', 'firstName lastName profilePicture')
-                .populate('positionId', 'title')
-                .populate('electionId', 'title status');
+            return await populateCandidate(Candidate.findById(id));
         },
     },
     Mutation: {
@@ -35,7 +44,7 @@ const candidateResolvers = {
             if (!position)
                 throw new Error('Position not found');
             const election = await Election.findById(electionId);
-            if (!election || election.status !== 'nomination')
+            if (!election || election.status !== 'active')
                 throw new Error('Nominations are not open');
             const existing = await Candidate.findOne({ electionId, positionId, memberId: member._id });
             if (existing)
@@ -100,19 +109,19 @@ const candidateResolvers = {
                 throw new Error('No active candidacy application found');
             if (candidate.formPaymentStatus !== 'paid')
                 throw new Error('Form fee not paid');
-            const updated = await Candidate.findByIdAndUpdate(candidate._id, { manifesto: data.manifesto, profilePicture: data.profilePicture }, { new: true });
+            const updated = await populateCandidate(Candidate.findByIdAndUpdate(candidate._id, { manifesto: data.manifesto, profilePicture: data.profilePicture }, { new: true }));
             return { success: true, message: 'Candidacy submitted', data: updated };
         },
         approveCandidate: async (_, { id }, context) => {
             requireAdminAuth(context);
-            const candidate = await Candidate.findByIdAndUpdate(id, { isApproved: true, approvedBy: context.admin.id }, { new: true });
+            const candidate = await populateCandidate(Candidate.findByIdAndUpdate(id, { isApproved: true, approvedBy: context.admin.id }, { new: true }));
             if (!candidate)
                 throw new Error('Candidate not found');
             return { success: true, message: 'Candidate approved', data: candidate };
         },
         rejectCandidate: async (_, { id }, context) => {
             requireAdminAuth(context);
-            const candidate = await Candidate.findByIdAndUpdate(id, { isApproved: false }, { new: true });
+            const candidate = await populateCandidate(Candidate.findByIdAndUpdate(id, { isApproved: false }, { new: true }));
             if (!candidate)
                 throw new Error('Candidate not found');
             return { success: true, message: 'Candidate rejected', data: candidate };

@@ -55,7 +55,7 @@ export default function EventsPage() {
       const q = search.toLowerCase()
       rows = rows.filter((e: any) => e.title?.toLowerCase().includes(q) || e.location?.toLowerCase().includes(q))
     }
-    if (typeFilter) rows = rows.filter((e: any) => e.type === typeFilter || e.eventType === typeFilter)
+    if (typeFilter) rows = rows.filter((e: any) => e.type === typeFilter)
     if (statusFilter) rows = rows.filter((e: any) => e.status === statusFilter)
     return rows
   }, [allEvents, search, typeFilter, statusFilter])
@@ -82,18 +82,7 @@ export default function EventsPage() {
           placeholder="Search events..."
           className="flex-1 min-w-48"
         />
-        <Select
-          value={typeFilter}
-          onChange={(e) => { setTypeFilter(e.target.value); setVisibleCount(20) }}
-          options={[
-            { value: '', label: 'All Types' },
-            { value: 'conference', label: 'Conference' },
-            { value: 'tournament', label: 'Tournament' },
-            { value: 'meeting', label: 'Meeting' },
-            { value: 'award', label: 'Award Ceremony' },
-            { value: 'other', label: 'Other' },
-          ]}
-        />
+      
         <Select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setVisibleCount(20) }}
@@ -113,7 +102,6 @@ export default function EventsPage() {
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Event</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Date</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Location</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide"></th>
               </tr>
@@ -139,12 +127,12 @@ export default function EventsPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{row.title}</p>
-                          <p className="text-xs text-gray-400 capitalize">{row.type || row.eventType}</p>
+                      
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{row.startDate || row.eventDate ? formatDate(row.startDate || row.eventDate) : '—'}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{row.location || row.venue || '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{row.createdAt ? formatDate(row.createdAt) : '—'}</td>
+                   
                     <td className="px-4 py-3"><Badge variant={row.status}>{row.status}</Badge></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

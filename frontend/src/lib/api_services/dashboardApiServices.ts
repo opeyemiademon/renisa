@@ -15,14 +15,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         pendingIDCards
         memberGrowth { month count }
         paymentTypeDistribution { name total }
-        recentMembers {
-          id memberNumber firstName lastName sport status profilePicture createdAt
-        }
-        recentPayments {
-          id amount year method status reference createdAt
-          member { id firstName lastName memberNumber }
-          paymentType { id name }
-        }
+        recentMembers
+        recentPayments
       }
     }
   `

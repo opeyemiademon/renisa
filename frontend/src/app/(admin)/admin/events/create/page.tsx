@@ -3,15 +3,16 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Camera, X } from 'lucide-react'
 import Link from 'next/link'
 import { createEvent, updateEvent, getEvent } from '@/lib/api_services/eventApiServices'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
-import { FileUpload } from '@/components/shared/FileUpload'
-import { RichTextEditor } from '@/components/shared/RichTextEditor'
-import { generateSlug } from '@/lib/utils'
+import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
+import { generateSlug, buildImageUrl } from '@/lib/utils'
+import { fileToBase64 } from '@/lib/fileUpload'
+import { Editor } from '@tinymce/tinymce-react'
 import toast from 'react-hot-toast'
 
 function CreateEventForm() {
@@ -23,19 +24,27 @@ function CreateEventForm() {
   const [form, setForm] = useState({
     title: '',
     slug: '',
-    description: '',
+    excerpt: '',
     content: '',
-    type: 'conference',
-    startDate: '',
-    endDate: '',
-    location: '',
-    address: '',
     coverImage: '',
-    registrationLink: '',
+    photoBase64: '',
     isFeatured: false,
   })
 
   const setField = (f: string, v: any) => setForm((p) => ({ ...p, [f]: v }))
+
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
+
+  const handleCapture = async (file: File) => {
+    try {
+      const base64 = await fileToBase64(file)
+      setForm((prev) => ({ ...prev, photoBase64: base64, coverImage: URL.createObjectURL(file) }))
+      toast.success('Photo captured successfully!')
+    } catch (error) {
+      toast.error('Failed to process photo')
+    }
+    setShowPhotoModal(false)
+  }
 
   const { data: existingEvent } = useQuery({
     queryKey: ['event', editId],
@@ -48,15 +57,10 @@ function CreateEventForm() {
       setForm({
         title: existingEvent.title,
         slug: existingEvent.slug,
-        description: existingEvent.description || '',
+        excerpt: existingEvent.excerpt || '',
         content: existingEvent.content || '',
-        type: existingEvent.type || existingEvent.eventType || 'conference',
-        startDate: existingEvent.startDate ? existingEvent.startDate.slice(0, 16) : '',
-        endDate: existingEvent.endDate ? existingEvent.endDate.slice(0, 16) : '',
-        location: existingEvent.location || '',
-        address: existingEvent.address || '',
         coverImage: existingEvent.coverImage || '',
-        registrationLink: existingEvent.registrationLink || '',
+        photoBase64: '',
         isFeatured: existingEvent.isFeatured || false,
       })
     }
@@ -88,25 +92,38 @@ function CreateEventForm() {
       {/* Basic Info */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h3 className="font-semibold text-gray-900">Event Details</h3>
-        <FileUpload label="Cover Image" value={form.coverImage} onChange={(url) => setField('coverImage', url)} />
+        <div>
+          <span className="block text-sm font-medium text-gray-700 mb-1.5">Cover Image</span>
+          {form.coverImage ? (
+            <div className="relative rounded-lg overflow-hidden border border-gray-200">
+              <img
+                src={form.coverImage.startsWith('blob:') ? form.coverImage : buildImageUrl(form.coverImage)}
+                alt="Cover preview"
+                className="w-full h-40 object-cover"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+              <button
+                type="button"
+                onClick={() => setField('coverImage', '')}
+                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-red-50 text-red-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowPhotoModal(true)}
+              className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center gap-3 hover:border-[#1a6b3a]/50 hover:bg-gray-50 transition-colors"
+            >
+              <Camera className="w-10 h-10 text-gray-300" />
+              <p className="text-sm font-medium text-gray-700">Take or Upload Photo</p>
+            </button>
+          )}
+        </div>
         <Input label="Title" value={form.title} onChange={(e) => handleTitleChange(e.target.value)} />
         <Input label="URL Slug" value={form.slug} onChange={(e) => setField('slug', e.target.value)} helperText="Auto-generated from title" />
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Select
-            label="Event Type"
-            value={form.type}
-            onChange={(e) => setField('type', e.target.value)}
-            options={[
-              { value: 'conference', label: 'Conference' },
-              { value: 'tournament', label: 'Tournament' },
-              { value: 'meeting', label: 'Meeting' },
-              { value: 'award', label: 'Award Ceremony' },
-              { value: 'other', label: 'Other' },
-            ]}
-          />
-          <Input label="Registration Link (optional)" type="url" value={form.registrationLink} onChange={(e) => setField('registrationLink', e.target.value)} />
-        </div>
-        <Input label="Short Description" placeholder="Brief event summary..." value={form.description} onChange={(e) => setField('description', e.target.value)} />
+        <Input label="Short Excerpt" placeholder="Brief event summary..." value={form.excerpt} onChange={(e) => setField('excerpt', e.target.value)} />
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -119,24 +136,27 @@ function CreateEventForm() {
         </div>
       </div>
 
-      {/* Dates & Location */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h3 className="font-semibold text-gray-900">Date & Location</h3>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Input label="Start Date & Time" type="datetime-local" value={form.startDate} onChange={(e) => setField('startDate', e.target.value)} />
-          <Input label="End Date & Time" type="datetime-local" value={form.endDate} onChange={(e) => setField('endDate', e.target.value)} />
-        </div>
-        <Input label="Location / Venue" value={form.location} onChange={(e) => setField('location', e.target.value)} />
-        <Input label="Full Address (optional)" value={form.address} onChange={(e) => setField('address', e.target.value)} />
-      </div>
-
       {/* Content */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h3 className="font-semibold text-gray-900">Full Content</h3>
-        <RichTextEditor
-          label="Event Content"
+        <h3 className="font-semibold text-gray-900">Event Content</h3>
+        <Editor
+          apiKey={process.env.NEXT_PUBLIC_TYINYMCE_KEY}
           value={form.content}
-          onChange={(v) => setField('content', v)}
+          onEditorChange={(content) => setField('content', content)}
+          init={{
+            height: 500,
+            menubar: true,
+            plugins: [
+              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+              'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | ' +
+              'bold italic forecolor | alignleft aligncenter ' +
+              'alignright alignjustify | bullist numlist outdent indent | ' +
+              'removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+          }}
         />
       </div>
 
@@ -150,6 +170,13 @@ function CreateEventForm() {
           {editId ? 'Save Changes' : 'Create Event'}
         </Button>
       </div>
+
+      <PhotoCaptureModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onCapture={handleCapture}
+        title="Event Cover Image"
+      />
     </div>
   )
 }

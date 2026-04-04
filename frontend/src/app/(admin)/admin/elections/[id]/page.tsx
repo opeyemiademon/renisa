@@ -15,10 +15,14 @@ import { PageLoader } from '@/components/shared/Spinner'
 import { VoteResultChart } from '@/components/admin/VoteResultChart'
 import { buildImageUrl, formatDate, formatCurrency } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 
 type TabType = 'overview' | 'candidates' | 'results'
 
-export default function ElectionDetailPage({ params }: { params: { id: string } }) {
+export default function ElectionDetailPage() {
+  
+   const params = useParams()
+    const id = params.id as string
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<TabType>('overview')
   const [statusAction, setStatusAction] = useState<string | null>(null)
@@ -26,34 +30,34 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
   const [positionForm, setPositionForm] = useState({ title: '', maxCandidates: '5', formFee: '0', description: '' })
 
   const { data: election, isLoading } = useQuery({
-    queryKey: ['election', params.id],
-    queryFn: () => getElection(params.id),
+    queryKey: ['election', id],
+    queryFn: () => getElection(id),
   })
 
   const { data: candidatesData } = useQuery({
-    queryKey: ['election-candidates', params.id],
-    queryFn: () => getCandidatesForElection(params.id),
+    queryKey: ['election-candidates', id],
+    queryFn: () => getCandidatesForElection(id),
     enabled: tab === 'candidates',
   })
 
   const { data: results } = useQuery({
-    queryKey: ['election-results', params.id],
-    queryFn: () => getElectionResults(params.id),
+    queryKey: ['election-results', id],
+    queryFn: () => getElectionResults(id),
     enabled: tab === 'results',
   })
 
   const statusMutation = useMutation({
-    mutationFn: (status: string) => updateElectionStatus(params.id, status),
+    mutationFn: (status: string) => updateElectionStatus(id, status),
     onSuccess: () => {
       toast.success('Election status updated')
-      queryClient.invalidateQueries({ queryKey: ['election', params.id] })
+      queryClient.invalidateQueries({ queryKey: ['election', id] })
       setStatusAction(null)
     },
     onError: (err: Error) => toast.error(err.message),
   })
 
   const addPositionMutation = useMutation({
-    mutationFn: () => addElectoralPosition(params.id, {
+    mutationFn: () => addElectoralPosition(id, {
       title: positionForm.title,
       maxCandidates: parseInt(positionForm.maxCandidates),
       formFee: parseFloat(positionForm.formFee),
@@ -61,7 +65,7 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
     }),
     onSuccess: () => {
       toast.success('Position added')
-      queryClient.invalidateQueries({ queryKey: ['election', params.id] })
+      queryClient.invalidateQueries({ queryKey: ['election', id] })
       setShowAddPosition(false)
       setPositionForm({ title: '', maxCandidates: '5', formFee: '0', description: '' })
     },
@@ -69,10 +73,10 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
   })
 
   const approveMutation = useMutation({
-    mutationFn: (candidateId: string) => approveCandidate(candidateId),
+    mutationFn: (id: string) => approveCandidate(id),
     onSuccess: () => {
       toast.success('Candidate approved')
-      queryClient.invalidateQueries({ queryKey: ['election-candidates', params.id] })
+      queryClient.invalidateQueries({ queryKey: ['election-candidates', id] })
     },
     onError: (err: Error) => toast.error(err.message),
   })
@@ -234,7 +238,7 @@ export default function ElectionDetailPage({ params }: { params: { id: string } 
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge variant={candidate.status}>{candidate.status}</Badge>
-                    {candidate.status === 'pending' && (
+                    {!candidate.isApproved && (
                       <Button size="sm" onClick={() => approveMutation.mutate(candidate.id)}>Approve</Button>
                     )}
                   </div>

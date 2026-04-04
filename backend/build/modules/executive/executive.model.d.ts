@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 declare const Executive: mongoose.Model<{
     name: string;
     isActive: boolean;
-    position: string;
     order: number;
+    position: string;
     profilePicture?: string | null | undefined;
     bio?: string | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
@@ -11,8 +11,8 @@ declare const Executive: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     name: string;
     isActive: boolean;
-    position: string;
     order: number;
+    position: string;
     profilePicture?: string | null | undefined;
     bio?: string | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
@@ -22,8 +22,8 @@ declare const Executive: mongoose.Model<{
 }> & {
     name: string;
     isActive: boolean;
-    position: string;
     order: number;
+    position: string;
     profilePicture?: string | null | undefined;
     bio?: string | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
@@ -37,8 +37,8 @@ declare const Executive: mongoose.Model<{
 }, {
     name: string;
     isActive: boolean;
-    position: string;
     order: number;
+    position: string;
     profilePicture?: string | null | undefined;
     bio?: string | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
@@ -46,8 +46,8 @@ declare const Executive: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     name: string;
     isActive: boolean;
-    position: string;
     order: number;
+    position: string;
     profilePicture?: string | null | undefined;
     bio?: string | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
@@ -57,8 +57,8 @@ declare const Executive: mongoose.Model<{
 }>> & mongoose.FlatRecord<{
     name: string;
     isActive: boolean;
-    position: string;
     order: number;
+    position: string;
     profilePicture?: string | null | undefined;
     bio?: string | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;

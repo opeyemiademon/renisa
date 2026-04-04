@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 declare const Leadership: mongoose.Model<{
     isActive: boolean;
     memberId: mongoose.Types.ObjectId;
-    position: string;
     order: number;
     groupId: mongoose.Types.ObjectId;
+    position: string;
     isCurrent: boolean;
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -13,9 +13,9 @@ declare const Leadership: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     isActive: boolean;
     memberId: mongoose.Types.ObjectId;
-    position: string;
     order: number;
     groupId: mongoose.Types.ObjectId;
+    position: string;
     isCurrent: boolean;
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -26,9 +26,9 @@ declare const Leadership: mongoose.Model<{
 }> & {
     isActive: boolean;
     memberId: mongoose.Types.ObjectId;
-    position: string;
     order: number;
     groupId: mongoose.Types.ObjectId;
+    position: string;
     isCurrent: boolean;
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -43,9 +43,9 @@ declare const Leadership: mongoose.Model<{
 }, {
     isActive: boolean;
     memberId: mongoose.Types.ObjectId;
-    position: string;
     order: number;
     groupId: mongoose.Types.ObjectId;
+    position: string;
     isCurrent: boolean;
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -54,9 +54,9 @@ declare const Leadership: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     isActive: boolean;
     memberId: mongoose.Types.ObjectId;
-    position: string;
     order: number;
     groupId: mongoose.Types.ObjectId;
+    position: string;
     isCurrent: boolean;
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -67,9 +67,9 @@ declare const Leadership: mongoose.Model<{
 }>> & mongoose.FlatRecord<{
     isActive: boolean;
     memberId: mongoose.Types.ObjectId;
-    position: string;
     order: number;
     groupId: mongoose.Types.ObjectId;
+    position: string;
     isCurrent: boolean;
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;

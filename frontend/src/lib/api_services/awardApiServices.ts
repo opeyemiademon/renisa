@@ -2,20 +2,25 @@ import graphqlClient from './graphqlClient'
 import { Award, AwardCategory, MutationResponse } from '@/types'
 
 const AWARD_FIELDS = `
-  id  year  votingEnabled votingEndDate totalVotes createdAt 
-  categoryId { id name }
+  id  year  votingEnabled votingStartDate votingEndDate totalVotes status createdAt
+  categoryId { id name pollActive votingStartDate votingEndDate }
   memberId { id firstName lastName profilePicture memberNumber }
+`
+
+const CATEGORY_FIELDS = `
+  id name description icon isActive pollActive votingStartDate votingEndDate createdAt
 `
 
 export const getAllAwards = async (params?: {
   year?: number
   categoryId?: string
   votingEnabled?: boolean
-  search?: string
+  status?: string
+  memberName?: string
 }) => {
   const query = `
-    query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean) {
-      getAllAwards(year: $year, categoryId: $categoryId, votingEnabled: $votingEnabled) {
+    query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean, $status: String, $memberName: String) {
+      getAllAwards(year: $year, categoryId: $categoryId, votingEnabled: $votingEnabled, status: $status, memberName: $memberName) {
         ${AWARD_FIELDS}
       }
     }
@@ -39,7 +44,7 @@ export const getAward = async (id: string): Promise<Award> => {
 export const createAward = async (data: object): Promise<Award> => {
   const mutation = `
     mutation CreateAward($data: CreateAwardInput!) {
-      createAward(data: $data) { success message  }
+      createAward(data: $data) { success message data { ${AWARD_FIELDS} } }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
@@ -87,10 +92,12 @@ export const enableAwardVoting = async (
   return response.data.data.enableAwardVoting
 }
 
+// ── Award Categories ──────────────────────────────────────────────────────────
+
 export const getAwardCategories = async (): Promise<AwardCategory[]> => {
   const query = `
     query GetAwardCategories {
-      getAllAwardCategories { id name description createdAt  }
+      getAllAwardCategories { ${CATEGORY_FIELDS} }
     }
   `
   const response = await graphqlClient.post('', { query })
@@ -104,7 +111,7 @@ export const createAwardCategory = async (data: {
 }): Promise<AwardCategory> => {
   const mutation = `
     mutation CreateAwardCategory($data: CreateAwardCategoryInput!) {
-      createAwardCategory(data: $data) { success message }
+      createAwardCategory(data: $data) { success message data { ${CATEGORY_FIELDS} } }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
@@ -120,12 +127,14 @@ export const updateAwardCategory = async (
 ): Promise<AwardCategory> => {
   const mutation = `
     mutation UpdateAwardCategory($id: ID!, $data: UpdateAwardCategoryInput!) {
-      updateAwardCategory(id: $id, data: $data) { id name description createdAt  }
+      updateAwardCategory(id: $id, data: $data) { success message data { ${CATEGORY_FIELDS} } }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { id, data } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.updateAwardCategory
+  const result = response.data.data.updateAwardCategory
+  if (!result.success) throw new Error(result.message)
+  return result.data
 }
 
 export const deleteAwardCategory = async (id: string): Promise<MutationResponse> => {
@@ -137,4 +146,65 @@ export const deleteAwardCategory = async (id: string): Promise<MutationResponse>
   const response = await graphqlClient.post('', { query: mutation, variables: { id } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.deleteAwardCategory
+}
+
+export const startCategoryPoll = async (
+  id: string,
+  votingStartDate?: string,
+  votingEndDate?: string
+): Promise<MutationResponse> => {
+  const mutation = `
+    mutation StartCategoryPoll($id: ID!, $votingStartDate: String, $votingEndDate: String) {
+      startCategoryPoll(id: $id, votingStartDate: $votingStartDate, votingEndDate: $votingEndDate) {
+        success message data { ${CATEGORY_FIELDS} }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { id, votingStartDate, votingEndDate } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.startCategoryPoll
+}
+
+export const endCategoryPoll = async (id: string): Promise<MutationResponse> => {
+  const mutation = `
+    mutation EndCategoryPoll($id: ID!) {
+      endCategoryPoll(id: $id) { success message data { ${CATEGORY_FIELDS} } }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.endCategoryPoll
+}
+
+// ── Winners Report ────────────────────────────────────────────────────────────
+
+export const getAwardWinnersReport = async (year?: number) => {
+  const query = `
+    query GetAwardWinnersReport($year: Int) {
+      getAwardWinnersReport(year: $year) {
+        categoryId
+        categoryName
+        pollActive
+        votingStartDate
+        votingEndDate
+        winner {
+          awardId
+          recipientName
+          recipientPhoto
+          memberNumber
+          voteCount
+        }
+        nominees {
+          awardId
+          recipientName
+          recipientPhoto
+          memberNumber
+          voteCount
+        }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query, variables: year ? { year } : {} })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getAwardWinnersReport
 }

@@ -6,7 +6,7 @@ declare const voteResolvers: {
             candidateId: any;
             candidateName: any;
             positionId: any;
-            positionTitle: any;
+            positionTitle: string;
             voteCount: any;
         }[]>;
         hasVoted: (_: any, { electionId, positionId }: any, context: AuthContext) => Promise<boolean>;

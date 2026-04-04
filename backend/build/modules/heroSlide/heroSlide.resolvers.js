@@ -1,5 +1,7 @@
 import HeroSlide from './heroSlide.model.js';
 import { requireAdminAuth } from '../../middleware/auth.js';
+import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
+import { STATIC_BASE_URL } from '../../utils/constants.js';
 const heroSlideResolvers = {
     Query: {
         getHeroSlides: async (_, { activeOnly }) => {
@@ -15,9 +17,21 @@ const heroSlideResolvers = {
     Mutation: {
         createHeroSlide: async (_, { data }, context) => {
             requireAdminAuth(context);
+            const { photoBase64, ...rest } = data;
+            let imageUrl = rest.imageUrl;
+            if (photoBase64) {
+                try {
+                    const fileName = await processBase64Upload(photoBase64, 'hero-slides', ALLOWED_IMAGE_TYPES, 'slide');
+                    imageUrl = `${STATIC_BASE_URL}/uploads/hero-slides/${fileName}`;
+                }
+                catch (uploadError) {
+                    console.error('Photo upload error:', uploadError.message);
+                }
+            }
             const count = await HeroSlide.countDocuments();
             const slide = await HeroSlide.create({
-                ...data,
+                ...rest,
+                imageUrl,
                 order: data.order ?? count,
                 createdBy: context.admin.id,
             });
@@ -25,7 +39,18 @@ const heroSlideResolvers = {
         },
         updateHeroSlide: async (_, { id, data }, context) => {
             requireAdminAuth(context);
-            const slide = await HeroSlide.findByIdAndUpdate(id, data, { new: true });
+            const { photoBase64, ...rest } = data;
+            let updateData = rest;
+            if (photoBase64) {
+                try {
+                    const fileName = await processBase64Upload(photoBase64, 'hero-slides', ALLOWED_IMAGE_TYPES, 'slide');
+                    updateData.imageUrl = `${STATIC_BASE_URL}/uploads/hero-slides/${fileName}`;
+                }
+                catch (uploadError) {
+                    console.error('Photo upload error:', uploadError.message);
+                }
+            }
+            const slide = await HeroSlide.findByIdAndUpdate(id, updateData, { new: true });
             if (!slide)
                 throw new Error('Hero slide not found');
             return { success: true, message: 'Hero slide updated', data: slide };

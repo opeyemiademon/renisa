@@ -12,7 +12,7 @@ export const getIDCardSettings = async (): Promise<IDCardSettings> => {
   const query = `
     query GetIDCardSettings {
       getIDCardSettings {
-        id onlineFee physicalFee requiresApproval isEnabled validityYears updatedAt
+        id onlineFee physicalFee requiresApproval isEnabled validityYears headerText footerText updatedAt
       }
     }
   `
@@ -25,7 +25,7 @@ export const updateIDCardSettings = async (data: Partial<IDCardSettings>): Promi
   const mutation = `
     mutation UpdateIDCardSettings($data: UpdateIDCardSettingsInput!) {
       updateIDCardSettings(data: $data) {
-        id onlineFee physicalFee requiresApproval isEnabled validityYears updatedAt
+        success message
       }
     }
   `

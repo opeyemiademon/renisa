@@ -6,6 +6,7 @@ const communicationTypeDefs = gql `
     message: String!
     type: String!
     recipients: String!
+    filterState: String
     specificMembers: [Member]
     status: String!
     sentCount: Int!
@@ -25,14 +26,9 @@ const communicationTypeDefs = gql `
   input SendCommunicationInput {
     subject: String!
     message: String!
-    type: String!
     recipients: String!
+    filterState: String
     specificMembers: [ID]
-  }
-
-  extend type Query {
-    getAllCommunications(page: Int, limit: Int): CommunicationListResponse!
-    getCommunication(id: ID!): Communication
   }
 
   type CommunicationListResponse {
@@ -40,6 +36,11 @@ const communicationTypeDefs = gql `
     total: Int!
     page: Int!
     limit: Int!
+  }
+
+  extend type Query {
+    getAllCommunications(page: Int, limit: Int): CommunicationListResponse!
+    getCommunication(id: ID!): Communication
   }
 
   extend type Mutation {

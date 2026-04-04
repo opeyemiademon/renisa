@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Bold, Italic, Heading2, List, ListOrdered, Link2 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { cn } from '@/lib/utils'
+
+const Editor = dynamic(() => import('@tinymce/tinymce-react').then((m) => m.Editor), { ssr: false })
 
 interface RichTextEditorProps {
   value: string
@@ -11,6 +12,7 @@ interface RichTextEditorProps {
   error?: string
   placeholder?: string
   className?: string
+  height?: number
 }
 
 export function RichTextEditor({
@@ -20,70 +22,32 @@ export function RichTextEditor({
   error,
   placeholder,
   className,
+  height = 300,
 }: RichTextEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const wrapSelection = (before: string, after: string) => {
-    const ta = textareaRef.current
-    if (!ta) return
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    const selected = value.slice(start, end)
-    const newValue = value.slice(0, start) + before + selected + after + value.slice(end)
-    onChange(newValue)
-    setTimeout(() => {
-      ta.focus()
-      ta.setSelectionRange(start + before.length, end + before.length)
-    }, 0)
-  }
-
-  const insertAtLine = (prefix: string) => {
-    const ta = textareaRef.current
-    if (!ta) return
-    const start = ta.selectionStart
-    const lineStart = value.lastIndexOf('\n', start - 1) + 1
-    const newValue = value.slice(0, lineStart) + prefix + value.slice(lineStart)
-    onChange(newValue)
-    setTimeout(() => ta.focus(), 0)
-  }
-
-  const tools = [
-    { icon: <Bold className="w-4 h-4" />, action: () => wrapSelection('<strong>', '</strong>'), title: 'Bold' },
-    { icon: <Italic className="w-4 h-4" />, action: () => wrapSelection('<em>', '</em>'), title: 'Italic' },
-    { icon: <Heading2 className="w-4 h-4" />, action: () => wrapSelection('<h2>', '</h2>'), title: 'Heading' },
-    { icon: <List className="w-4 h-4" />, action: () => insertAtLine('<li>'), title: 'List item' },
-    { icon: <Link2 className="w-4 h-4" />, action: () => wrapSelection('<a href="#">', '</a>'), title: 'Link' },
-  ]
-
   return (
     <div className={cn('flex flex-col gap-1', className)}>
       {label && <span className="text-sm font-medium text-gray-700">{label}</span>}
-      <div
-        className={cn(
-          'border rounded-lg overflow-hidden',
-          error ? 'border-red-500' : 'border-gray-300 focus-within:border-[#1a6b3a] focus-within:ring-2 focus-within:ring-[#1a6b3a]/20'
-        )}
-      >
-        <div className="flex gap-1 px-2 py-1.5 bg-gray-50 border-b border-gray-200">
-          {tools.map((tool, i) => (
-            <button
-              key={i}
-              type="button"
-              title={tool.title}
-              onClick={tool.action}
-              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors"
-            >
-              {tool.icon}
-            </button>
-          ))}
-        </div>
-        <textarea
-          ref={textareaRef}
+      <div className={cn('rounded-lg overflow-hidden', error ? 'ring-2 ring-red-500' : '')}>
+        <Editor
+          apiKey={process.env.NEXT_PUBLIC_TYINYMCE_KEY}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={10}
-          className="w-full p-3 text-sm text-gray-900 resize-vertical focus:outline-none bg-white"
+          onEditorChange={onChange}
+          init={{
+            height,
+            menubar: false,
+            placeholder,
+            plugins: [
+              'advlist', 'autolink', 'lists', 'link', 'charmap',
+              'searchreplace', 'visualblocks', 'code',
+              'insertdatetime', 'table', 'wordcount',
+            ],
+            toolbar:
+              'undo redo | blocks | bold italic forecolor | ' +
+              'alignleft aligncenter alignright | bullist numlist | ' +
+              'link | removeformat | code',
+            content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+            branding: false,
+          }}
         />
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}

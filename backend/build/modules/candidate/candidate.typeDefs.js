@@ -5,12 +5,16 @@ const candidateTypeDefs = gql `
     electionId: Election!
     positionId: ElectoralPosition!
     memberId: Member!
+    # derived field resolvers
+    member: Member
+    position: ElectoralPosition
     manifesto: String
     formPaymentRef: String
     formPaymentStatus: String!
     isApproved: Boolean!
     approvedBy: AdminUser
     profilePicture: String
+    status: String
     createdAt: String!
     updatedAt: String!
   }

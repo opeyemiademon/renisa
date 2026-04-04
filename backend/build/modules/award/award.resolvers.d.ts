@@ -1,36 +1,15 @@
 import { AuthContext } from '../../middleware/auth.js';
 declare const awardResolvers: {
     Award: {
+        recipientName: (parent: any) => string;
+        recipientPhoto: (parent: any) => any;
+        title: (parent: any) => any;
+        category: (parent: any) => any;
+        member: (parent: any) => any;
         totalVotes: (parent: any) => Promise<number>;
     };
     Query: {
-        getAllAwards: (_: any, { year, status, categoryId, votingEnabled }: any) => Promise<(import("mongoose").Document<unknown, {}, {
-            year: number;
-            status: "voting" | "nominated" | "awarded";
-            memberId: import("mongoose").Types.ObjectId;
-            categoryId: import("mongoose").Types.ObjectId;
-            votingEnabled: boolean;
-            votingStartDate?: NativeDate | null | undefined;
-            votingEndDate?: NativeDate | null | undefined;
-            image?: string | null | undefined;
-            nominatedBy?: import("mongoose").Types.ObjectId | null | undefined;
-        } & import("mongoose").DefaultTimestampProps, {}, {
-            timestamps: true;
-        }> & {
-            year: number;
-            status: "voting" | "nominated" | "awarded";
-            memberId: import("mongoose").Types.ObjectId;
-            categoryId: import("mongoose").Types.ObjectId;
-            votingEnabled: boolean;
-            votingStartDate?: NativeDate | null | undefined;
-            votingEndDate?: NativeDate | null | undefined;
-            image?: string | null | undefined;
-            nominatedBy?: import("mongoose").Types.ObjectId | null | undefined;
-        } & import("mongoose").DefaultTimestampProps & {
-            _id: import("mongoose").Types.ObjectId;
-        } & {
-            __v: number;
-        })[]>;
+        getAllAwards: (_: any, { year, status, categoryId, votingEnabled, memberName }: any) => Promise<any>;
         getAward: (_: any, { id }: {
             id: string;
         }) => Promise<any>;

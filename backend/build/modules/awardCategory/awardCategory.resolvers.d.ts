@@ -1,19 +1,25 @@
 import { AuthContext } from '../../middleware/auth.js';
 declare const awardCategoryResolvers: {
     Query: {
-        getAllAwardCategories: (_: any, { isActive }: any) => Promise<(import("mongoose").Document<unknown, {}, {
+        getAllAwardCategories: () => Promise<(import("mongoose").Document<unknown, {}, {
             name: string;
             isActive: boolean;
+            pollActive: boolean;
             description?: string | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+            votingStartDate?: NativeDate | null | undefined;
+            votingEndDate?: NativeDate | null | undefined;
             icon?: string | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
         }> & {
             name: string;
             isActive: boolean;
+            pollActive: boolean;
             description?: string | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+            votingStartDate?: NativeDate | null | undefined;
+            votingEndDate?: NativeDate | null | undefined;
             icon?: string | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -25,16 +31,22 @@ declare const awardCategoryResolvers: {
         }) => Promise<(import("mongoose").Document<unknown, {}, {
             name: string;
             isActive: boolean;
+            pollActive: boolean;
             description?: string | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+            votingStartDate?: NativeDate | null | undefined;
+            votingEndDate?: NativeDate | null | undefined;
             icon?: string | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
         }> & {
             name: string;
             isActive: boolean;
+            pollActive: boolean;
             description?: string | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+            votingStartDate?: NativeDate | null | undefined;
+            votingEndDate?: NativeDate | null | undefined;
             icon?: string | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -51,16 +63,22 @@ declare const awardCategoryResolvers: {
             data: import("mongoose").Document<unknown, {}, {
                 name: string;
                 isActive: boolean;
+                pollActive: boolean;
                 description?: string | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
                 icon?: string | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
             }> & {
                 name: string;
                 isActive: boolean;
+                pollActive: boolean;
                 description?: string | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
                 icon?: string | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -74,16 +92,22 @@ declare const awardCategoryResolvers: {
             data: import("mongoose").Document<unknown, {}, {
                 name: string;
                 isActive: boolean;
+                pollActive: boolean;
                 description?: string | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
                 icon?: string | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
             }> & {
                 name: string;
                 isActive: boolean;
+                pollActive: boolean;
                 description?: string | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
                 icon?: string | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -96,6 +120,66 @@ declare const awardCategoryResolvers: {
         }, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
+        }>;
+        startCategoryPoll: (_: any, { id, votingStartDate, votingEndDate }: any, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: import("mongoose").Document<unknown, {}, {
+                name: string;
+                isActive: boolean;
+                pollActive: boolean;
+                description?: string | null | undefined;
+                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
+                icon?: string | null | undefined;
+            } & import("mongoose").DefaultTimestampProps, {}, {
+                timestamps: true;
+            }> & {
+                name: string;
+                isActive: boolean;
+                pollActive: boolean;
+                description?: string | null | undefined;
+                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
+                icon?: string | null | undefined;
+            } & import("mongoose").DefaultTimestampProps & {
+                _id: import("mongoose").Types.ObjectId;
+            } & {
+                __v: number;
+            };
+        }>;
+        endCategoryPoll: (_: any, { id }: {
+            id: string;
+        }, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: import("mongoose").Document<unknown, {}, {
+                name: string;
+                isActive: boolean;
+                pollActive: boolean;
+                description?: string | null | undefined;
+                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
+                icon?: string | null | undefined;
+            } & import("mongoose").DefaultTimestampProps, {}, {
+                timestamps: true;
+            }> & {
+                name: string;
+                isActive: boolean;
+                pollActive: boolean;
+                description?: string | null | undefined;
+                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
+                votingStartDate?: NativeDate | null | undefined;
+                votingEndDate?: NativeDate | null | undefined;
+                icon?: string | null | undefined;
+            } & import("mongoose").DefaultTimestampProps & {
+                _id: import("mongoose").Types.ObjectId;
+            } & {
+                __v: number;
+            };
         }>;
     };
 };

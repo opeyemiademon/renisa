@@ -7,6 +7,9 @@ const awardCategoryTypeDefs = gql`
     description: String
     icon: String
     isActive: Boolean!
+    pollActive: Boolean!
+    votingStartDate: String
+    votingEndDate: String
     createdBy: AdminUser
     createdAt: String!
     updatedAt: String!
@@ -41,6 +44,8 @@ const awardCategoryTypeDefs = gql`
     createAwardCategory(data: CreateAwardCategoryInput!): AwardCategoryResponse!
     updateAwardCategory(id: ID!, data: UpdateAwardCategoryInput!): AwardCategoryResponse!
     deleteAwardCategory(id: ID!): AwardCategoryResponse!
+    startCategoryPoll(id: ID!, votingStartDate: String, votingEndDate: String): AwardCategoryResponse!
+    endCategoryPoll(id: ID!): AwardCategoryResponse!
   }
 `;
 

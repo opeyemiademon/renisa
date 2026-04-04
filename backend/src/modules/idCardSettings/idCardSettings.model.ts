@@ -8,6 +8,8 @@ const idCardSettingsSchema = new Schema({
   isEnabled: { type: Boolean, default: true },
   requiresApproval: { type: Boolean, default: true },
   validityYears: { type: Number, default: 1 },
+  headerText: { type: String, trim: true },
+  footerText: { type: String, trim: true },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
 }, { timestamps: true });
 

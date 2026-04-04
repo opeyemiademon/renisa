@@ -23,6 +23,7 @@ const heroSlideTypeDefs = gql `
     tag: String
     ctaText: String
     ctaLink: String
+    photoBase64:String
     order: Int
     isActive: Boolean
   }

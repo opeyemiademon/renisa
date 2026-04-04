@@ -2,8 +2,8 @@ import graphqlClient from './graphqlClient'
 import { Election, VoteResult, MutationResponse } from '@/types'
 
 const ELECTION_FIELDS = `
-  id title description startDate endDate candidacyDeadline status
-  eligibilityCriteria { minYearsAsMember mustBeActive mustHavePaidDues }
+  id title description year startDate endDate votingStartDate votingEndDate
+  status eligibilityMinYears requiresDuesPayment
   positions { id title description formFee maxCandidates }
   createdAt updatedAt
 `
@@ -11,9 +11,7 @@ const ELECTION_FIELDS = `
 export const getAllElections = async (): Promise<Election[]> => {
   const query = `
     query GetAllElections {
-      getAllElections {
-        ${ELECTION_FIELDS}
-      }
+      getAllElections { ${ELECTION_FIELDS} }
     }
   `
   const response = await graphqlClient.post('', { query })
@@ -35,23 +33,27 @@ export const getElection = async (id: string): Promise<Election> => {
 export const createElection = async (data: object): Promise<Election> => {
   const mutation = `
     mutation CreateElection($data: CreateElectionInput!) {
-      createElection(data: $data) { ${ELECTION_FIELDS} }
+      createElection(data: $data) { success message data { ${ELECTION_FIELDS} } }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.createElection
+  const result = response.data.data.createElection
+  if (!result.success) throw new Error(result.message)
+  return result.data
 }
 
 export const updateElection = async (id: string, data: object): Promise<Election> => {
   const mutation = `
     mutation UpdateElection($id: ID!, $data: UpdateElectionInput!) {
-      updateElection(id: $id, data: $data) { ${ELECTION_FIELDS} }
+      updateElection(id: $id, data: $data) { success message data { ${ELECTION_FIELDS} } }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { id, data } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.updateElection
+  const result = response.data.data.updateElection
+  if (!result.success) throw new Error(result.message)
+  return result.data
 }
 
 export const updateElectionStatus = async (
@@ -132,4 +134,15 @@ export const castVote = async (data: {
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.castVote
+}
+
+export const deleteElection = async (id: string): Promise<MutationResponse> => {
+  const mutation = `
+    mutation DeleteElection($id: ID!) {
+      deleteElection(id: $id) { success message }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.deleteElection
 }

@@ -217,7 +217,7 @@ export const PhotoCaptureModal: React.FC<PhotoCaptureModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
+    <div className='fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
       <div className='relative mx-auto flex h-full max-h-[90vh] w-full max-w-6xl flex-col gap-6 overflow-y-auto rounded-3xl bg-white px-4 py-6 shadow-2xl md:px-8'>
         <button
           onClick={onClose}

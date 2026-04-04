@@ -2,8 +2,14 @@ import { gql } from 'graphql-tag';
 const awardTypeDefs = gql `
   type Award {
     id: ID!
-    memberId: Member
+    memberId: Member!
+    member: Member
     categoryId: AwardCategory!
+    category: AwardCategory
+    # Derived at resolve-time from linked member and category
+    recipientName: String!
+    title: String!
+    recipientPhoto: String
     year: Int!
     votingEnabled: Boolean!
     votingStartDate: String
@@ -38,7 +44,7 @@ const awardTypeDefs = gql `
   }
 
   extend type Query {
-    getAllAwards(year: Int, status: String, categoryId: ID, votingEnabled: Boolean): [Award!]!
+    getAllAwards(year: Int, status: String, categoryId: ID, votingEnabled: Boolean, memberName: String): [Award!]!
     getAward(id: ID!): Award
   }
 

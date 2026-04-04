@@ -150,8 +150,9 @@ export interface Candidate {
   manifesto: string
   profilePicture?: string
   isApproved: boolean
-  formFeePaid: boolean
-  formFeeReference?: string
+  formPaymentStatus: string
+  formPaymentRef?: string
+  status?: string
   createdAt: string
   updatedAt: string
 }

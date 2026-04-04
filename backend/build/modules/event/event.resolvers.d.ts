@@ -1,11 +1,10 @@
 import { AuthContext } from '../../middleware/auth.js';
 declare const eventResolvers: {
     Query: {
-        getAllEvents: (_: any, { eventType, status }: any) => Promise<(import("mongoose").Document<unknown, {}, {
-            status: "draft" | "published" | "archived";
+        getAllEvents: (_: any, { status }: any) => Promise<(import("mongoose").Document<unknown, {}, {
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -13,16 +12,13 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
         }> & {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -30,8 +26,6 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -41,10 +35,9 @@ declare const eventResolvers: {
         getEvent: (_: any, { id }: {
             id: string;
         }) => Promise<(import("mongoose").Document<unknown, {}, {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -52,16 +45,13 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
         }> & {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -69,8 +59,6 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -80,10 +68,9 @@ declare const eventResolvers: {
         getEventBySlug: (_: any, { slug }: {
             slug: string;
         }) => Promise<(import("mongoose").Document<unknown, {}, {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -91,16 +78,13 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
         }> & {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -108,8 +92,6 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -117,10 +99,9 @@ declare const eventResolvers: {
             __v: number;
         }) | null>;
         getFeaturedEvents: (_: any, { limit }: any) => Promise<(import("mongoose").Document<unknown, {}, {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -128,16 +109,13 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
         }> & {
-            status: "draft" | "published" | "archived";
             title: string;
+            status: "draft" | "published" | "archived";
             images: string[];
-            eventType: "news" | "event" | "announcement";
             isFeatured: boolean;
             views: number;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -145,8 +123,6 @@ declare const eventResolvers: {
             content?: string | null | undefined;
             excerpt?: string | null | undefined;
             coverImage?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
-            venue?: string | null | undefined;
             publishedAt?: NativeDate | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -161,10 +137,9 @@ declare const eventResolvers: {
             success: boolean;
             message: string;
             data: import("mongoose").Document<unknown, {}, {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -172,16 +147,13 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
             }> & {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -189,8 +161,6 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -202,10 +172,9 @@ declare const eventResolvers: {
             success: boolean;
             message: string;
             data: import("mongoose").Document<unknown, {}, {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -213,16 +182,13 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
             }> & {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -230,8 +196,6 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -251,10 +215,9 @@ declare const eventResolvers: {
             success: boolean;
             message: string;
             data: import("mongoose").Document<unknown, {}, {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -262,16 +225,13 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
             }> & {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -279,8 +239,6 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -294,10 +252,9 @@ declare const eventResolvers: {
             success: boolean;
             message: string;
             data: import("mongoose").Document<unknown, {}, {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -305,16 +262,13 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
             }> & {
-                status: "draft" | "published" | "archived";
                 title: string;
+                status: "draft" | "published" | "archived";
                 images: string[];
-                eventType: "news" | "event" | "announcement";
                 isFeatured: boolean;
                 views: number;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -322,8 +276,6 @@ declare const eventResolvers: {
                 content?: string | null | undefined;
                 excerpt?: string | null | undefined;
                 coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
                 publishedAt?: NativeDate | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;

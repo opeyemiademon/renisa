@@ -20,19 +20,13 @@ const siteContentTypeDefs = gql`
     data: SiteContent
   }
 
-  input UpdateSiteContentInput {
-    title: String
-    content: String
-    metadata: JSON
-  }
-
   extend type Query {
     getSiteContent(section: String!): SiteContent
     getAllSiteContent: [SiteContent!]!
   }
 
   extend type Mutation {
-    updateSiteContent(section: String!, data: UpdateSiteContentInput!): SiteContentResponse!
+    updateSiteContent(section: String!, data: JSON!): SiteContentResponse!
   }
 `;
 

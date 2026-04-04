@@ -79,6 +79,9 @@ import heroSlideResolvers from './modules/heroSlide/heroSlide.resolvers.js';
 import dashboardTypeDefs from './modules/dashboard/dashboard.typeDefs.js';
 import dashboardResolvers from './modules/dashboard/dashboard.resolvers.js';
 
+import notificationTypeDefs from './modules/notification/notification.typeDefs.js';
+import notificationResolvers from './modules/notification/notification.resolvers.js';
+
 const JSONScalar = new GraphQLScalarType({
   name: 'JSON',
   description: 'The JSON scalar type represents JSON objects',
@@ -120,6 +123,7 @@ export const schema = makeExecutableSchema({
     siteContentTypeDefs,
     heroSlideTypeDefs,
     dashboardTypeDefs,
+    notificationTypeDefs,
   ],
   resolvers: [
     { JSON: JSONScalar },
@@ -149,5 +153,6 @@ export const schema = makeExecutableSchema({
     siteContentResolvers,
     heroSlideResolvers,
     dashboardResolvers,
+    notificationResolvers,
   ],
 });

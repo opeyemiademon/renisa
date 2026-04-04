@@ -2,11 +2,11 @@ import graphqlClient from './graphqlClient'
 import { Communication, MutationResponse } from '@/types'
 
 export const sendCommunication = async (data: {
-  type: 'email' | 'sms' | 'both'
-  recipients: 'all' | 'active' | string[]
-  subject?: string
+  recipients: 'all' | 'active' | 'state' | 'specific'
+  subject: string
   message: string
-  filters?: Record<string, string | undefined>
+  filterState?: string
+  specificMembers?: string[]
 }): Promise<MutationResponse> => {
   const mutation = `
     mutation SendCommunication($data: SendCommunicationInput!) {
@@ -21,18 +21,18 @@ export const sendCommunication = async (data: {
 export const getCommunicationHistory = async (params?: {
   page?: number
   limit?: number
-}): Promise<{ data: Communication[]; total: number; page: number; limit: number; totalPages: number }> => {
+}): Promise<{ communications: Communication[]; total: number; page: number; limit: number }> => {
   const query = `
-    query GetCommunicationHistory($page: Int, $limit: Int) {
-      getCommunicationHistory(page: $page, limit: $limit) {
-        data {
-          id type subject message recipients sentBy sentCount createdAt
+    query GetAllCommunications($page: Int, $limit: Int) {
+      getAllCommunications(page: $page, limit: $limit) {
+        communications {
+          id subject message type recipients filterState sentCount failedCount status sentAt createdAt
         }
-        total page limit totalPages
+        total page limit
       }
     }
   `
   const response = await graphqlClient.post('', { query, variables: params })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.getCommunicationHistory
+  return response.data.data.getAllCommunications
 }

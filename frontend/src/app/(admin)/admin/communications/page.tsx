@@ -1,30 +1,110 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { Send, MessageSquare, Clock } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Send, MessageSquare, Clock, X, Users } from 'lucide-react'
 import { sendCommunication, getCommunicationHistory } from '@/lib/api_services/communicationApiServices'
+import { getAllMembers } from '@/lib/api_services/memberApiServices'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Badge } from '@/components/shared/Badge'
 import { formatDate } from '@/lib/utils'
+import dynamic from 'next/dynamic'
 import toast from 'react-hot-toast'
+import { NIGERIAN_STATES } from '@/lib/nigerianStates'
+
+const Editor = dynamic(() => import('@tinymce/tinymce-react').then((m) => m.Editor), { ssr: false })
 
 type Tab = 'send' | 'history'
+type RecipientType = 'all' | 'active' | 'state' | 'specific'
 
-export default function CommunicationsPage() {
-  const [tab, setTab] = useState<Tab>('send')
-  const [form, setForm] = useState({
-    type: 'email',
-    recipients: 'all',
-    subject: '',
-    message: '',
-    sport: '',
-    state: '',
+
+
+function MemberSearch({
+  selected,
+  onChange,
+}: {
+  selected: { id: string; name: string }[]
+  onChange: (members: { id: string; name: string }[]) => void
+}) {
+  const [search, setSearch] = useState('')
+  const [open, setOpen] = useState(false)
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['members-search', search],
+    queryFn: () => getAllMembers({ search }),
+    enabled: search.length >= 2,
   })
 
-  const setField = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }))
+  const add = (m: any) => {
+    if (!selected.find((s) => s.id === m.id)) {
+      onChange([...selected, { id: m.id, name: `${m.firstName} ${m.lastName}` }])
+    }
+    setSearch('')
+    setOpen(false)
+  }
+
+  const remove = (id: string) => onChange(selected.filter((s) => s.id !== id))
+
+  return (
+    <div>
+      <span className="block text-sm font-medium text-gray-700 mb-1.5">Select Member(s)</span>
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {selected.map((m) => (
+            <span key={m.id} className="flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+              {m.name}
+              <button type="button" onClick={() => remove(m.id)} className="hover:text-red-500 transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="relative">
+        <Input
+          placeholder="Search by name or member number..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setOpen(true) }}
+          onFocus={() => search.length >= 2 && setOpen(true)}
+        />
+        {open && members.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+            {(members as any[]).map((m: any) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => add(m)}
+                className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm"
+              >
+                <Users className="w-4 h-4 text-gray-400 shrink-0" />
+                <span className="font-medium text-gray-900">{m.firstName} {m.lastName}</span>
+                <span className="text-gray-400 text-xs ml-auto">{m.memberNumber}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const RECIPIENT_LABELS: Record<RecipientType, string> = {
+  all: 'All Members',
+  active: 'Active Members',
+  state: 'Members by State',
+  specific: 'Specific Member(s)',
+}
+
+export default function CommunicationsPage() {
+  const queryClient = useQueryClient()
+  const [tab, setTab] = useState<Tab>('send')
+  const [recipients, setRecipients] = useState<RecipientType>('all')
+  const [filterState, setFilterState] = useState('')
+  const [specificMembers, setSpecificMembers] = useState<{ id: string; name: string }[]>([])
+  const [subject, setSubject] = useState('')
+  const [message, setMessage] = useState('')
 
   const { data: historyData, isLoading: historyLoading } = useQuery({
     queryKey: ['communication-history'],
@@ -34,32 +114,37 @@ export default function CommunicationsPage() {
 
   const sendMutation = useMutation({
     mutationFn: () => sendCommunication({
-      type: form.type as 'email' | 'sms' | 'both',
-      recipients: form.recipients as 'all' | 'active' | string[],
-      subject: form.subject,
-      message: form.message,
-      filters: {
-        sport: form.sport || undefined,
-        state: form.state || undefined,
-      },
+      recipients,
+      subject,
+      message,
+      filterState: recipients === 'state' ? filterState : undefined,
+      specificMembers: recipients === 'specific' ? specificMembers.map((m) => m.id) : undefined,
     }),
     onSuccess: (data: any) => {
-      toast.success(`Message sent to ${data.recipientCount || 'all'} recipients`)
-      setForm({ type: 'email', recipients: 'all', subject: '', message: '', sport: '', state: '' })
+      toast.success(data.message || 'Email sent')
+      queryClient.invalidateQueries({ queryKey: ['communication-history'] })
+      setSubject('')
+      setMessage('')
+      setFilterState('')
+      setSpecificMembers([])
+      setRecipients('all')
     },
     onError: (err: Error) => toast.error(err.message),
   })
 
-  const history = historyData?.data || []
+  const canSend = subject.trim() && message.trim() &&
+    (recipients !== 'state' || filterState) &&
+    (recipients !== 'specific' || specificMembers.length > 0)
+
+  const history = historyData?.communications || []
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-900">Communications</h2>
-        <p className="text-gray-500 text-sm mt-0.5">Send messages and announcements to members</p>
+        <p className="text-gray-500 text-sm mt-0.5">Compose and send emails to members</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
         {(['send', 'history'] as Tab[]).map((t) => (
           <button
@@ -70,7 +155,7 @@ export default function CommunicationsPage() {
             }`}
           >
             {t === 'send' ? (
-              <span className="flex items-center gap-1.5"><Send className="w-3.5 h-3.5" />Send</span>
+              <span className="flex items-center gap-1.5"><Send className="w-3.5 h-3.5" />Compose</span>
             ) : (
               <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />History</span>
             )}
@@ -79,82 +164,76 @@ export default function CommunicationsPage() {
       </div>
 
       {tab === 'send' && (
-        <div className="max-w-2xl bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-          <div className="grid sm:grid-cols-2 gap-4">
+        <div className="max-w-3xl bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+          <Select
+            label="Send To"
+            value={recipients}
+            onChange={(e) => { setRecipients(e.target.value as RecipientType); setFilterState(''); setSpecificMembers([]) }}
+            options={[
+              { value: 'all', label: 'All Members' },
+              { value: 'active', label: 'Active Members Only' },
+              { value: 'state', label: 'Members in a State' },
+              { value: 'specific', label: 'Specific Member(s)' },
+            ]}
+          />
+
+          {recipients === 'state' && (
             <Select
-              label="Communication Type"
-              value={form.type}
-              onChange={(e) => setField('type', e.target.value)}
+              label="Select State"
+              value={filterState}
+              onChange={(e) => setFilterState(e.target.value)}
               options={[
-                { value: 'email', label: 'Email' },
-                { value: 'sms', label: 'SMS' },
-                { value: 'push', label: 'Push Notification' },
+                { value: '', label: 'Choose a state...' },
+                ...NIGERIAN_STATES.map((s) => ({ value: s, label: s })),
               ]}
             />
-            <Select
-              label="Recipients"
-              value={form.recipients}
-              onChange={(e) => setField('recipients', e.target.value)}
-              options={[
-                { value: 'all', label: 'All Members' },
-                { value: 'active', label: 'Active Members' },
-                { value: 'alumni', label: 'Alumni' },
-                { value: 'filtered', label: 'Filtered (by sport/state)' },
-              ]}
-            />
-          </div>
-
-          {form.recipients === 'filtered' && (
-            <div className="grid sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-              <Input
-                label="Filter by Sport (optional)"
-                placeholder="e.g. Football"
-                value={form.sport}
-                onChange={(e) => setField('sport', e.target.value)}
-              />
-              <Input
-                label="Filter by State (optional)"
-                placeholder="e.g. Lagos"
-                value={form.state}
-                onChange={(e) => setField('state', e.target.value)}
-              />
-            </div>
           )}
 
-          {form.type === 'email' && (
-            <Input
-              label="Subject"
-              placeholder="Email subject line"
-              value={form.subject}
-              onChange={(e) => setField('subject', e.target.value)}
-            />
+          {recipients === 'specific' && (
+            <MemberSearch selected={specificMembers} onChange={setSpecificMembers} />
           )}
+
+          <Input
+            label="Subject"
+            placeholder="Email subject line"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Message <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              rows={6}
-              value={form.message}
-              onChange={(e) => setField('message', e.target.value)}
-              placeholder="Type your message here..."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a6b3a]/30 resize-none"
+            <span className="block text-sm font-medium text-gray-700 mb-1.5">Message Body</span>
+            <Editor
+              apiKey={process.env.NEXT_PUBLIC_TYINYMCE_KEY}
+              value={message}
+              onEditorChange={setMessage}
+              init={{
+                height: 400,
+                menubar: false,
+                plugins: [
+                  'advlist', 'autolink', 'lists', 'link', 'charmap',
+                  'searchreplace', 'visualblocks', 'code', 'table', 'wordcount',
+                ],
+                toolbar:
+                  'undo redo | blocks | bold italic forecolor | ' +
+                  'alignleft aligncenter alignright | bullist numlist | ' +
+                  'link table | removeformat | code',
+                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                branding: false,
+              }}
             />
-            <p className="text-xs text-gray-400 mt-1">{form.message.length} characters</p>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
             <p className="text-sm text-gray-400">
-              Recipients: <span className="font-medium text-gray-700">{form.recipients === 'all' ? 'All Members' : form.recipients}</span>
+              To: <span className="font-medium text-gray-700">{RECIPIENT_LABELS[recipients]}{recipients === 'state' && filterState ? ` — ${filterState}` : ''}</span>
             </p>
             <Button
               onClick={() => sendMutation.mutate()}
               loading={sendMutation.isPending}
-              disabled={!form.message || (form.type === 'email' && !form.subject)}
+              disabled={!canSend}
               iconLeft={<Send className="w-4 h-4" />}
             >
-              Send Now
+              Send Email
             </Button>
           </div>
         </div>
@@ -171,27 +250,22 @@ export default function CommunicationsPage() {
           ) : history.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p>No communication history</p>
+              <p>No emails sent yet</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
               {history.map((item: any) => (
                 <div key={item.id} className="px-5 py-4">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="active" className="text-xs">{item.type}</Badge>
-                        <Badge variant="secondary" className="text-xs">{item.recipients}</Badge>
-                        {item.recipientCount && (
-                          <span className="text-xs text-gray-400">{item.recipientCount} recipients</span>
-                        )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Badge variant={item.status === 'sent' ? 'active' : 'inactive'} className="text-xs capitalize">{item.status}</Badge>
+                        <Badge variant="secondary" className="text-xs">{RECIPIENT_LABELS[item.recipients as RecipientType] || item.recipients}{item.filterState ? ` — ${item.filterState}` : ''}</Badge>
+                        <span className="text-xs text-gray-400">{item.sentCount} sent{item.failedCount > 0 ? `, ${item.failedCount} failed` : ''}</span>
                       </div>
-                      {item.subject && (
-                        <p className="font-medium text-gray-900 text-sm">{item.subject}</p>
-                      )}
-                      <p className="text-gray-500 text-sm mt-0.5 line-clamp-2">{item.message}</p>
+                      <p className="font-medium text-gray-900 text-sm truncate">{item.subject}</p>
+                      <p className="text-gray-400 text-xs mt-0.5">{formatDate(item.sentAt || item.createdAt)}</p>
                     </div>
-                    <p className="text-xs text-gray-400 whitespace-nowrap">{formatDate(item.createdAt)}</p>
                   </div>
                 </div>
               ))}

@@ -4,9 +4,13 @@ declare const awardVoteResolvers: {
     Query: {
         getAwardVoteResults: (_: any, { awardId }: any) => Promise<{
             awardId: any;
-            awardTitle: any;
+            recipientName: string;
+            categoryName: any;
             voteCount: any;
         }[]>;
+        getAwardWinnersReport: (_: any, { year }: {
+            year?: number;
+        }) => Promise<any[]>;
         hasVotedForAward: (_: any, { awardId }: any, context: AuthContext) => Promise<boolean>;
     };
     Mutation: {

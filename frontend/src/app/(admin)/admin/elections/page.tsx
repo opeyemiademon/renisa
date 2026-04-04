@@ -70,7 +70,7 @@ export default function ElectionsPage() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 ">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
               <div className="h-5 bg-gray-100 rounded w-48 mb-2" />
@@ -87,10 +87,10 @@ export default function ElectionsPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 ">
           {filteredElections.map((election: any) => (
             <Link key={election.id} href={`/admin/elections/${election.id}`}>
-              <div className={`rounded-xl border p-5 cursor-pointer hover:shadow-md transition-shadow ${statusColor[election.status] || 'bg-white border-gray-200'}`}>
+              <div className={`rounded-xl border my-5 p-5 cursor-pointer hover:shadow-md transition-shadow ${statusColor[election.status] || 'bg-white border-gray-200'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

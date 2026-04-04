@@ -29,7 +29,7 @@ export const createHeroSlide = async (data: {
 }): Promise<HeroSlide> => {
   const mutation = `
     mutation CreateHeroSlide($data: CreateHeroSlideInput!) {
-      createHeroSlide(data: $data) { success message data { ${SLIDE_FIELDS} } }
+      createHeroSlide(data: $data) { success message  }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })

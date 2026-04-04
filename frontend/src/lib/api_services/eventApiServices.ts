@@ -2,7 +2,7 @@ import graphqlClient from './graphqlClient'
 import { Event, MutationResponse } from '@/types'
 
 const EVENT_FIELDS = `
-  id title slug excerpt content coverImage eventDate venue eventType status isFeatured createdAt updatedAt
+  id title slug excerpt content coverImage status isFeatured createdAt 
 `
 
 export const getAllEvents = async (params?: {
@@ -10,8 +10,8 @@ export const getAllEvents = async (params?: {
   status?: string
 }): Promise<Event[]> => {
   const query = `
-    query GetAllEvents($eventType: String, $status: String) {
-      getAllEvents(eventType: $eventType, status: $status) {
+    query GetAllEvents{
+      getAllEvents {
         ${EVENT_FIELDS}
       }
     }
@@ -21,7 +21,19 @@ export const getAllEvents = async (params?: {
   return response.data.data.getAllEvents
 }
 
-export const getEvent = async (slug: string): Promise<Event> => {
+export const getEvent = async (id: string): Promise<Event> => {
+  const query = `
+    query GetEvent($id: ID!) {
+      getEvent(id: $id) { ${EVENT_FIELDS} }
+    }
+  `
+  const response = await graphqlClient.post('', { query, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getEvent
+}
+
+
+export const getEventBySlug = async (slug: string): Promise<Event> => {
   const query = `
     query GetEventBySlug($slug: String!) {
       getEventBySlug(slug: $slug) { ${EVENT_FIELDS} }
@@ -46,7 +58,7 @@ export const getFeaturedEvents = async (): Promise<Event[]> => {
 export const createEvent = async (data: object): Promise<Event> => {
   const mutation = `
     mutation CreateEvent($data: CreateEventInput!) {
-      createEvent(data: $data) { success message data { ${EVENT_FIELDS} } }
+      createEvent(data: $data) { success message  }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })

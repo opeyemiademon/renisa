@@ -1,22 +1,19 @@
 import { gql } from 'graphql-tag';
 
 const electionTypeDefs = gql`
-  type EligibilityCriteria {
-    minimumMembershipYears: Int
-    paymentYears: [Int]
-    mustBeActive: Boolean
-  }
-
   type Election {
     id: ID!
     title: String!
     description: String
-    nominationStartDate: String
-    nominationEndDate: String
+    year: Int!
+    startDate: String
+    endDate: String
     votingStartDate: String
     votingEndDate: String
     status: String!
-    eligibilityCriteria: EligibilityCriteria
+    positions: [ElectoralPosition!]!
+    eligibilityMinYears: Int!
+    requiresDuesPayment: Boolean!
     createdBy: AdminUser
     createdAt: String!
     updatedAt: String!
@@ -28,30 +25,36 @@ const electionTypeDefs = gql`
     data: Election
   }
 
-  input EligibilityCriteriaInput {
-    minimumMembershipYears: Int
-    paymentYears: [Int]
-    mustBeActive: Boolean
+  input ElectoralPositionInput {
+    title: String!
+    description: String
+    maxCandidates: Int
+    formFee: Float
   }
 
   input CreateElectionInput {
     title: String!
     description: String
-    nominationStartDate: String
-    nominationEndDate: String
+    year: Int
+    startDate: String
+    endDate: String
     votingStartDate: String
     votingEndDate: String
-    eligibilityCriteria: EligibilityCriteriaInput
+    eligibilityMinYears: Int
+    requiresDuesPayment: Boolean
+    positions: [ElectoralPositionInput]
   }
 
   input UpdateElectionInput {
     title: String
     description: String
-    nominationStartDate: String
-    nominationEndDate: String
+    year: Int
+    startDate: String
+    endDate: String
     votingStartDate: String
     votingEndDate: String
-    eligibilityCriteria: EligibilityCriteriaInput
+    eligibilityMinYears: Int
+    requiresDuesPayment: Boolean
   }
 
   extend type Query {
@@ -63,6 +66,7 @@ const electionTypeDefs = gql`
     createElection(data: CreateElectionInput!): ElectionResponse!
     updateElection(id: ID!, data: UpdateElectionInput!): ElectionResponse!
     updateElectionStatus(id: ID!, status: String!): ElectionResponse!
+    addElectoralPosition(electionId: ID!, data: ElectoralPositionInput!): ElectionResponse!
     deleteElection(id: ID!): ElectionResponse!
   }
 `;
