@@ -20,7 +20,9 @@ graphqlClient.interceptors.request.use((config) => {
   return config
 })
 
-const AUTH_ERROR_PATTERNS = ['jwt expired', 'token expired', 'invalid token', 'not authenticated', 'authentication required']
+// Only auto-logout on token expiry (JWT expired), not on generic auth errors
+// (e.g. "Authentication required" can fire on member routes when admin is logged in — handled by onError)
+const TOKEN_EXPIRY_PATTERNS = ['jwt expired', 'token expired', 'token is not valid']
 
 const handleAuthExpiry = () => {
   clearAll()
@@ -31,11 +33,10 @@ const handleAuthExpiry = () => {
 
 graphqlClient.interceptors.response.use(
   (response) => {
-    // GraphQL returns 200 even for auth errors — check error messages
     const errors = response.data?.errors
     if (errors?.length) {
       const msg = errors[0].message?.toLowerCase() || ''
-      if (AUTH_ERROR_PATTERNS.some((p) => msg.includes(p))) {
+      if (TOKEN_EXPIRY_PATTERNS.some((p) => msg.includes(p))) {
         handleAuthExpiry()
       }
     }

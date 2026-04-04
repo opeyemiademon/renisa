@@ -252,11 +252,11 @@ export function AdminTopbar() {
         >
           <div className="w-8 h-8 rounded-full bg-[#1a6b3a] flex items-center justify-center">
             <span className="text-white text-xs font-bold">
-              {adminUser ? getInitials(adminUser.name || adminUser.username) : 'A'}
+              {adminUser ? getInitials(adminUser.username) : 'A'}
             </span>
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-sm font-medium text-gray-900 leading-none">{adminUser?.name || adminUser?.username}</p>
+            <p className="text-sm font-medium text-gray-900 leading-none">{adminUser?.username}</p>
             <p className="text-xs text-gray-400 capitalize mt-0.5">{adminUser?.role}</p>
           </div>
           <ChevronDown className="w-4 h-4 text-gray-400" />

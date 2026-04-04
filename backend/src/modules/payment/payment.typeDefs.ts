@@ -41,6 +41,20 @@ const paymentTypeDefs = gql`
     year: Int
   }
 
+  input RecordPaystackPaymentInput {
+    reference: String!
+    paymentTypeId: ID!
+    amount: Float!
+    year: Int
+  }
+
+  input SubmitManualPaymentInput {
+    paymentTypeId: ID!
+    year: Int
+    referenceNumber: String!
+    notes: String
+  }
+
   input AdminRecordPaymentInput {
     memberId: ID!
     paymentTypeId: ID!
@@ -62,6 +76,8 @@ const paymentTypeDefs = gql`
     verifyPayment(reference: String!): PaymentResponse!
     adminRecordPayment(data: AdminRecordPaymentInput!): PaymentResponse!
     deletePayment(id: ID!): PaymentResponse!
+    submitManualPayment(data: SubmitManualPaymentInput!): PaymentResponse!
+    recordPaystackPayment(data: RecordPaystackPaymentInput!): PaymentResponse!
   }
 `;
 

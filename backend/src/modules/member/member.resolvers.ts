@@ -7,6 +7,7 @@ import { requireMemberAuth, requireAdminAuth, AuthContext } from '../../middlewa
 import { sendEmail, welcomeTemplate } from '../../utils/emailService.js';
 import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
 import { createNotification } from '../../utils/createNotification.js';
+import { createMemberNotification } from '../../utils/createMemberNotification.js';
 
 const generateMemberNumber = async (): Promise<string> => {
   const year = new Date().getFullYear();
@@ -98,7 +99,11 @@ const memberResolvers = {
       return await Member.findById(context.member!.id).select('-password');
     },
 
-    loginMember: async (_: any, { data }: { data: any }) => {
+ 
+  },
+
+  Mutation: {
+       loginMember: async (_: any, { data }: { data: any }) => {
       const { email, password } = data;
       const member = await Member.findOne({ email });
       if (!member) throw new Error('Invalid email or password');
@@ -114,9 +119,6 @@ const memberResolvers = {
       );
       return { token, member };
     },
-  },
-
-  Mutation: {
     registerMember: async (_: any, { data }: { data: any }) => {
       const { memberCode: code, email, password, photoBase64, ...rest } = data;
 
@@ -224,6 +226,7 @@ const memberResolvers = {
 
       sendEmail(email, 'Welcome to RENISA', welcomeTemplate(`${rest.firstName} ${rest.lastName}`, memberNumber)).catch(console.error);
       createNotification('new_member', 'New Member Registered', `${rest.firstName} ${rest.lastName} (${memberNumber}) has joined as a new member.`, member._id.toString(), 'Member');
+      createMemberNotification(member._id.toString(), 'welcome', 'Welcome to RENISA!', `Your membership has been approved. Your member number is ${memberNumber}.`, '/member/dashboard');
 
       return { success: true, message: 'Member registered successfully', data: member };
     },
@@ -265,6 +268,18 @@ const memberResolvers = {
       const member = await Member.findByIdAndUpdate(id, { isAlumni: true, alumniYear: year }, { new: true }).select('-password');
       if (!member) throw new Error('Member not found');
       return { success: true, message: 'Member marked as alumni', data: member };
+    },
+
+    changePassword: async (_: any, { data }: { data: any }, context: AuthContext) => {
+      requireMemberAuth(context);
+      const { currentPassword, newPassword } = data;
+      const member = await Member.findById(context.member!.id);
+      if (!member) throw new Error('Member not found');
+      const valid = await bcrypt.compare(currentPassword, member.password);
+      if (!valid) throw new Error('Current password is incorrect');
+      const hashed = await bcrypt.hash(newPassword, 10);
+      await Member.findByIdAndUpdate(context.member!.id, { password: hashed });
+      return { success: true, message: 'Password changed successfully' };
     },
 
     loginAsMember: async (_: any, { id }: { id: string }, context: AuthContext) => {

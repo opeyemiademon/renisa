@@ -18,8 +18,8 @@ declare const donationResolvers: {
             donationMode: "physical" | "monetary";
             donorName: string;
             donationTypeId: import("mongoose").Types.ObjectId;
-            amount?: number | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
+            amount?: number | null | undefined;
             paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
             paystackRef?: string | null | undefined;
             paidAt?: NativeDate | null | undefined;
@@ -45,8 +45,8 @@ declare const donationResolvers: {
             donationMode: "physical" | "monetary";
             donorName: string;
             donationTypeId: import("mongoose").Types.ObjectId;
-            amount?: number | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
+            amount?: number | null | undefined;
             paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
             paystackRef?: string | null | undefined;
             paidAt?: NativeDate | null | undefined;
@@ -77,8 +77,8 @@ declare const donationResolvers: {
             donationMode: "physical" | "monetary";
             donorName: string;
             donationTypeId: import("mongoose").Types.ObjectId;
-            amount?: number | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
+            amount?: number | null | undefined;
             paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
             paystackRef?: string | null | undefined;
             paidAt?: NativeDate | null | undefined;
@@ -104,8 +104,8 @@ declare const donationResolvers: {
             donationMode: "physical" | "monetary";
             donorName: string;
             donationTypeId: import("mongoose").Types.ObjectId;
-            amount?: number | null | undefined;
             memberId?: import("mongoose").Types.ObjectId | null | undefined;
+            amount?: number | null | undefined;
             paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
             paystackRef?: string | null | undefined;
             paidAt?: NativeDate | null | undefined;
@@ -141,8 +141,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -168,8 +168,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -204,8 +204,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -231,8 +231,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -267,8 +267,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -294,8 +294,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -328,8 +328,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;
@@ -355,8 +355,8 @@ declare const donationResolvers: {
                 donationMode: "physical" | "monetary";
                 donorName: string;
                 donationTypeId: import("mongoose").Types.ObjectId;
-                amount?: number | null | undefined;
                 memberId?: import("mongoose").Types.ObjectId | null | undefined;
+                amount?: number | null | undefined;
                 paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
                 paystackRef?: string | null | undefined;
                 paidAt?: NativeDate | null | undefined;

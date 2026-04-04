@@ -6,6 +6,7 @@ import Member from '../member/member.model.js';
 import { requireMemberAuth, requireAdminAuth, AuthContext } from '../../middleware/auth.js';
 import { sendEmail, paymentReceiptTemplate } from '../../utils/emailService.js';
 import { createNotification } from '../../utils/createNotification.js';
+import { createMemberNotification } from '../../utils/createMemberNotification.js';
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
@@ -46,7 +47,8 @@ const paymentResolvers = {
     getMemberPayments: async (_: any, { memberId }: any, context: AuthContext) => {
       if (!context.isAuthenticated) throw new Error('Authentication required');
       return await Payment.find({ memberId })
-        .populate('paymentTypeId', 'name amount frequency')
+        .populate('memberId', 'firstName lastName memberNumber email')
+        .populate('paymentTypeId', 'name amount')
         .sort({ createdAt: -1 });
     },
 
@@ -150,6 +152,7 @@ const paymentResolvers = {
             )
           ).catch(console.error);
           createNotification('new_payment', 'New Payment Received', `${member.firstName} ${member.lastName} paid ₦${updated.amount.toLocaleString()} for ${type?.name || 'Payment'}.`, updated._id.toString(), 'Payment');
+          createMemberNotification(member._id?.toString() || member.id, 'payment', 'Payment Confirmed', `Your payment of ₦${updated.amount.toLocaleString()} for ${type?.name || 'Payment'} was successful.`, '/member/payments');
         }
 
         return { success: isSuccessful, message: isSuccessful ? 'Payment verified' : 'Payment failed', data: updated };
@@ -163,6 +166,76 @@ const paymentResolvers = {
       const payment = await Payment.findByIdAndDelete(id);
       if (!payment) throw new Error('Payment not found');
       return { success: true, message: 'Payment deleted successfully', data: null };
+    },
+
+    recordPaystackPayment: async (_: any, { data }: { data: any }, context: AuthContext) => {
+      requireMemberAuth(context);
+      const member = await Member.findById(context.member!.id);
+      if (!member) throw new Error('Member not found');
+      const paymentType = await PaymentType.findById(data.paymentTypeId);
+      if (!paymentType) throw new Error('Payment type not found');
+
+      // Verify with Paystack
+      try {
+        const response = await axios.get(
+          `https://api.paystack.co/transaction/verify/${data.reference}`,
+          { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
+        );
+        const ps = response.data.data;
+        if (ps.status !== 'success') throw new Error('Payment was not successful');
+
+        const payment = await Payment.create({
+          transactionRef: data.reference,
+          memberId: member._id,
+          paymentTypeId: data.paymentTypeId,
+          amount: data.amount,
+          year: data.year || new Date().getFullYear(),
+          paymentMethod: 'paystack',
+          status: 'successful',
+          paystackRef: ps.reference,
+          paidAt: new Date(),
+        });
+
+        const populated = await Payment.findById(payment._id)
+          .populate('paymentTypeId', 'name amount');
+        const pt = (populated?.paymentTypeId as any);
+        sendEmail(
+          member.email,
+          'Payment Receipt - RENISA',
+          paymentReceiptTemplate(
+            `${(member as any).firstName} ${(member as any).lastName}`,
+            data.amount,
+            pt?.name || 'Payment',
+            data.reference
+          )
+        ).catch(console.error);
+        createNotification('new_payment', 'New Payment Received', `${(member as any).firstName} ${(member as any).lastName} paid ₦${data.amount.toLocaleString()} for ${pt?.name || 'Payment'}.`, payment._id.toString(), 'Payment');
+        createMemberNotification(member._id.toString(), 'payment', 'Payment Confirmed', `Your payment of ₦${data.amount.toLocaleString()} for ${pt?.name || 'Payment'} was successful.`, '/member/payments');
+
+        return { success: true, message: 'Payment recorded successfully', data: populated };
+      } catch (err: any) {
+        throw new Error(err.message || 'Failed to verify payment with Paystack');
+      }
+    },
+
+    submitManualPayment: async (_: any, { data }: { data: any }, context: AuthContext) => {
+      requireMemberAuth(context);
+      const paymentType = await PaymentType.findById(data.paymentTypeId);
+      if (!paymentType) throw new Error('Payment type not found');
+      const transactionRef = `RENISA-MANUAL-${data.referenceNumber.replace(/\s+/g, '-').toUpperCase()}`;
+      const existing = await Payment.findOne({ transactionRef });
+      if (existing) throw new Error('A payment with this reference already exists');
+      const payment = await Payment.create({
+        transactionRef,
+        memberId: context.member!.id,
+        paymentTypeId: data.paymentTypeId,
+        amount: (paymentType as any).amount,
+        year: data.year || new Date().getFullYear(),
+        paymentMethod: 'bank_transfer',
+        status: 'pending',
+        notes: data.notes ? data.notes : `Bank transfer reference: ${data.referenceNumber}`,
+      });
+      return { success: true, message: 'Manual payment submitted. An admin will verify and confirm.', data: payment };
     },
 
     adminRecordPayment: async (_: any, { data }: { data: any }, context: AuthContext) => {

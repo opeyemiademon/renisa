@@ -6,8 +6,8 @@ declare const Donation: mongoose.Model<{
     donationMode: "physical" | "monetary";
     donorName: string;
     donationTypeId: mongoose.Types.ObjectId;
-    amount?: number | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
+    amount?: number | null | undefined;
     paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
     paystackRef?: string | null | undefined;
     paidAt?: NativeDate | null | undefined;
@@ -31,8 +31,8 @@ declare const Donation: mongoose.Model<{
     donationMode: "physical" | "monetary";
     donorName: string;
     donationTypeId: mongoose.Types.ObjectId;
-    amount?: number | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
+    amount?: number | null | undefined;
     paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
     paystackRef?: string | null | undefined;
     paidAt?: NativeDate | null | undefined;
@@ -58,8 +58,8 @@ declare const Donation: mongoose.Model<{
     donationMode: "physical" | "monetary";
     donorName: string;
     donationTypeId: mongoose.Types.ObjectId;
-    amount?: number | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
+    amount?: number | null | undefined;
     paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
     paystackRef?: string | null | undefined;
     paidAt?: NativeDate | null | undefined;
@@ -89,8 +89,8 @@ declare const Donation: mongoose.Model<{
     donationMode: "physical" | "monetary";
     donorName: string;
     donationTypeId: mongoose.Types.ObjectId;
-    amount?: number | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
+    amount?: number | null | undefined;
     paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
     paystackRef?: string | null | undefined;
     paidAt?: NativeDate | null | undefined;
@@ -114,8 +114,8 @@ declare const Donation: mongoose.Model<{
     donationMode: "physical" | "monetary";
     donorName: string;
     donationTypeId: mongoose.Types.ObjectId;
-    amount?: number | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
+    amount?: number | null | undefined;
     paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
     paystackRef?: string | null | undefined;
     paidAt?: NativeDate | null | undefined;
@@ -141,8 +141,8 @@ declare const Donation: mongoose.Model<{
     donationMode: "physical" | "monetary";
     donorName: string;
     donationTypeId: mongoose.Types.ObjectId;
-    amount?: number | null | undefined;
     memberId?: mongoose.Types.ObjectId | null | undefined;
+    amount?: number | null | undefined;
     paymentMethod?: "paystack" | "bank_transfer" | null | undefined;
     paystackRef?: string | null | undefined;
     paidAt?: NativeDate | null | undefined;

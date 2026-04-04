@@ -1,8 +1,8 @@
 import graphqlClient from './graphqlClient'
-import { Payment, MutationResponse } from '@/types'
+import { Payment } from '@/types'
 
 const PAYMENT_FIELDS = `
-  id transactionRef reference amount year paymentMethod method status notes paystackRef paidAt createdAt updatedAt
+  id transactionRef reference amount year paymentMethod method status notes paystackRef paidAt createdAt 
   member { id firstName lastName memberNumber email }
   paymentType { id name amount }
 `
@@ -73,6 +73,50 @@ export const verifyPayment = async (reference: string): Promise<Payment> => {
   const response = await graphqlClient.post('', { query: mutation, variables: { reference } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   const result = response.data.data.verifyPayment
+  if (!result.success) throw new Error(result.message)
+  return result.data
+}
+
+export const recordPaystackPayment = async (data: {
+  reference: string
+  paymentTypeId: string
+  amount: number
+  year?: number
+}): Promise<Payment> => {
+  const mutation = `
+    mutation RecordPaystackPayment($data: RecordPaystackPaymentInput!) {
+      recordPaystackPayment(data: $data) {
+        success
+        message
+        data { ${PAYMENT_FIELDS} }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { data } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  const result = response.data.data.recordPaystackPayment
+  if (!result.success) throw new Error(result.message)
+  return result.data
+}
+
+export const submitManualPayment = async (data: {
+  paymentTypeId: string
+  year?: number
+  referenceNumber: string
+  notes?: string
+}): Promise<Payment> => {
+  const mutation = `
+    mutation SubmitManualPayment($data: SubmitManualPaymentInput!) {
+      submitManualPayment(data: $data) {
+        success
+        message
+      
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { data } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  const result = response.data.data.submitManualPayment
   if (!result.success) throw new Error(result.message)
   return result.data
 }

@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 declare const Payment: mongoose.Model<{
     year: number;
+    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
     amount: number;
     transactionRef: string;
-    memberId: mongoose.Types.ObjectId;
     paymentTypeId: mongoose.Types.ObjectId;
     paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
     paystackRef?: string | null | undefined;
@@ -14,10 +14,10 @@ declare const Payment: mongoose.Model<{
     processedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     year: number;
+    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
     amount: number;
     transactionRef: string;
-    memberId: mongoose.Types.ObjectId;
     paymentTypeId: mongoose.Types.ObjectId;
     paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
     paystackRef?: string | null | undefined;
@@ -29,10 +29,10 @@ declare const Payment: mongoose.Model<{
     timestamps: true;
 }> & {
     year: number;
+    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
     amount: number;
     transactionRef: string;
-    memberId: mongoose.Types.ObjectId;
     paymentTypeId: mongoose.Types.ObjectId;
     paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
     paystackRef?: string | null | undefined;
@@ -48,10 +48,10 @@ declare const Payment: mongoose.Model<{
     timestamps: true;
 }, {
     year: number;
+    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
     amount: number;
     transactionRef: string;
-    memberId: mongoose.Types.ObjectId;
     paymentTypeId: mongoose.Types.ObjectId;
     paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
     paystackRef?: string | null | undefined;
@@ -61,10 +61,10 @@ declare const Payment: mongoose.Model<{
     processedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     year: number;
+    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
     amount: number;
     transactionRef: string;
-    memberId: mongoose.Types.ObjectId;
     paymentTypeId: mongoose.Types.ObjectId;
     paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
     paystackRef?: string | null | undefined;
@@ -76,10 +76,10 @@ declare const Payment: mongoose.Model<{
     timestamps: true;
 }>> & mongoose.FlatRecord<{
     year: number;
+    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
     amount: number;
     transactionRef: string;
-    memberId: mongoose.Types.ObjectId;
     paymentTypeId: mongoose.Types.ObjectId;
     paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
     paystackRef?: string | null | undefined;

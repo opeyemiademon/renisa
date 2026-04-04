@@ -475,6 +475,8 @@ declare const memberResolvers: {
         } & {
             __v: number;
         }) | null>;
+    };
+    Mutation: {
         loginMember: (_: any, { data }: {
             data: any;
         }) => Promise<{
@@ -557,8 +559,6 @@ declare const memberResolvers: {
                 __v: number;
             };
         }>;
-    };
-    Mutation: {
         registerMember: (_: any, { data }: {
             data: any;
         }) => Promise<{
@@ -975,6 +975,12 @@ declare const memberResolvers: {
             } & {
                 __v: number;
             };
+        }>;
+        changePassword: (_: any, { data }: {
+            data: any;
+        }, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
         }>;
         loginAsMember: (_: any, { id }: {
             id: string;

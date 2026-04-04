@@ -32,6 +32,7 @@ const idCardRequestTypeDefs = gql`
     message: String!
     data: IDCardRequest
     authorizationUrl: String
+    reference: String
   }
 
   input RequestIDCardInput {
@@ -54,6 +55,8 @@ const idCardRequestTypeDefs = gql`
     approveIDCardRequest(id: ID!): IDCardRequestResponse!
     rejectIDCardRequest(id: ID!, reason: String!): IDCardRequestResponse!
     updateIDCardDeliveryStatus(id: ID!, deliveryStatus: String!, trackingInfo: String): IDCardRequestResponse!
+    manualIDCardPayment(requestId: ID!, referenceNumber: String!, notes: String): IDCardRequestResponse!
+    confirmIDCardPaystackPayment(requestId: ID!, reference: String!, amount: Float!): IDCardRequestResponse!
   }
 `;
 

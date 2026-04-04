@@ -9,10 +9,10 @@ declare const paymentResolvers: {
     Query: {
         getAllPayments: (_: any, { memberId, status, year, paymentTypeId, dateFrom, dateTo, reference }: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             year: number;
+            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
             amount: number;
             transactionRef: string;
-            memberId: import("mongoose").Types.ObjectId;
             paymentTypeId: import("mongoose").Types.ObjectId;
             paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
             paystackRef?: string | null | undefined;
@@ -24,10 +24,10 @@ declare const paymentResolvers: {
             timestamps: true;
         }> & {
             year: number;
+            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
             amount: number;
             transactionRef: string;
-            memberId: import("mongoose").Types.ObjectId;
             paymentTypeId: import("mongoose").Types.ObjectId;
             paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
             paystackRef?: string | null | undefined;
@@ -42,10 +42,10 @@ declare const paymentResolvers: {
         })[]>;
         getMemberPayments: (_: any, { memberId }: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             year: number;
+            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
             amount: number;
             transactionRef: string;
-            memberId: import("mongoose").Types.ObjectId;
             paymentTypeId: import("mongoose").Types.ObjectId;
             paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
             paystackRef?: string | null | undefined;
@@ -57,10 +57,10 @@ declare const paymentResolvers: {
             timestamps: true;
         }> & {
             year: number;
+            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
             amount: number;
             transactionRef: string;
-            memberId: import("mongoose").Types.ObjectId;
             paymentTypeId: import("mongoose").Types.ObjectId;
             paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
             paystackRef?: string | null | undefined;
@@ -77,10 +77,10 @@ declare const paymentResolvers: {
             id: string;
         }, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             year: number;
+            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
             amount: number;
             transactionRef: string;
-            memberId: import("mongoose").Types.ObjectId;
             paymentTypeId: import("mongoose").Types.ObjectId;
             paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
             paystackRef?: string | null | undefined;
@@ -92,10 +92,10 @@ declare const paymentResolvers: {
             timestamps: true;
         }> & {
             year: number;
+            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
             amount: number;
             transactionRef: string;
-            memberId: import("mongoose").Types.ObjectId;
             paymentTypeId: import("mongoose").Types.ObjectId;
             paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
             paystackRef?: string | null | undefined;
@@ -125,10 +125,10 @@ declare const paymentResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 year: number;
+                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
                 amount: number;
                 transactionRef: string;
-                memberId: import("mongoose").Types.ObjectId;
                 paymentTypeId: import("mongoose").Types.ObjectId;
                 paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
                 paystackRef?: string | null | undefined;
@@ -140,10 +140,10 @@ declare const paymentResolvers: {
                 timestamps: true;
             }> & {
                 year: number;
+                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
                 amount: number;
                 transactionRef: string;
-                memberId: import("mongoose").Types.ObjectId;
                 paymentTypeId: import("mongoose").Types.ObjectId;
                 paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
                 paystackRef?: string | null | undefined;
@@ -164,17 +164,17 @@ declare const paymentResolvers: {
             message: string;
             data: null;
         }>;
-        adminRecordPayment: (_: any, { data }: {
+        recordPaystackPayment: (_: any, { data }: {
             data: any;
         }, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 year: number;
+                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
                 amount: number;
                 transactionRef: string;
-                memberId: import("mongoose").Types.ObjectId;
                 paymentTypeId: import("mongoose").Types.ObjectId;
                 paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
                 paystackRef?: string | null | undefined;
@@ -186,10 +186,88 @@ declare const paymentResolvers: {
                 timestamps: true;
             }> & {
                 year: number;
+                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
                 amount: number;
                 transactionRef: string;
+                paymentTypeId: import("mongoose").Types.ObjectId;
+                paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
+                paystackRef?: string | null | undefined;
+                paystackData?: any;
+                paidAt?: NativeDate | null | undefined;
+                notes?: string | null | undefined;
+                processedBy?: import("mongoose").Types.ObjectId | null | undefined;
+            } & import("mongoose").DefaultTimestampProps & {
+                _id: import("mongoose").Types.ObjectId;
+            } & {
+                __v: number;
+            }) | null;
+        }>;
+        submitManualPayment: (_: any, { data }: {
+            data: any;
+        }, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: import("mongoose").Document<unknown, {}, {
+                year: number;
                 memberId: import("mongoose").Types.ObjectId;
+                status: "pending" | "successful" | "failed" | "reversed";
+                amount: number;
+                transactionRef: string;
+                paymentTypeId: import("mongoose").Types.ObjectId;
+                paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
+                paystackRef?: string | null | undefined;
+                paystackData?: any;
+                paidAt?: NativeDate | null | undefined;
+                notes?: string | null | undefined;
+                processedBy?: import("mongoose").Types.ObjectId | null | undefined;
+            } & import("mongoose").DefaultTimestampProps, {}, {
+                timestamps: true;
+            }> & {
+                year: number;
+                memberId: import("mongoose").Types.ObjectId;
+                status: "pending" | "successful" | "failed" | "reversed";
+                amount: number;
+                transactionRef: string;
+                paymentTypeId: import("mongoose").Types.ObjectId;
+                paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
+                paystackRef?: string | null | undefined;
+                paystackData?: any;
+                paidAt?: NativeDate | null | undefined;
+                notes?: string | null | undefined;
+                processedBy?: import("mongoose").Types.ObjectId | null | undefined;
+            } & import("mongoose").DefaultTimestampProps & {
+                _id: import("mongoose").Types.ObjectId;
+            } & {
+                __v: number;
+            };
+        }>;
+        adminRecordPayment: (_: any, { data }: {
+            data: any;
+        }, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: (import("mongoose").Document<unknown, {}, {
+                year: number;
+                memberId: import("mongoose").Types.ObjectId;
+                status: "pending" | "successful" | "failed" | "reversed";
+                amount: number;
+                transactionRef: string;
+                paymentTypeId: import("mongoose").Types.ObjectId;
+                paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
+                paystackRef?: string | null | undefined;
+                paystackData?: any;
+                paidAt?: NativeDate | null | undefined;
+                notes?: string | null | undefined;
+                processedBy?: import("mongoose").Types.ObjectId | null | undefined;
+            } & import("mongoose").DefaultTimestampProps, {}, {
+                timestamps: true;
+            }> & {
+                year: number;
+                memberId: import("mongoose").Types.ObjectId;
+                status: "pending" | "successful" | "failed" | "reversed";
+                amount: number;
+                transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
                 paymentMethod: "paystack" | "bank_transfer" | "cash" | "admin_credit";
                 paystackRef?: string | null | undefined;

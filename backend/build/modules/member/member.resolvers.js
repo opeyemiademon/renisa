@@ -7,6 +7,7 @@ import { requireMemberAuth, requireAdminAuth } from '../../middleware/auth.js';
 import { sendEmail, welcomeTemplate } from '../../utils/emailService.js';
 import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
 import { createNotification } from '../../utils/createNotification.js';
+import { createMemberNotification } from '../../utils/createMemberNotification.js';
 const generateMemberNumber = async () => {
     const year = new Date().getFullYear();
     const count = await Member.countDocuments();
@@ -99,6 +100,8 @@ const memberResolvers = {
             requireMemberAuth(context);
             return await Member.findById(context.member.id).select('-password');
         },
+    },
+    Mutation: {
         loginMember: async (_, { data }) => {
             const { email, password } = data;
             const member = await Member.findOne({ email });
@@ -114,8 +117,6 @@ const memberResolvers = {
             const token = jwt.sign({ id: member._id, email: member.email, role: member.role, type: 'member' }, TOKEN_SECRET, signOptions);
             return { token, member };
         },
-    },
-    Mutation: {
         registerMember: async (_, { data }) => {
             const { memberCode: code, email, password, photoBase64, ...rest } = data;
             const codeDoc = await MemberCode.findOne({ code });
@@ -200,6 +201,7 @@ const memberResolvers = {
             });
             sendEmail(email, 'Welcome to RENISA', welcomeTemplate(`${rest.firstName} ${rest.lastName}`, memberNumber)).catch(console.error);
             createNotification('new_member', 'New Member Registered', `${rest.firstName} ${rest.lastName} (${memberNumber}) has joined as a new member.`, member._id.toString(), 'Member');
+            createMemberNotification(member._id.toString(), 'welcome', 'Welcome to RENISA!', `Your membership has been approved. Your member number is ${memberNumber}.`, '/member/dashboard');
             return { success: true, message: 'Member registered successfully', data: member };
         },
         updateMember: async (_, { id, data }, context) => {
@@ -242,6 +244,19 @@ const memberResolvers = {
             if (!member)
                 throw new Error('Member not found');
             return { success: true, message: 'Member marked as alumni', data: member };
+        },
+        changePassword: async (_, { data }, context) => {
+            requireMemberAuth(context);
+            const { currentPassword, newPassword } = data;
+            const member = await Member.findById(context.member.id);
+            if (!member)
+                throw new Error('Member not found');
+            const valid = await bcrypt.compare(currentPassword, member.password);
+            if (!valid)
+                throw new Error('Current password is incorrect');
+            const hashed = await bcrypt.hash(newPassword, 10);
+            await Member.findByIdAndUpdate(context.member.id, { password: hashed });
+            return { success: true, message: 'Password changed successfully' };
         },
         loginAsMember: async (_, { id }, context) => {
             requireAdminAuth(context);

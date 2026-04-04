@@ -4,7 +4,8 @@ import { requireAdminAuth, AuthContext } from '../../middleware/auth.js';
 const paymentTypeResolvers = {
   Query: {
     getAllPaymentTypes: async (_: any, { isActive }: any, context: AuthContext) => {
-  requireAdminAuth(context);
+
+  if (!context.isAuthenticated) throw new Error('Authentication required');
       return await PaymentType.find().sort({ createdAt: -1 });
     },
 

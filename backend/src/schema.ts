@@ -82,6 +82,9 @@ import dashboardResolvers from './modules/dashboard/dashboard.resolvers.js';
 import notificationTypeDefs from './modules/notification/notification.typeDefs.js';
 import notificationResolvers from './modules/notification/notification.resolvers.js';
 
+import memberNotificationTypeDefs from './modules/memberNotification/memberNotification.typeDefs.js';
+import memberNotificationResolvers from './modules/memberNotification/memberNotification.resolvers.js';
+
 const JSONScalar = new GraphQLScalarType({
   name: 'JSON',
   description: 'The JSON scalar type represents JSON objects',
@@ -124,6 +127,7 @@ export const schema = makeExecutableSchema({
     heroSlideTypeDefs,
     dashboardTypeDefs,
     notificationTypeDefs,
+    memberNotificationTypeDefs,
   ],
   resolvers: [
     { JSON: JSONScalar },
@@ -154,5 +158,6 @@ export const schema = makeExecutableSchema({
     heroSlideResolvers,
     dashboardResolvers,
     notificationResolvers,
+    memberNotificationResolvers,
   ],
 });

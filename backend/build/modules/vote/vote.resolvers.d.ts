@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { AuthContext } from '../../middleware/auth.js';
 declare const voteResolvers: {
     Query: {
@@ -9,31 +8,18 @@ declare const voteResolvers: {
             positionTitle: string;
             voteCount: any;
         }[]>;
-        hasVoted: (_: any, { electionId, positionId }: any, context: AuthContext) => Promise<boolean>;
+        hasVoted: (_: any, { electionId }: any, context: AuthContext) => Promise<boolean>;
+        checkMemberEligibility: (_: any, { electionId }: any, context: AuthContext) => Promise<{
+            eligible: boolean;
+            reasons: string[];
+        }>;
     };
     Mutation: {
-        castVote: (_: any, { electionId, positionId, candidateId }: any, context: AuthContext) => Promise<{
+        castVote: (_: any, { data }: {
+            data: any;
+        }, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
-            data: mongoose.Document<unknown, {}, {
-                electionId: mongoose.Types.ObjectId;
-                positionId: mongoose.Types.ObjectId;
-                voterId: mongoose.Types.ObjectId;
-                candidateId: mongoose.Types.ObjectId;
-                votedAt: NativeDate;
-            } & mongoose.DefaultTimestampProps, {}, {
-                timestamps: true;
-            }> & {
-                electionId: mongoose.Types.ObjectId;
-                positionId: mongoose.Types.ObjectId;
-                voterId: mongoose.Types.ObjectId;
-                candidateId: mongoose.Types.ObjectId;
-                votedAt: NativeDate;
-            } & mongoose.DefaultTimestampProps & {
-                _id: mongoose.Types.ObjectId;
-            } & {
-                __v: number;
-            };
         }>;
     };
 };

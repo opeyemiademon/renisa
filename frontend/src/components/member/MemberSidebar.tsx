@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, User, CreditCard, Vote, IdCard, Award, LogOut, Trophy } from 'lucide-react'
+import { LayoutDashboard, User, CreditCard, Vote, IdCard, Award, LogOut, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { logout } from '@/lib/store/authSlice'
@@ -15,6 +15,7 @@ const navItems = [
   { label: 'Elections', href: '/member/elections', icon: Vote },
   { label: 'ID Card', href: '/member/id-card', icon: IdCard },
   { label: 'Awards', href: '/member/awards', icon: Award },
+  { label: 'Notifications', href: '/member/notifications', icon: Bell },
 ]
 
 export function MemberSidebar() {
@@ -56,7 +57,7 @@ export function MemberSidebar() {
                     : 'text-white/80 hover:bg-white/10 hover:text-white'
                 )}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <Icon className="w-5 h-5 shrink-0" />
                 {item.label}
               </div>
             </Link>
@@ -67,7 +68,7 @@ export function MemberSidebar() {
       {/* User section */}
       <div className="px-3 py-4 border-t border-white/10">
         <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/20 flex-shrink-0">
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/20 shrink-0">
             {member?.profilePicture ? (
               <img src={buildImageUrl(member.profilePicture)} alt={member.firstName} className="w-full h-full object-cover" />
             ) : (

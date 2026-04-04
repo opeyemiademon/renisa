@@ -25,13 +25,29 @@ const voteTypeDefs = gql`
     data: Vote
   }
 
+  type EligibilityResult {
+    eligible: Boolean!
+    reasons: [String!]!
+  }
+
+  input VoteInput {
+    positionId: ID!
+    candidateId: ID!
+  }
+
+  input CastVoteInput {
+    electionId: ID!
+    votes: [VoteInput!]!
+  }
+
   extend type Query {
     getElectionResults(electionId: ID!): [VoteResult!]!
-    hasVoted(electionId: ID!, positionId: ID!): Boolean!
+    hasVoted(electionId: ID!): Boolean!
+    checkMemberEligibility(electionId: ID!): EligibilityResult!
   }
 
   extend type Mutation {
-    castVote(electionId: ID!, positionId: ID!, candidateId: ID!): VoteResponse!
+    castVote(data: CastVoteInput!): VoteResponse!
   }
 `;
 

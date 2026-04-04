@@ -129,6 +129,16 @@ const awardVoteResolvers = {
       const vote = await AwardVote.findOne({ awardId, voterId: context.member!.id });
       return !!vote;
     },
+
+    getMyAwardVotes: async (_: any, { year }: { year?: number }, context: AuthContext) => {
+      requireMemberAuth(context);
+      const y = year || new Date().getFullYear();
+      const votes = await AwardVote.find({ voterId: context.member!.id })
+        .populate({ path: 'awardId', match: { year: y } });
+      return votes
+        .filter((v: any) => v.awardId != null)
+        .map((v: any) => v.awardId._id ? v.awardId._id.toString() : v.awardId.toString());
+    },
   },
 
   Mutation: {
@@ -150,6 +160,14 @@ const awardVoteResolvers = {
 
       const existing = await AwardVote.findOne({ awardId, voterId: context.member!.id });
       if (existing) throw new Error('You have already voted for this award');
+
+      // Enforce one vote per category
+      const awardsInCategory = await Award.find({ categoryId: category._id }, '_id');
+      const categoryVote = await AwardVote.findOne({
+        awardId: { $in: awardsInCategory.map((a: any) => a._id) },
+        voterId: context.member!.id,
+      });
+      if (categoryVote) throw new Error('You have already cast your vote for this category');
 
       const vote = await AwardVote.create({
         awardId,

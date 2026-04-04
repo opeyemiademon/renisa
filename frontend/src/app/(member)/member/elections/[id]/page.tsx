@@ -13,34 +13,39 @@ import { PageLoader } from '@/components/shared/Spinner'
 import { buildImageUrl } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-export default function ElectionBallotPage({ params }: { params: { id: string } }) {
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
+
+
+export default function ElectionBallotPage() {
+
+  const params = useParams()
   const [votes, setVotes] = useState<Record<string, string>>({})
   const [confirmOpen, setConfirmOpen] = useState(false)
-
+ const id = params.id as string
   const { data: election, isLoading: electionLoading } = useQuery({
-    queryKey: ['election', params.id],
-    queryFn: () => getElection(params.id),
+    queryKey: ['election', id],
+    queryFn: () => getElection(id),
   })
 
   const { data: candidates, isLoading: candLoading } = useQuery({
-    queryKey: ['candidates', params.id],
-    queryFn: () => getCandidatesForElection(params.id),
+    queryKey: ['candidates', id],
+    queryFn: () => getCandidatesForElection(id),
   })
 
   const { data: voted, isLoading: votedLoading } = useQuery({
-    queryKey: ['has-voted', params.id],
-    queryFn: () => hasVoted(params.id),
+    queryKey: ['has-voted', id],
+    queryFn: () => hasVoted(id),
   })
 
   const { data: eligibility } = useQuery({
-    queryKey: ['eligibility', params.id],
-    queryFn: () => checkMemberEligibility(params.id),
+    queryKey: ['eligibility', id],
+    queryFn: () => checkMemberEligibility(id),
   })
 
   const voteMutation = useMutation({
     mutationFn: () =>
       castVote({
-        electionId: params.id,
+        electionId: id,
         votes: Object.entries(votes).map(([positionId, candidateId]) => ({
           positionId,
           candidateId,

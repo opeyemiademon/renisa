@@ -9,6 +9,7 @@ import { generateIDCard } from '../../utils/idCardGenerator.js';
 import { sendEmail, idCardStatusTemplate } from '../../utils/emailService.js';
 import { UPLOAD_FOLDERS } from '../../utils/constants.js';
 import { createNotification } from '../../utils/createNotification.js';
+import { createMemberNotification } from '../../utils/createMemberNotification.js';
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
@@ -96,6 +97,7 @@ const idCardRequestResolvers = {
           success: true,
           message: 'Payment initiated',
           authorizationUrl: response.data.data.authorization_url,
+          reference: paymentRef,
           data: request,
         };
       } catch {
@@ -183,6 +185,7 @@ const idCardRequestResolvers = {
         idCardStatusTemplate(`${member.firstName} ${member.lastName}`, 'approved')
       ).catch(console.error);
 
+      createMemberNotification(String((request.memberId as any)._id || request.memberId), 'id_card_approved', 'ID Card Approved', 'Your ID card request has been approved. You can now download your digital ID card.', '/member/id-card');
       return { success: true, message: 'ID card request approved and card generated', data: updated };
     },
 
@@ -201,6 +204,7 @@ const idCardRequestResolvers = {
         'RENISA ID Card Request Update',
         idCardStatusTemplate(`${member.firstName} ${member.lastName}`, 'rejected', reason)
       ).catch(console.error);
+      createMemberNotification(String((member as any)._id || (request.memberId as any)._id), 'id_card_rejected', 'ID Card Request Rejected', reason ? `Your ID card request was rejected: ${reason}` : 'Your ID card request was rejected.', '/member/id-card');
       return { success: true, message: 'ID card request rejected', data: updated };
     },
 
@@ -213,6 +217,49 @@ const idCardRequestResolvers = {
       );
       if (!updated) throw new Error('Request not found');
       return { success: true, message: 'Delivery status updated', data: updated };
+    },
+
+    confirmIDCardPaystackPayment: async (_: any, { requestId, reference, amount }: any, context: AuthContext) => {
+      requireMemberAuth(context);
+      const request = await IDCardRequest.findById(requestId);
+      if (!request) throw new Error('ID card request not found');
+      if (request.memberId.toString() !== context.member!.id) throw new Error('Unauthorized');
+      if (request.paymentStatus === 'paid') throw new Error('Payment already completed');
+
+      try {
+        const response = await axios.get(
+          `https://api.paystack.co/transaction/verify/${reference}`,
+          { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
+        );
+        const ps = response.data.data;
+        if (ps.status !== 'success') throw new Error('Payment was not successful');
+
+        const updated = await IDCardRequest.findByIdAndUpdate(
+          requestId,
+          { paymentRef: reference, paymentStatus: 'paid', paidAt: new Date() },
+          { new: true }
+        );
+        createMemberNotification(context.member!.id, 'payment', 'ID Card Payment Confirmed', `Your ID card payment of ₦${amount.toLocaleString()} was successful. We will process your request shortly.`, '/member/id-card');
+        return { success: true, message: 'Payment confirmed', data: updated };
+      } catch (err: any) {
+        throw new Error(err.message || 'Failed to verify payment');
+      }
+    },
+
+    manualIDCardPayment: async (_: any, { requestId, referenceNumber, notes }: any, context: AuthContext) => {
+      requireMemberAuth(context);
+      const request = await IDCardRequest.findById(requestId);
+      if (!request) throw new Error('ID card request not found');
+      if (request.memberId.toString() !== context.member!.id) throw new Error('Unauthorized');
+      if (request.paymentStatus === 'paid') throw new Error('Payment already completed');
+      const paymentRef = `RENISA-ID-MANUAL-${referenceNumber.replace(/\s+/g, '-').toUpperCase()}`;
+      await IDCardRequest.findByIdAndUpdate(requestId, {
+        paymentRef,
+        paymentStatus: 'pending',
+        notes: notes || `Manual bank transfer reference: ${referenceNumber}`,
+      });
+      const updated = await IDCardRequest.findById(requestId);
+      return { success: true, message: 'Manual payment submitted. Admin will verify and process your request.', data: updated };
     },
   },
 };

@@ -2,23 +2,23 @@
 
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Save, Eye, EyeOff } from 'lucide-react'
+import { Save, Eye, EyeOff, Camera } from 'lucide-react'
 import { updateMember } from '@/lib/api_services/memberApiServices'
 import { changePassword } from '@/lib/api_services/authApiServices'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
-import { FileUpload } from '@/components/shared/FileUpload'
+import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { useAppSelector, useAppDispatch } from '@/hooks/redux'
 import { updateMemberProfile } from '@/lib/store/authSlice'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
-import { SAMPLE_MEMBER } from '@/lib/sampleData'
+import { buildImageUrl, getInitials } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 export default function MemberProfilePage() {
-  const { member: authMember } = useAppSelector((s) => s.auth)
-  const member = authMember || SAMPLE_MEMBER as any
+  const { member } = useAppSelector((s) => s.auth)
   const dispatch = useAppDispatch()
+
   const [form, setForm] = useState({
     firstName: member?.firstName || '',
     lastName: member?.lastName || '',
@@ -30,17 +30,22 @@ export default function MemberProfilePage() {
     stateOfOrigin: member?.stateOfOrigin || '',
     lga: member?.lga || '',
     sport: member?.sport || '',
-    profilePicture: member?.profilePicture || '',
+    photoBase64: '' as string,
+    photoPreview: member?.profilePicture ? buildImageUrl(member.profilePicture) : '',
   })
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' })
   const [showPass, setShowPass] = useState(false)
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
 
   const set = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }))
 
   const updateMutation = useMutation({
-    mutationFn: () => updateMember(member!.id, form),
+    mutationFn: () => {
+      const { photoPreview, ...data } = form
+      return updateMember(member!.id, data as any)
+    },
     onSuccess: (data) => {
-      dispatch(updateMemberProfile(data))
+      dispatch(updateMemberProfile(data as any))
       toast.success('Profile updated successfully!')
     },
     onError: (err: Error) => toast.error(err.message || 'Update failed'),
@@ -55,20 +60,51 @@ export default function MemberProfilePage() {
     onError: (err: Error) => toast.error(err.message || 'Failed to change password'),
   })
 
+  const handlePhotoCapture = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = reader.result as string
+      setForm((p) => ({ ...p, photoBase64: base64, photoPreview: base64 }))
+    }
+    reader.readAsDataURL(file)
+  }
+
+  if (!member) return null
+
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
   const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
 
   return (
     <div className="max-w-3xl space-y-6">
-      {/* Profile Info */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-5">Profile Information</h2>
         <div className="space-y-4">
-          <FileUpload
-            label="Profile Picture"
-            value={form.profilePicture}
-            onChange={(url) => set('profilePicture', url)}
-          />
+          {/* Profile Photo */}
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Profile Picture</p>
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-[#1a6b3a]/10 border-2 border-gray-200 shrink-0">
+                {form.photoPreview ? (
+                  <img src={form.photoPreview} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-[#1a6b3a] text-lg font-bold">
+                      {getInitials(`${member.firstName} ${member.lastName}`)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPhotoModalOpen(true)}
+                iconLeft={<Camera className="w-4 h-4" />}
+              >
+                Change Photo
+              </Button>
+            </div>
+          </div>
+
           <div className="grid sm:grid-cols-3 gap-4">
             <Input label="First Name" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} required />
             <Input label="Middle Name" value={form.middleName} onChange={(e) => set('middleName', e.target.value)} />
@@ -85,26 +121,21 @@ export default function MemberProfilePage() {
             <Input label="LGA" value={form.lga} onChange={(e) => set('lga', e.target.value)} />
           </div>
           <Select label="Sport" value={form.sport} onChange={(e) => set('sport', e.target.value)} options={sportOptions} />
-          <Button
-            onClick={() => updateMutation.mutate()}
-            loading={updateMutation.isPending}
-            iconLeft={<Save className="w-4 h-4" />}
-          >
+          <Button onClick={() => updateMutation.mutate()} loading={updateMutation.isPending} iconLeft={<Save className="w-4 h-4" />}>
             Save Changes
           </Button>
         </div>
       </div>
 
-      {/* Read-only info */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Details</h2>
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           {[
-            { label: 'Member Number', value: member?.memberNumber },
-            { label: 'Email', value: member?.email },
-            { label: 'Date of Birth', value: member?.dateOfBirth },
-            { label: 'Gender', value: member?.gender },
-            { label: 'Status', value: member?.status },
+            { label: 'Member Number', value: member.memberNumber },
+            { label: 'Email', value: member.email },
+            { label: 'Date of Birth', value: member.dateOfBirth },
+            { label: 'Gender', value: member.gender },
+            { label: 'Status', value: member.status },
           ].map((item) => (
             <div key={item.label} className="bg-gray-50 rounded-lg p-3">
               <p className="text-gray-500 text-xs uppercase tracking-wide">{item.label}</p>
@@ -114,7 +145,6 @@ export default function MemberProfilePage() {
         </div>
       </div>
 
-      {/* Change Password */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-5">Change Password</h2>
         <div className="space-y-4 max-w-sm">
@@ -129,22 +159,13 @@ export default function MemberProfilePage() {
               {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <Input
-            label="New Password"
-            type="password"
-            value={passwords.new}
-            onChange={(e) => setPasswords((p) => ({ ...p, new: e.target.value }))}
-          />
-          <Input
-            label="Confirm New Password"
-            type="password"
-            value={passwords.confirm}
-            onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
-          />
+          <Input label="New Password" type="password" value={passwords.new} onChange={(e) => setPasswords((p) => ({ ...p, new: e.target.value }))} />
+          <Input label="Confirm New Password" type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} />
           <Button
             onClick={() => {
               if (!passwords.current || !passwords.new) return toast.error('Fill all fields')
               if (passwords.new !== passwords.confirm) return toast.error('Passwords do not match')
+              if (passwords.new.length < 6) return toast.error('New password must be at least 6 characters')
               changePwMutation.mutate()
             }}
             loading={changePwMutation.isPending}
@@ -154,6 +175,13 @@ export default function MemberProfilePage() {
           </Button>
         </div>
       </div>
+
+      <PhotoCaptureModal
+        isOpen={photoModalOpen}
+        onClose={() => setPhotoModalOpen(false)}
+        onCapture={handlePhotoCapture}
+        title="Update Profile Photo"
+      />
     </div>
   )
 }

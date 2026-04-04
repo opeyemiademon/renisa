@@ -2,26 +2,34 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { Vote, Calendar, ChevronRight, CheckCircle, XCircle } from 'lucide-react'
+import { Vote, Calendar, ChevronRight } from 'lucide-react'
 import { getAllElections } from '@/lib/api_services/electionApiServices'
 import { Badge } from '@/components/shared/Badge'
 import { Button } from '@/components/shared/Button'
 import { PageLoader } from '@/components/shared/Spinner'
 import { formatDate } from '@/lib/utils'
-import { SAMPLE_MEMBER_ELECTIONS } from '@/lib/sampleData'
 
 export default function MemberElectionsPage() {
-  const { data: electionsData, isLoading } = useQuery({
+  const { data: elections, isLoading } = useQuery({
     queryKey: ['all-elections'],
-    queryFn: () => getAllElections(),
+    queryFn: getAllElections,
   })
 
   if (isLoading) return <PageLoader />
 
-  const elections = SAMPLE_MEMBER_ELECTIONS;//(electionsData?.data && electionsData.data.length > 0) ? electionsData.data : SAMPLE_MEMBER_ELECTIONS as any[]
-  const activeElections = elections.filter((e) => e.status === 'active')
-  const upcomingElections = elections.filter((e) => e.status === 'upcoming')
-  const closedElections = elections.filter((e) => e.status === 'closed' || e.status === 'results_declared')
+  const all = (elections || []) as any[]
+  const activeElections = all.filter((e) => e.status === 'active')
+  const upcomingElections = all.filter((e) => e.status === 'upcoming')
+  const closedElections = all.filter((e) => e.status === 'closed' || e.status === 'results_declared')
+
+  if (all.length === 0) {
+    return (
+      <div className="text-center py-20 text-gray-400">
+        <Vote className="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <p>No elections at this time</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -33,7 +41,7 @@ export default function MemberElectionsPage() {
           </h3>
           <div className="space-y-3">
             {activeElections.map((election) => (
-              <div key={election.id} className="bg-white rounded-xl border-2 border-[#1a6b3a] p-5">
+              <div key={election.id} className="bg-white rounded-xl border-2 border-primary p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -67,16 +75,12 @@ export default function MemberElectionsPage() {
           <div className="space-y-3">
             {upcomingElections.map((election) => (
               <div key={election.id} className="bg-white rounded-xl border border-gray-200 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <Badge variant="upcoming" className="mb-2">Upcoming</Badge>
-                    <h3 className="font-bold text-gray-900">{election.title}</h3>
-                    <p className="text-gray-500 text-sm mt-1">{election.description}</p>
-                    <div className="flex gap-4 mt-3 text-sm text-gray-500">
-                      <span>Starts {formatDate(election.startDate)}</span>
-                      <span>Ends {formatDate(election.endDate)}</span>
-                    </div>
-                  </div>
+                <Badge variant="upcoming" className="mb-2">Upcoming</Badge>
+                <h3 className="font-bold text-gray-900">{election.title}</h3>
+                <p className="text-gray-500 text-sm mt-1">{election.description}</p>
+                <div className="flex gap-4 mt-3 text-sm text-gray-500">
+                  <span>Starts {formatDate(election.startDate)}</span>
+                  <span>Ends {formatDate(election.endDate)}</span>
                 </div>
               </div>
             ))}
@@ -90,25 +94,14 @@ export default function MemberElectionsPage() {
           <div className="space-y-3">
             {closedElections.map((election) => (
               <div key={election.id} className="bg-gray-50 rounded-xl border border-gray-200 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <Badge variant={election.status}>{election.status.replace('_', ' ')}</Badge>
-                    <h3 className="font-semibold text-gray-900 mt-2">{election.title}</h3>
-                    <p className="text-sm text-gray-400 mt-1">Ended {formatDate(election.endDate)}</p>
-                  </div>
-                </div>
+                <Badge variant={election.status}>{election.status.replace('_', ' ')}</Badge>
+                <h3 className="font-semibold text-gray-900 mt-2">{election.title}</h3>
+                <p className="text-sm text-gray-400 mt-1">Ended {formatDate(election.endDate)}</p>
               </div>
             ))}
           </div>
         </div>
       )}
-
-      {!elections || elections.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Vote className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>No elections at this time</p>
-        </div>
-      ) : null}
     </div>
   )
 }

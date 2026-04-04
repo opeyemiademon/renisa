@@ -6,10 +6,9 @@ export const loginMember = async (data: {
   password: string
 }): Promise<AuthPayload> => {
   const mutation = `
-    mutation LoginMember($data: MemberLoginInput!) {
+    mutation loginMember($data: MemberLoginInput!) {
       loginMember(data: $data) {
         token
-        portal
         member {
           id
           memberNumber
@@ -30,7 +29,6 @@ export const loginMember = async (data: {
           status
           isAlumni
           createdAt
-          updatedAt
         }
       }
     }

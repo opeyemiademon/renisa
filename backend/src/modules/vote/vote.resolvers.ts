@@ -11,7 +11,6 @@ const voteResolvers = {
     getElectionResults: async (_: any, { electionId }: any, context: AuthContext) => {
       if (!context.isAuthenticated) throw new Error('Authentication required');
 
-      // Load the election to get embedded positions (for title lookup)
       const election = await Election.findById(electionId);
       if (!election) throw new Error('Election not found');
 
@@ -59,62 +58,116 @@ const voteResolvers = {
       }));
     },
 
-    hasVoted: async (_: any, { electionId, positionId }: any, context: AuthContext) => {
+    hasVoted: async (_: any, { electionId }: any, context: AuthContext) => {
       requireMemberAuth(context);
-      const existing = await Vote.findOne({ electionId, positionId, voterId: context.member!.id });
+      const existing = await Vote.findOne({ electionId, voterId: context.member!.id });
       return !!existing;
+    },
+
+    checkMemberEligibility: async (_: any, { electionId }: any, context: AuthContext) => {
+      requireMemberAuth(context);
+      const memberId = context.member!.id;
+
+      const election = await Election.findById(electionId);
+      if (!election) throw new Error('Election not found');
+
+      const member = await Member.findById(memberId);
+      if (!member) throw new Error('Member not found');
+
+      const reasons: string[] = [];
+
+      if (election.status !== 'active') {
+        reasons.push('This election is not currently active');
+      }
+
+      const now = new Date();
+      if ((election as any).votingStartDate && now < new Date((election as any).votingStartDate)) {
+        reasons.push('Voting has not started yet');
+      }
+      if ((election as any).votingEndDate && now > new Date((election as any).votingEndDate)) {
+        reasons.push('Voting period has ended');
+      }
+
+      if ((election as any).eligibilityMinYears && (election as any).eligibilityMinYears > 0) {
+        const memberYear = (member as any).membershipYear || new Date().getFullYear();
+        const yearsAsMember = new Date().getFullYear() - memberYear;
+        if (yearsAsMember < (election as any).eligibilityMinYears) {
+          reasons.push(`You must have been a member for at least ${(election as any).eligibilityMinYears} year(s) to vote`);
+        }
+      }
+
+      if ((election as any).requiresDuesPayment) {
+        const currentYear = new Date().getFullYear();
+        const paid = await Payment.findOne({
+          memberId,
+          year: currentYear,
+          $or: [{ status: 'successful' }, { status: 'completed' }],
+        });
+        if (!paid) {
+          reasons.push(`You must have paid your dues for ${currentYear} to vote`);
+        }
+      }
+
+      return { eligible: reasons.length === 0, reasons };
     },
   },
 
   Mutation: {
-    castVote: async (_: any, { electionId, positionId, candidateId }: any, context: AuthContext) => {
+    castVote: async (_: any, { data }: { data: any }, context: AuthContext) => {
       requireMemberAuth(context);
       const memberId = context.member!.id;
+      const { electionId, votes } = data;
 
       const election = await Election.findById(electionId);
       if (!election) throw new Error('Election not found');
       if (election.status !== 'active') throw new Error('Voting is not currently open');
 
       const now = new Date();
-      if (election.votingStartDate && now < new Date(election.votingStartDate)) {
+      if ((election as any).votingStartDate && now < new Date((election as any).votingStartDate)) {
         throw new Error('Voting has not started yet');
       }
-      if (election.votingEndDate && now > new Date(election.votingEndDate)) {
+      if ((election as any).votingEndDate && now > new Date((election as any).votingEndDate)) {
         throw new Error('Voting has ended');
       }
 
       const member = await Member.findById(memberId);
       if (!member) throw new Error('Member not found');
 
-      if (election.eligibilityMinYears && election.eligibilityMinYears > 0) {
+      if ((election as any).eligibilityMinYears && (election as any).eligibilityMinYears > 0) {
         const memberYear = (member as any).membershipYear || new Date().getFullYear();
         const yearsAsMember = new Date().getFullYear() - memberYear;
-        if (yearsAsMember < election.eligibilityMinYears) {
-          throw new Error(`You must have been a member for at least ${election.eligibilityMinYears} year(s) to vote`);
+        if (yearsAsMember < (election as any).eligibilityMinYears) {
+          throw new Error(`You must have been a member for at least ${(election as any).eligibilityMinYears} year(s) to vote`);
         }
       }
 
-      if (election.requiresDuesPayment) {
+      if ((election as any).requiresDuesPayment) {
         const currentYear = new Date().getFullYear();
-        const paid = await Payment.findOne({ memberId, year: currentYear, status: 'successful' });
+        const paid = await Payment.findOne({
+          memberId,
+          year: currentYear,
+          $or: [{ status: 'successful' }, { status: 'completed' }],
+        });
         if (!paid) throw new Error(`You must have paid dues for ${currentYear} to be eligible to vote`);
       }
 
-      const existing = await Vote.findOne({ electionId, positionId, voterId: memberId });
-      if (existing) throw new Error('You have already voted for this position');
+      const alreadyVoted = await Vote.findOne({ electionId, voterId: memberId });
+      if (alreadyVoted) throw new Error('You have already voted in this election');
 
-      const candidate = await Candidate.findOne({ _id: candidateId, electionId, positionId });
-      if (!candidate) throw new Error('Candidate not found');
+      for (const { positionId, candidateId } of votes) {
+        const candidate = await Candidate.findOne({ _id: candidateId, electionId, positionId });
+        if (!candidate) throw new Error(`Candidate not found for position ${positionId}`);
 
-      const vote = await Vote.create({
-        electionId,
-        positionId,
-        voterId: memberId,
-        candidateId,
-        votedAt: new Date(),
-      });
+        await Vote.create({
+          electionId,
+          positionId,
+          voterId: memberId,
+          candidateId,
+          votedAt: new Date(),
+        });
+      }
 
-      return { success: true, message: 'Vote cast successfully', data: vote };
+      return { success: true, message: 'Your vote has been cast successfully' };
     },
   },
 };

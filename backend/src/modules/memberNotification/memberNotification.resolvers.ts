@@ -1,0 +1,40 @@
+import MemberNotification from './memberNotification.model.js';
+import { requireMemberAuth, AuthContext } from '../../middleware/auth.js';
+
+const memberNotificationResolvers = {
+  Query: {
+    getMemberNotifications: async (_: any, { limit = 30 }: any, context: AuthContext) => {
+      requireMemberAuth(context);
+      const memberId = context.member!.id;
+      const [notifications, unreadCount] = await Promise.all([
+        MemberNotification.find({ memberId }).sort({ createdAt: -1 }).limit(limit).lean(),
+        MemberNotification.countDocuments({ memberId, isRead: false }),
+      ]);
+      return {
+        notifications: notifications.map((n: any) => ({ ...n, id: n._id.toString() })),
+        unreadCount,
+      };
+    },
+  },
+
+  Mutation: {
+    markMemberNotificationRead: async (_: any, { id }: { id: string }, context: AuthContext) => {
+      requireMemberAuth(context);
+      const n = await MemberNotification.findOneAndUpdate(
+        { _id: id, memberId: context.member!.id },
+        { isRead: true },
+        { new: true }
+      );
+      if (!n) throw new Error('Notification not found');
+      return { ...n.toObject(), id: n._id.toString() };
+    },
+
+    markAllMemberNotificationsRead: async (_: any, __: any, context: AuthContext) => {
+      requireMemberAuth(context);
+      await MemberNotification.updateMany({ memberId: context.member!.id, isRead: false }, { isRead: true });
+      return true;
+    },
+  },
+};
+
+export default memberNotificationResolvers;

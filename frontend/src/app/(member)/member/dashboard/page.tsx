@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { CreditCard, Vote, IdCard, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { CreditCard, Vote, IdCard, CheckCircle, AlertCircle } from 'lucide-react'
 import { useAppSelector } from '@/hooks/redux'
 import { getMemberPayments } from '@/lib/api_services/paymentApiServices'
 import { getAllElections } from '@/lib/api_services/electionApiServices'
@@ -11,73 +11,66 @@ import { StatCard } from '@/components/shared/StatCard'
 import { DataTable } from '@/components/shared/DataTable'
 import { Badge } from '@/components/shared/Badge'
 import { Button } from '@/components/shared/Button'
+import { PageLoader } from '@/components/shared/Spinner'
 import { buildImageUrl, formatCurrency, formatDate, getInitials } from '@/lib/utils'
-import { SAMPLE_MEMBER, SAMPLE_MEMBER_PAYMENTS, SAMPLE_MEMBER_ELECTIONS, SAMPLE_MEMBER_ID_CARD_REQUESTS } from '@/lib/sampleData'
 
 export default function MemberDashboardPage() {
-  const { member: authMember } = useAppSelector((s) => s.auth)
-  const member = authMember || SAMPLE_MEMBER as any
+  const { member } = useAppSelector((s) => s.auth)
 
-  const { data: payments } = useQuery({
+  const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['my-payments', member?.id],
     queryFn: () => getMemberPayments(member!.id),
-    enabled: !!authMember?.id,
+    enabled: !!member?.id,
   })
 
-  const { data: electionsResult } = useQuery({
+  const { data: elections } = useQuery({
     queryKey: ['active-elections'],
-    queryFn: () => getAllElections(),
+    queryFn: getAllElections,
   })
 
   const { data: idCardRequests } = useQuery({
     queryKey: ['my-id-cards'],
     queryFn: getMyIDCardRequests,
-    enabled: !!authMember,
+    enabled: !!member,
   })
 
-  const allPayments: any[] = (payments && payments.length > 0) ? payments : SAMPLE_MEMBER_PAYMENTS
-  const recentPayments = allPayments.slice(0, 5)
-  const allElections = SAMPLE_MEMBER_ELECTIONS;//(electionsResult?.data && electionsResult.data.length > 0) ? electionsResult.data : SAMPLE_MEMBER_ELECTIONS
-  const activeElections = allElections.filter((e: any) => e.status === 'active')
-  const latestIDCard = idCardRequests?.[0] || SAMPLE_MEMBER_ID_CARD_REQUESTS[0] as any
+  if (!member) return <PageLoader />
 
-  const completedFields = member
-    ? [
-        member.firstName, member.lastName, member.email, member.phone,
-        member.address, member.profilePicture, member.sport, member.state,
-      ].filter(Boolean).length
-    : 0
+  const recentPayments = (payments || []).slice(0, 5)
+  const activeElections = (elections || []).filter((e: any) => e.status === 'active')
+  const latestIDCard = idCardRequests?.[0]
+
+  const completedFields = [
+    member.firstName, member.lastName, member.email, member.phone,
+    member.address, member.profilePicture, member.sport, member.state,
+  ].filter(Boolean).length
   const profileCompletion = Math.round((completedFields / 8) * 100)
 
   const latestPayment = payments?.[0]
-  const isDuesPaid = latestPayment?.status === 'completed' && latestPayment?.year === new Date().getFullYear()
+  const isDuesPaid = (latestPayment?.status === 'completed' || (latestPayment?.status as string) === 'successful') && latestPayment?.year === new Date().getFullYear()
 
   return (
     <div className="space-y-6">
       {/* Profile Card */}
       <div className="bg-gradient-to-br from-[#1a6b3a] to-[#2d9a57] rounded-2xl p-6 text-white">
         <div className="flex items-center gap-5">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white/30 flex-shrink-0 bg-white/20">
-            {member?.profilePicture ? (
+          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white/30 shrink-0 bg-white/20">
+            {member.profilePicture ? (
               <img src={buildImageUrl(member.profilePicture)} alt={member.firstName} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-white text-2xl font-bold">
-                  {member ? getInitials(`${member.firstName} ${member.lastName}`) : 'M'}
+                  {getInitials(`${member.firstName} ${member.lastName}`)}
                 </span>
               </div>
             )}
           </div>
           <div>
-            <h2 className="text-2xl font-bold">
-              {member ? `${member.firstName} ${member.lastName}` : 'Member'}
-            </h2>
-            <p className="text-white/80 text-sm">{member?.memberNumber}</p>
-            <p className="text-white/70 text-sm mt-0.5">{member?.sport} • {member?.state}</p>
+            <h2 className="text-2xl font-bold">{member.firstName} {member.lastName}</h2>
+            <p className="text-white/80 text-sm">{member.memberNumber}</p>
+            <p className="text-white/70 text-sm mt-0.5">{member.sport} · {member.state}</p>
             <div className="mt-2">
-              <Badge variant={member?.status || 'active'} className="text-xs capitalize">
-                {member?.status}
-              </Badge>
+              <Badge variant={member.status || 'active'} className="text-xs capitalize">{member.status}</Badge>
             </div>
           </div>
         </div>
@@ -91,38 +84,24 @@ export default function MemberDashboardPage() {
           icon={isDuesPaid ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
           variant={isDuesPaid ? 'green' : 'white'}
         />
+        <StatCard title="Active Elections" value={activeElections.length} icon={<Vote className="w-5 h-5" />} variant="white" />
         <StatCard
-          title="Active Elections"
-          value={activeElections.length}
-          icon={<Vote className="w-5 h-5" />}
-          variant="white"
-        />
-        <StatCard
-          title="Profile Completion"
+          title="Profile"
           value={`${profileCompletion}%`}
           icon={<CheckCircle className="w-5 h-5" />}
           variant={profileCompletion >= 100 ? 'green' : 'white'}
         />
-        <StatCard
-          title="Total Payments"
-          value={payments?.length || 0}
-          icon={<CreditCard className="w-5 h-5" />}
-          variant="white"
-        />
+        <StatCard title="Total Payments" value={payments?.length ?? 0} icon={<CreditCard className="w-5 h-5" />} variant="white" />
       </div>
 
       {/* Active Election Alert */}
       {activeElections.length > 0 && (
         <div className="bg-[#d4a017]/10 border border-[#d4a017] rounded-xl p-5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Vote className="w-6 h-6 text-[#d4a017]" />
+            <Vote className="w-6 h-6 text-[#d4a017] shrink-0" />
             <div>
-              <p className="font-semibold text-gray-900">
-                Active Election: {activeElections[0].title}
-              </p>
-              <p className="text-sm text-gray-600">
-                Ends {formatDate(activeElections[0].endDate)}
-              </p>
+              <p className="font-semibold text-gray-900">Active Election: {activeElections[0].title}</p>
+              <p className="text-sm text-gray-600">Ends {formatDate(activeElections[0].endDate)}</p>
             </div>
           </div>
           <Link href={`/member/elections/${activeElections[0].id}`}>
@@ -139,21 +118,15 @@ export default function MemberDashboardPage() {
             ID Card
           </h3>
           {!latestIDCard && (
-            <Link href="/member/id-card/request">
-              <Button size="sm">Request ID Card</Button>
-            </Link>
+            <Link href="/member/id-card/request"><Button size="sm">Request ID Card</Button></Link>
           )}
         </div>
         {latestIDCard ? (
           <div className="flex items-center justify-between">
-            <div>
+            <div className="space-y-1">
               <p className="text-sm text-gray-600 capitalize">Type: {latestIDCard.requestType}</p>
-              <p className="text-sm text-gray-600">
-                Payment: <Badge variant={latestIDCard.paymentStatus}>{latestIDCard.paymentStatus}</Badge>
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                Status: <Badge variant={latestIDCard.adminStatus}>{latestIDCard.adminStatus}</Badge>
-              </p>
+              <p className="text-sm text-gray-600 flex items-center gap-2">Payment: <Badge variant={latestIDCard.paymentStatus}>{latestIDCard.paymentStatus}</Badge></p>
+              <p className="text-sm text-gray-600 flex items-center gap-2">Status: <Badge variant={latestIDCard.adminStatus}>{latestIDCard.adminStatus}</Badge></p>
             </div>
             {latestIDCard.adminStatus === 'approved' && latestIDCard.requestType === 'online' && latestIDCard.cardUrl && (
               <a href={buildImageUrl(latestIDCard.cardUrl)} download>
@@ -170,11 +143,10 @@ export default function MemberDashboardPage() {
       <div className="bg-white rounded-xl border border-gray-200">
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <h3 className="font-semibold text-gray-900">Recent Payments</h3>
-          <Link href="/member/payments" className="text-[#1a6b3a] text-sm hover:underline">
-            View all
-          </Link>
+          <Link href="/member/payments" className="text-[#1a6b3a] text-sm hover:underline">View all</Link>
         </div>
         <DataTable
+          loading={paymentsLoading}
           columns={[
             { key: 'date', header: 'Date', render: (row) => formatDate(row.createdAt) },
             { key: 'type', header: 'Type', render: (row) => row.paymentType?.name || '—' },

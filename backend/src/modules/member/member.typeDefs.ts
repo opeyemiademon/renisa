@@ -110,6 +110,11 @@ const memberTypeDefs = gql`
     website: String
   }
 
+  input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
+  }
+
   input UpdateMemberInput {
     firstName: String
     lastName: String
@@ -143,10 +148,10 @@ const memberTypeDefs = gql`
     getAlumni: [Member!]!
     getNewMembers(limit: Int): [Member!]!
     me: Member
-    loginMember(data: MemberLoginInput!): MemberAuthPayload!
   }
 
   type Mutation {
+    loginMember(data: MemberLoginInput!): MemberAuthPayload!
     registerMember(data: RegisterMemberInput!): MemberAuthPayload!
     adminRegisterMember(data: AdminRegisterMemberInput!): MemberResponse!
     updateMember(id: ID!, data: UpdateMemberInput!): MemberResponse!
@@ -154,6 +159,7 @@ const memberTypeDefs = gql`
     deleteMember(id: ID!): MemberResponse!
     markMemberAsAlumni(id: ID!, alumniYear: Int): MemberResponse!
     loginAsMember(id: ID!): MemberAuthPayload!
+    changePassword(data: ChangePasswordInput!): MemberResponse!
   }
 `;
 

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 declare const IDCardRequest: mongoose.Model<{
-    amount: number;
     memberId: mongoose.Types.ObjectId;
+    amount: number;
     requestType: "online" | "physical";
     paymentStatus: "pending" | "failed" | "paid";
     adminStatus: "approved" | "rejected" | "pending";
@@ -18,8 +18,8 @@ declare const IDCardRequest: mongoose.Model<{
     deliveryStatus?: "pending" | "processing" | "dispatched" | "delivered" | null | undefined;
     trackingInfo?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
-    amount: number;
     memberId: mongoose.Types.ObjectId;
+    amount: number;
     requestType: "online" | "physical";
     paymentStatus: "pending" | "failed" | "paid";
     adminStatus: "approved" | "rejected" | "pending";
@@ -38,8 +38,8 @@ declare const IDCardRequest: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
 }> & {
-    amount: number;
     memberId: mongoose.Types.ObjectId;
+    amount: number;
     requestType: "online" | "physical";
     paymentStatus: "pending" | "failed" | "paid";
     adminStatus: "approved" | "rejected" | "pending";
@@ -62,8 +62,8 @@ declare const IDCardRequest: mongoose.Model<{
 }, mongoose.Schema<any, mongoose.Model<any, any, any, any, any, any>, {}, {}, {}, {}, {
     timestamps: true;
 }, {
-    amount: number;
     memberId: mongoose.Types.ObjectId;
+    amount: number;
     requestType: "online" | "physical";
     paymentStatus: "pending" | "failed" | "paid";
     adminStatus: "approved" | "rejected" | "pending";
@@ -80,8 +80,8 @@ declare const IDCardRequest: mongoose.Model<{
     deliveryStatus?: "pending" | "processing" | "dispatched" | "delivered" | null | undefined;
     trackingInfo?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
-    amount: number;
     memberId: mongoose.Types.ObjectId;
+    amount: number;
     requestType: "online" | "physical";
     paymentStatus: "pending" | "failed" | "paid";
     adminStatus: "approved" | "rejected" | "pending";
@@ -100,8 +100,8 @@ declare const IDCardRequest: mongoose.Model<{
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
 }>> & mongoose.FlatRecord<{
-    amount: number;
     memberId: mongoose.Types.ObjectId;
+    amount: number;
     requestType: "online" | "physical";
     paymentStatus: "pending" | "failed" | "paid";
     adminStatus: "approved" | "rejected" | "pending";

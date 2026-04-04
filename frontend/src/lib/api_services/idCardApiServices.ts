@@ -60,13 +60,52 @@ export const initiateIDCardPayment = async (
       initiateIDCardPayment(requestId: $requestId) {
         success
         authorizationUrl
+        reference
       }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { requestId } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   const result = response.data.data.initiateIDCardPayment
-  return { authorizationUrl: result.authorizationUrl, reference: requestId }
+  return { authorizationUrl: result.authorizationUrl, reference: result.reference || requestId }
+}
+
+export const confirmIDCardPaystackPayment = async (data: {
+  requestId: string
+  reference: string
+  amount: number
+}): Promise<IDCardRequest> => {
+  const mutation = `
+    mutation ConfirmIDCardPaystackPayment($requestId: ID!, $reference: String!, $amount: Float!) {
+      confirmIDCardPaystackPayment(requestId: $requestId, reference: $reference, amount: $amount) {
+        success message data { ${REQUEST_FIELDS} }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: data })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  const result = response.data.data.confirmIDCardPaystackPayment
+  if (!result.success) throw new Error(result.message)
+  return result.data
+}
+
+export const manualIDCardPayment = async (data: {
+  requestId: string
+  referenceNumber: string
+  notes?: string
+}): Promise<IDCardRequest> => {
+  const mutation = `
+    mutation ManualIDCardPayment($requestId: ID!, $referenceNumber: String!, $notes: String) {
+      manualIDCardPayment(requestId: $requestId, referenceNumber: $referenceNumber, notes: $notes) {
+        success message data { ${REQUEST_FIELDS} }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: data })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  const result = response.data.data.manualIDCardPayment
+  if (!result.success) throw new Error(result.message)
+  return result.data
 }
 
 export const verifyIDCardPayment = async (reference: string): Promise<IDCardRequest> => {
