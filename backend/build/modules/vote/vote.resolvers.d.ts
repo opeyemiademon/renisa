@@ -2,11 +2,15 @@ import { AuthContext } from '../../middleware/auth.js';
 declare const voteResolvers: {
     Query: {
         getElectionResults: (_: any, { electionId }: any, context: AuthContext) => Promise<{
-            candidateId: any;
-            candidateName: any;
             positionId: any;
-            positionTitle: string;
-            voteCount: any;
+            positionTitle: any;
+            totalVotes: number;
+            candidates: {
+                candidateId: any;
+                candidateName: string;
+                voteCount: number;
+                percentage: number;
+            }[];
         }[]>;
         hasVoted: (_: any, { electionId }: any, context: AuthContext) => Promise<boolean>;
         checkMemberEligibility: (_: any, { electionId }: any, context: AuthContext) => Promise<{

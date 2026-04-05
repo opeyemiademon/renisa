@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { MemberSidebar } from '@/components/member/MemberSidebar'
 import { MemberTopbar } from '@/components/member/MemberTopbar'
+import { ChatRightbar } from '@/components/member/ChatRightbar'
 import { useAppSelector } from '@/hooks/redux'
 import { Spinner } from '@/components/shared/Spinner'
 import { cn } from '@/lib/utils'
@@ -36,6 +37,7 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
         <MemberTopbar />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+      <ChatRightbar />
     </div>
   )
 }

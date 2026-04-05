@@ -88,11 +88,19 @@ export const getElectionResults = async (electionId: string): Promise<VoteResult
   const query = `
     query GetElectionResults($electionId: ID!) {
       getElectionResults(electionId: $electionId) {
-        positionId positionTitle totalVotes
-        candidates { candidateId candidateName voteCount percentage }
+        positionId
+        positionTitle
+        totalVotes
+        candidates {
+          candidateId
+          candidateName
+          voteCount
+          percentage
+        }
       }
     }
   `
+
   const response = await graphqlClient.post('', { query, variables: { electionId } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.getElectionResults

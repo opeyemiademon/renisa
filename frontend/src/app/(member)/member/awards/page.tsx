@@ -8,15 +8,36 @@ import { PageLoader } from '@/components/shared/Spinner'
 import { Button } from '@/components/shared/Button'
 import { buildImageUrl, formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import type { AwardCategory } from '@/types'
 
-function useCountdown(endDate?: string) {
+function awardCategoryId(award: { categoryId?: { id?: string } | string }): string | null {
+  const c = award.categoryId
+  if (c == null) return null
+  return typeof c === 'object' && c.id != null ? String(c.id) : String(c)
+}
+
+/** Epoch ms or null if value is missing / not parseable (avoids NaN in countdown UI). */
+function parseTimeMs(value?: string | null): number | null {
+  if (value == null || String(value).trim() === '') return null
+  const t = new Date(value).getTime()
+  return Number.isFinite(t) ? t : null
+}
+
+function useCountdown(endDate?: string | null) {
   const [timeLeft, setTimeLeft] = useState('')
   useEffect(() => {
-    if (!endDate) return
+    const endMs = parseTimeMs(endDate)
+    if (endMs == null) {
+      setTimeLeft('')
+      return
+    }
     const tick = () => {
-      const diff = new Date(endDate).getTime() - Date.now()
-      if (diff <= 0) { setTimeLeft('Ended'); return }
+      const diff = endMs - Date.now()
+      if (diff <= 0) {
+        setTimeLeft('Ended')
+        return
+      }
       const d = Math.floor(diff / 86400000)
       const h = Math.floor((diff % 86400000) / 3600000)
       const m = Math.floor((diff % 3600000) / 60000)
@@ -37,13 +58,18 @@ function CategoryPoll({ category, awards, myVotedIds, onVote, voting }: {
   voting: string | null
 }) {
   const countdown = useCountdown(category.votingEndDate)
-  const isEnded = category.votingEndDate && new Date(category.votingEndDate) < new Date()
-  const hasNotStarted = category.votingStartDate && new Date(category.votingStartDate) > new Date()
+  const endMs = parseTimeMs(category.votingEndDate)
+  const startMs = parseTimeMs(category.votingStartDate)
+  const isEnded = endMs != null && endMs < Date.now()
+  const hasNotStarted = startMs != null && startMs > Date.now()
   const votedAwardId = awards.find((a) => myVotedIds.has(a.id))?.id
   const totalVotes = awards.reduce((sum, a) => sum + (a.totalVotes ?? 0), 0)
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div
+      id={`award-cat-${category.id}`}
+      className="bg-white rounded-2xl border border-gray-200 overflow-hidden scroll-mt-24"
+    >
       {/* Category Header */}
       <div className="bg-gradient-to-r from-[#1a6b3a] to-[#2d9a57] px-6 py-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -187,8 +213,9 @@ export default function MemberAwardsPage() {
   })
 
   const { data: awards, isLoading: awardsLoading } = useQuery({
-    queryKey: ['awards-voting'],
-    queryFn: () => getAllAwards({ votingEnabled: true }),
+    queryKey: ['awards-voting', currentYear],
+    // Category polls control voting (see castAwardVote); per-award votingEnabled is not required
+    queryFn: () => getAllAwards({ year: currentYear }),
   })
 
   const { data: myVotedIds = [], isLoading: votesLoading } = useQuery({
@@ -201,7 +228,7 @@ export default function MemberAwardsPage() {
     onSuccess: () => {
       toast.success('Vote cast successfully!')
       queryClient.invalidateQueries({ queryKey: ['my-award-votes'] })
-      queryClient.invalidateQueries({ queryKey: ['awards-voting'] })
+      queryClient.invalidateQueries({ queryKey: ['awards-voting', currentYear] })
     },
     onError: (err: Error) => toast.error(err.message || 'Failed to cast vote'),
     onSettled: () => setVoting(null),
@@ -212,19 +239,29 @@ export default function MemberAwardsPage() {
     voteMutation.mutate(awardId)
   }
 
+  const activeCategories = useMemo(
+    () => (categories || []).filter((c: AwardCategory) => c.pollActive),
+    [categories],
+  )
+
+  const activeCategoryIdSet = useMemo(
+    () => new Set(activeCategories.map((c) => String(c.id))),
+    [activeCategories],
+  )
+
+  const awardsByCategory = useMemo(() => {
+    const list = (awards as any[]) || []
+    return list.reduce((acc: Record<string, any[]>, award: any) => {
+      if (award.status === 'awarded') return acc
+      const catId = awardCategoryId(award)
+      if (!catId || !activeCategoryIdSet.has(catId)) return acc
+      if (!acc[catId]) acc[catId] = []
+      acc[catId].push(award)
+      return acc
+    }, {})
+  }, [awards, activeCategoryIdSet])
+
   if (catLoading || awardsLoading || votesLoading) return <PageLoader />
-
-  // Active polls: categories with pollActive: true
-  const activeCategories = (categories || []).filter((c: any) => c.pollActive)
-
-  // Group awards by categoryId
-  const awardsByCategory = ((awards as any[]) || []).reduce((acc: Record<string, any[]>, award: any) => {
-    const catId = award.categoryId?.id || award.categoryId
-    if (!catId) return acc
-    if (!acc[catId]) acc[catId] = []
-    acc[catId].push(award)
-    return acc
-  }, {})
 
   const votedSet = new Set(myVotedIds)
 
@@ -232,7 +269,10 @@ export default function MemberAwardsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-900">Awards &amp; Voting</h2>
-        <p className="text-gray-500 text-sm mt-1">Vote for your favourite nominee in each category</p>
+        <p className="text-gray-500 text-sm mt-1">
+          Vote for one nominee per category ({currentYear}). Open polls are listed below; jump to a category using the
+          shortcuts.
+        </p>
       </div>
 
       {activeCategories.length === 0 ? (
@@ -243,6 +283,20 @@ export default function MemberAwardsPage() {
         </div>
       ) : (
         <div className="space-y-6">
+          <div className="sticky top-0 z-10 -mx-1 px-1 py-2 bg-[#f6f7f9]/95 backdrop-blur-sm border-b border-gray-200/80 rounded-lg">
+            <p className="text-xs font-medium text-gray-500 mb-2">Categories with an open poll</p>
+            <div className="flex flex-wrap gap-2">
+              {activeCategories.map((category) => (
+                <a
+                  key={category.id}
+                  href={`#award-cat-${category.id}`}
+                  className="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:border-[#1a6b3a]/40 hover:text-[#1a6b3a] transition-colors"
+                >
+                  {category.name}
+                </a>
+              ))}
+            </div>
+          </div>
           {activeCategories.map((category: any) => (
             <CategoryPoll
               key={category.id}

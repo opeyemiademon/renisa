@@ -3,8 +3,8 @@ import { Executive, MutationResponse } from '@/types'
 
 const EXEC_FIELDS = `
   id name position title profilePicture photo order displayOrder tenure bio isActive createdAt updatedAt
-  memberId { id firstName lastName profilePicture memberNumber }
-  member { id firstName lastName profilePicture memberNumber }
+  memberId { id firstName lastName profilePicture memberNumber sport }
+  member { id firstName lastName profilePicture memberNumber sport }
 `
 
 export const getAllExecutives = async (): Promise<Executive[]> => {
@@ -16,6 +16,17 @@ export const getAllExecutives = async (): Promise<Executive[]> => {
   const response = await graphqlClient.post('', { query })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.getAllExecutives
+}
+
+export const getExecutive = async (id: string): Promise<Executive | null> => {
+  const query = `
+    query GetExecutive($id: ID!) {
+      getExecutive(id: $id) { ${EXEC_FIELDS} }
+    }
+  `
+  const response = await graphqlClient.post('', { query, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getExecutive
 }
 
 export const createExecutive = async (data: {

@@ -6,7 +6,6 @@ import { Users, Award, Twitter, Facebook, Linkedin } from 'lucide-react'
 import { getAllExecutives } from '@/lib/api_services/executiveApiServices'
 import { buildImageUrl } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
-import { SAMPLE_EXECUTIVES } from '@/lib/sampleData'
 
 const SocialIcon = ({ platform }: { platform: string }) => {
   const icons: Record<string, React.ReactNode> = {
@@ -23,7 +22,15 @@ export default function ExecutivesPage() {
     queryFn: getAllExecutives,
   })
 
-  const executives = apiExecutives && apiExecutives.length > 0 ? apiExecutives : SAMPLE_EXECUTIVES
+  const executives = (apiExecutives || []).map((e: any) => {
+    const mid = e.memberId
+    const sportMid = typeof mid === 'object' && mid != null ? mid.sport : undefined
+    return {
+      ...e,
+      sport: e.sport || e.member?.sport || sportMid,
+      photo: e.photo || e.profilePicture,
+    }
+  })
 
   return (
     <div className="bg-white min-h-screen">
@@ -48,6 +55,8 @@ export default function ExecutivesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <PageLoader />
+          ) : executives.length === 0 ? (
+            <p className="text-center text-gray-400 py-20">No executives listed yet.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {executives.map((exec) => (
@@ -102,7 +111,7 @@ export default function ExecutivesPage() {
                       {/* Social links */}
                       {exec.socialLinks && exec.socialLinks.length > 0 && (
                         <div className="flex justify-center gap-2 mt-3">
-                          {exec.socialLinks.map((link, i) => (
+                          {exec.socialLinks.map((link: { platform: string; url: string }, i: number) => (
                             <a
                               key={i}
                               href={link.url}

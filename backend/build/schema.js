@@ -18,6 +18,8 @@ import candidateTypeDefs from './modules/candidate/candidate.typeDefs.js';
 import candidateResolvers from './modules/candidate/candidate.resolvers.js';
 import voteTypeDefs from './modules/vote/vote.typeDefs.js';
 import voteResolvers from './modules/vote/vote.resolvers.js';
+import electionApplicationTypeDefs from './modules/electionApplication/electionApplication.typeDefs.js';
+import electionApplicationResolvers from './modules/electionApplication/electionApplication.resolvers.js';
 import leadershipGroupTypeDefs from './modules/leadershipGroup/leadershipGroup.typeDefs.js';
 import leadershipGroupResolvers from './modules/leadershipGroup/leadershipGroup.resolvers.js';
 import leadershipTypeDefs from './modules/leadership/leadership.typeDefs.js';
@@ -56,6 +58,8 @@ import notificationTypeDefs from './modules/notification/notification.typeDefs.j
 import notificationResolvers from './modules/notification/notification.resolvers.js';
 import memberNotificationTypeDefs from './modules/memberNotification/memberNotification.typeDefs.js';
 import memberNotificationResolvers from './modules/memberNotification/memberNotification.resolvers.js';
+import ticketTypeDefs from './modules/ticket/ticket.typeDefs.js';
+import ticketResolvers from './modules/ticket/ticket.resolvers.js';
 const JSONScalar = new GraphQLScalarType({
     name: 'JSON',
     description: 'The JSON scalar type represents JSON objects',
@@ -84,6 +88,7 @@ export const schema = makeExecutableSchema({
         electoralPositionTypeDefs,
         candidateTypeDefs,
         voteTypeDefs,
+        electionApplicationTypeDefs,
         leadershipGroupTypeDefs,
         leadershipTypeDefs,
         executiveTypeDefs,
@@ -103,6 +108,7 @@ export const schema = makeExecutableSchema({
         dashboardTypeDefs,
         notificationTypeDefs,
         memberNotificationTypeDefs,
+        ticketTypeDefs,
     ],
     resolvers: [
         { JSON: JSONScalar },
@@ -115,6 +121,7 @@ export const schema = makeExecutableSchema({
         electoralPositionResolvers,
         candidateResolvers,
         voteResolvers,
+        electionApplicationResolvers,
         leadershipGroupResolvers,
         leadershipResolvers,
         executiveResolvers,
@@ -134,6 +141,7 @@ export const schema = makeExecutableSchema({
         dashboardResolvers,
         notificationResolvers,
         memberNotificationResolvers,
+        ticketResolvers,
     ],
 });
 //# sourceMappingURL=schema.js.map

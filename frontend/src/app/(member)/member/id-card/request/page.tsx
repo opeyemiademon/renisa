@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { Monitor, Package, ArrowLeft, ArrowRight, Eye, CheckCircle, CreditCard, Landmark } from 'lucide-react'
@@ -18,6 +18,9 @@ import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
 import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
 import { useAppSelector } from '@/hooks/redux'
 import { formatCurrency, buildImageUrl } from '@/lib/utils'
+import { captureIdCardToPngDataUrl } from '@/lib/idCardCapture'
+import { fetchImageAsDataUrl } from '@/lib/idCardPhoto'
+import { buildMemberForIdCardPreview } from '@/lib/idCardMember'
 import toast from 'react-hot-toast'
 
 const STEPS = ['Choose Type', 'Upload Photo', 'Preview', 'Pay']
@@ -34,8 +37,10 @@ export default function IDCardRequestPage() {
   const [requestId, setRequestId] = useState('')
   const [payMode, setPayMode] = useState<'paystack' | 'manual'>('paystack')
   const [manualRef, setManualRef] = useState('')
-  // Generate a unique reference per page session
+  const [inliningPhoto, setInliningPhoto] = useState(false)
   const txRef = useRef(`RENISA-ID-${Date.now()}`)
+  const frontCardRef = useRef<HTMLDivElement>(null)
+  const backCardRef = useRef<HTMLDivElement>(null)
 
   const { data: settings } = useQuery({
     queryKey: ['id-card-settings'],
@@ -72,13 +77,39 @@ export default function IDCardRequestPage() {
     onError: (err: Error) => toast.error(err.message || 'Submission failed'),
   })
 
+  const previewSettings = settings
+    ? {
+        headerText: settings.headerText,
+        footerText: settings.footerText,
+        validityYears: settings.validityYears,
+      }
+    : null
+
+  const cardMember = useMemo(() => (member ? buildMemberForIdCardPreview(member) : null), [member])
+
   const requestMutation = useMutation({
-    mutationFn: () =>
-      requestIDCard({
-        requestType: cardType,
-        photo: photoBase64 || photo,
-        uploadedPhoto: photoBase64 || photo,
-      }),
+    mutationFn: async () => {
+      if (!frontCardRef.current || !backCardRef.current) {
+        throw new Error('Card preview is not ready. Please wait a moment and try again.')
+      }
+      const t = toast.loading('Preparing your ID card files…')
+      try {
+        const [generatedCardFront, generatedCardBack] = await Promise.all([
+          captureIdCardToPngDataUrl(frontCardRef.current),
+          captureIdCardToPngDataUrl(backCardRef.current),
+        ])
+        const idPhoto = photoBase64 || photo
+        return requestIDCard({
+          requestType: cardType,
+          photo: idPhoto,
+          uploadedPhoto: idPhoto,
+          generatedCardFront,
+          generatedCardBack,
+        })
+      } finally {
+        toast.dismiss(t)
+      }
+    },
     onSuccess: (data) => {
       setRequestId(data.id)
       if (fee === 0) {
@@ -162,7 +193,7 @@ export default function IDCardRequestPage() {
                   type: 'online' as const,
                   icon: <Monitor className="w-8 h-8" />,
                   title: 'Online (Digital)',
-                  desc: 'Download as PDF instantly after approval',
+                  desc: 'Download PNG files after approval (same as your preview)',
                   fee: settings?.onlineFee,
                 },
                 {
@@ -213,17 +244,29 @@ export default function IDCardRequestPage() {
               Use a clear, recent passport-style photo (white or plain background preferred)
             </p>
             <div className="flex flex-col items-center gap-4">
-              <div className="w-32 h-40 rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50">
+              {/* Photo preview — larger and clickable */}
+              <button
+                type="button"
+                onClick={() => setPhotoModalOpen(true)}
+                className="relative w-36 h-44 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 bg-gray-50 hover:border-primary hover:bg-primary/5 transition-all group"
+              >
                 {photo ? (
-                  <img src={photo} alt="ID photo" className="w-full h-full object-cover" />
+                  <>
+                    <img src={photo} alt="ID photo" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-white" />
+                    </div>
+                  </>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                    No photo
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-400">
+                    <Eye className="w-8 h-8" />
+                    <span className="text-xs text-center px-2">Tap to add photo</span>
                   </div>
                 )}
-              </div>
+              </button>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setPhotoModalOpen(true)}
                 iconLeft={<Eye className="w-4 h-4" />}
               >
@@ -231,10 +274,25 @@ export default function IDCardRequestPage() {
               </Button>
             </div>
             <Button
-              onClick={() => {
+              onClick={async () => {
                 if (!photo) return toast.error('Please provide a photo')
+                if (!photo.startsWith('data:')) {
+                  setInliningPhoto(true)
+                  try {
+                    const dataUrl = await fetchImageAsDataUrl(photo)
+                    setPhoto(dataUrl)
+                    setPhotoBase64(dataUrl)
+                  } catch (e: unknown) {
+                    const msg = e instanceof Error ? e.message : 'Could not load your photo'
+                    toast.error(msg)
+                    setInliningPhoto(false)
+                    return
+                  }
+                  setInliningPhoto(false)
+                }
                 setStep(2)
               }}
+              loading={inliningPhoto}
               iconRight={<ArrowRight className="w-4 h-4" />}
               className="w-full"
             >
@@ -250,15 +308,28 @@ export default function IDCardRequestPage() {
               <Eye className="w-5 h-5 text-[#1a6b3a]" />
               Preview Your ID Card
             </h3>
+            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              This preview is exactly what will be stored for your request and used for your digital download after
+              approval (same artwork the admin sees).
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-              <div>
-                <p className="text-xs text-gray-400 text-center mb-2">Front</p>
-                <IDCardFrontPreview member={member} photoUrl={photo} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 text-center mb-2">Back</p>
-                <IDCardBackPreview member={member} />
-              </div>
+              {cardMember && (
+                <>
+                  <div>
+                    <p className="text-xs text-gray-400 text-center mb-2">Front</p>
+                    <IDCardFrontPreview
+                      ref={frontCardRef}
+                      member={cardMember}
+                      photoUrl={photoBase64 || photo}
+                      settings={previewSettings}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 text-center mb-2">Back</p>
+                    <IDCardBackPreview ref={backCardRef} member={cardMember} settings={previewSettings} />
+                  </div>
+                </>
+              )}
             </div>
             <div className="bg-gray-50 rounded-lg p-4 border text-sm">
               <div className="flex justify-between mb-1">
@@ -267,7 +338,7 @@ export default function IDCardRequestPage() {
               </div>
               <div className="flex justify-between font-bold text-base border-t border-gray-200 pt-2 mt-2">
                 <span>Total Fee</span>
-                <span className="text-[#1a6b3a]">{fee ? formatCurrency(fee) : '—'}</span>
+                <span className="text-[#1a6b3a]">{fee > 0 ? formatCurrency(fee) : 'Free'}</span>
               </div>
             </div>
             <Button
@@ -276,7 +347,7 @@ export default function IDCardRequestPage() {
               className="w-full"
               size="lg"
             >
-              Submit &amp; Proceed to Payment
+              {fee === 0 ? 'Submit Request' : 'Submit & Proceed to Payment'}
             </Button>
           </div>
         )}

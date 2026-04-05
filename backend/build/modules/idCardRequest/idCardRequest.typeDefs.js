@@ -7,7 +7,7 @@ const idCardRequestTypeDefs = gql `
     requestType: String!
     uploadedPhoto: String
     photo: String
-    amount: Float!
+    amount: Float
     paymentRef: String
     paymentStatus: String!
     paidAt: String
@@ -39,6 +39,8 @@ const idCardRequestTypeDefs = gql `
     uploadedPhoto: String
     photo: String
     deliveryAddress: String
+    generatedCardFront: String
+    generatedCardBack: String
   }
 
   extend type Query {
@@ -49,13 +51,14 @@ const idCardRequestTypeDefs = gql `
 
   extend type Mutation {
     requestIDCard(data: RequestIDCardInput!): IDCardRequestResponse!
-    initiateIDCardPayment(requestId: ID!): IDCardRequestResponse!
     verifyIDCardPayment(reference: String!): IDCardRequestResponse!
     approveIDCardRequest(id: ID!): IDCardRequestResponse!
     rejectIDCardRequest(id: ID!, reason: String!): IDCardRequestResponse!
     updateIDCardDeliveryStatus(id: ID!, deliveryStatus: String!, trackingInfo: String): IDCardRequestResponse!
     manualIDCardPayment(requestId: ID!, referenceNumber: String!, notes: String): IDCardRequestResponse!
     confirmIDCardPaystackPayment(requestId: ID!, reference: String!, amount: Float!): IDCardRequestResponse!
+    approveIDCardPayment(id: ID!): IDCardRequestResponse!
+    deleteIDCardRequest(id: ID!): IDCardRequestResponse!
   }
 `;
 export default idCardRequestTypeDefs;

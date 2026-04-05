@@ -35,10 +35,6 @@ const electionTypeDefs = gql `
     title: String!
     description: String
     year: Int
-    startDate: String
-    endDate: String
-    votingStartDate: String
-    votingEndDate: String
     eligibilityMinYears: Int
     requiresDuesPayment: Boolean
     positions: [ElectoralPositionInput]

@@ -1,11 +1,10 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
 import IDCardRequest from './idCardRequest.model.js';
 import IDCardSettings from '../idCardSettings/idCardSettings.model.js';
 import Member from '../member/member.model.js';
 import { requireMemberAuth, requireAdminAuth, AuthContext } from '../../middleware/auth.js';
-import { generateIDCard } from '../../utils/idCardGenerator.js';
+import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
 import { sendEmail, idCardStatusTemplate } from '../../utils/emailService.js';
 import { UPLOAD_FOLDERS } from '../../utils/constants.js';
 import { createNotification } from '../../utils/createNotification.js';
@@ -13,6 +12,18 @@ import { createMemberNotification } from '../../utils/createMemberNotification.j
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
+
+async function persistIdCardPreviewPng(
+  input: string | undefined,
+  filePrefix: string
+): Promise<string | undefined> {
+  if (!input || typeof input !== 'string') return undefined;
+  const trimmed = input.trim();
+  if (trimmed.startsWith('/uploads/')) return trimmed;
+  if (!trimmed.startsWith('data:image')) return undefined;
+  const fileName = await processBase64Upload(trimmed, UPLOAD_FOLDERS.ID_CARDS, ALLOWED_IMAGE_TYPES, filePrefix);
+  return `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${fileName}`;
+}
 
 const idCardRequestResolvers = {
   IDCardRequest: {
@@ -25,6 +36,8 @@ const idCardRequestResolvers = {
     getMyIDCardRequests: async (_: any, __: any, context: AuthContext) => {
       requireMemberAuth(context);
       return await IDCardRequest.find({ memberId: context.member!.id })
+        .populate('memberId', 'firstName lastName middleName memberNumber profilePicture sport state status createdAt')
+        .populate('reviewedBy', 'name email')
         .sort({ createdAt: -1 });
     },
 
@@ -53,6 +66,23 @@ const idCardRequestResolvers = {
       const settings = await IDCardSettings.findOne();
       if (!settings || !settings.isEnabled) throw new Error('ID card requests are currently disabled');
       const amount = data.requestType === 'online' ? settings.onlineFee : settings.physicalFee;
+
+      const prefix = `id-${String(context.member!.id).slice(-8)}`;
+      let generatedCardFront: string | undefined;
+      let generatedCardBack: string | undefined;
+      try {
+        generatedCardFront = await persistIdCardPreviewPng(data.generatedCardFront, `${prefix}-front`);
+        generatedCardBack = await persistIdCardPreviewPng(data.generatedCardBack, `${prefix}-back`);
+      } catch (e: any) {
+        throw new Error(e?.message || 'Failed to save ID card preview images');
+      }
+
+      if (!generatedCardFront || !generatedCardBack) {
+        throw new Error(
+          'Both sides of the ID card preview are required. Open the preview step and submit again from the app.'
+        );
+      }
+
       const request = await IDCardRequest.create({
         memberId: context.member!.id,
         requestType: data.requestType,
@@ -61,6 +91,8 @@ const idCardRequestResolvers = {
         amount,
         paymentStatus: 'pending',
         adminStatus: 'pending',
+        ...(generatedCardFront && { generatedCardFront }),
+        ...(generatedCardBack && { generatedCardBack }),
       });
       const memberDoc = await Member.findById(context.member!.id).select('firstName lastName').lean() as any;
       const name = memberDoc ? `${memberDoc.firstName} ${memberDoc.lastName}` : 'A member';
@@ -68,43 +100,7 @@ const idCardRequestResolvers = {
       return { success: true, message: 'ID card request submitted', data: request };
     },
 
-    initiateIDCardPayment: async (_: any, { requestId }: any, context: AuthContext) => {
-      requireMemberAuth(context);
-      const request = await IDCardRequest.findById(requestId);
-      if (!request) throw new Error('ID card request not found');
-      if (request.memberId.toString() !== context.member!.id) throw new Error('Unauthorized');
-      if (request.paymentStatus === 'paid') throw new Error('Payment already completed');
-
-      const member = await Member.findById(context.member!.id);
-      if (!member) throw new Error('Member not found');
-
-      const paymentRef = `RENISA-ID-${uuidv4().slice(0, 8).toUpperCase()}`;
-      await IDCardRequest.findByIdAndUpdate(requestId, { paymentRef });
-
-      try {
-        const response = await axios.post(
-          'https://api.paystack.co/transaction/initialize',
-          {
-            email: member.email,
-            amount: request.amount * 100,
-            reference: paymentRef,
-            callback_url: PAYSTACK_CALLBACK_URL,
-            metadata: { requestId: requestId, type: 'id_card' },
-          },
-          { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
-        );
-        return {
-          success: true,
-          message: 'Payment initiated',
-          authorizationUrl: response.data.data.authorization_url,
-          reference: paymentRef,
-          data: request,
-        };
-      } catch {
-        throw new Error('Failed to initialize payment');
-      }
-    },
-
+   
     verifyIDCardPayment: async (_: any, { reference }: any, context: AuthContext) => {
       requireMemberAuth(context);
       const paystackRef = reference;
@@ -134,47 +130,14 @@ const idCardRequestResolvers = {
       if (!request) throw new Error('Request not found');
 
       const member = request.memberId as any;
-      const settings = await IDCardSettings.findOne();
-      const validityYears = settings?.validityYears || 1;
-      const validUntil = String(new Date().getFullYear() + validityYears);
 
-      const outputDir = path.join(process.cwd(), 'uploads', UPLOAD_FOLDERS.ID_CARDS);
-      let generatedCardFront: string | undefined;
-      let generatedCardBack: string | undefined;
-
-      try {
-        const profilePicPath = member.profilePicture
-          ? path.join(process.cwd(), member.profilePicture.replace(/^\//, ''))
-          : undefined;
-
-        const result = await generateIDCard(
-          {
-            memberNumber: member.memberNumber,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            middleName: member.middleName,
-            sport: member.sport,
-            state: member.state,
-            membershipYear: member.membershipYear,
-            profilePicture: profilePicPath,
-            validUntil,
-          },
-          outputDir
-        );
-        generatedCardFront = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.frontPath)}`;
-        generatedCardBack = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.backPath)}`;
-      } catch (err) {
-        console.error('ID card generation error:', err);
-      }
-
+      // Card artwork is always the member app preview (PNGs saved at request time). Do not regenerate server-side.
       const updated = await IDCardRequest.findByIdAndUpdate(
         id,
         {
           adminStatus: 'approved',
           reviewedBy: context.admin!.id,
           reviewedAt: new Date(),
-          generatedCardFront,
-          generatedCardBack,
         },
         { new: true }
       );
@@ -186,7 +149,7 @@ const idCardRequestResolvers = {
       ).catch(console.error);
 
       createMemberNotification(String((request.memberId as any)._id || request.memberId), 'id_card_approved', 'ID Card Approved', 'Your ID card request has been approved. You can now download your digital ID card.', '/member/id-card');
-      return { success: true, message: 'ID card request approved and card generated', data: updated };
+      return { success: true, message: 'ID card request approved', data: updated };
     },
 
     rejectIDCardRequest: async (_: any, { id, reason }: any, context: AuthContext) => {
@@ -244,6 +207,38 @@ const idCardRequestResolvers = {
       } catch (err: any) {
         throw new Error(err.message || 'Failed to verify payment');
       }
+    },
+
+    approveIDCardPayment: async (_: any, { id }: { id: string }, context: AuthContext) => {
+      requireAdminAuth(context);
+      const request = await IDCardRequest.findById(id).populate('memberId', 'firstName lastName email');
+      if (!request) throw new Error('Request not found');
+      if (request.paymentStatus === 'paid') throw new Error('Payment is already marked as paid');
+
+      const updated = await IDCardRequest.findByIdAndUpdate(
+        id,
+        { paymentStatus: 'paid', paidAt: new Date() },
+        { new: true }
+      );
+
+      const member = request.memberId as any;
+      createMemberNotification(
+        String(member._id || member),
+        'payment',
+        'ID Card Payment Approved',
+        'Your ID card payment has been approved by admin. Your request is now being processed.',
+        '/member/id-card'
+      );
+
+      return { success: true, message: 'Payment approved successfully', data: updated };
+    },
+
+    deleteIDCardRequest: async (_: any, { id }: { id: string }, context: AuthContext) => {
+      requireAdminAuth(context);
+      const request = await IDCardRequest.findById(id);
+      if (!request) throw new Error('Request not found');
+      await IDCardRequest.findByIdAndDelete(id);
+      return { success: true, message: 'ID card request deleted', data: null };
     },
 
     manualIDCardPayment: async (_: any, { requestId, referenceNumber, notes }: any, context: AuthContext) => {

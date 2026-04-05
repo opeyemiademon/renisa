@@ -12,6 +12,9 @@ declare const awardVoteResolvers: {
             year?: number;
         }) => Promise<any[]>;
         hasVotedForAward: (_: any, { awardId }: any, context: AuthContext) => Promise<boolean>;
+        getMyAwardVotes: (_: any, { year }: {
+            year?: number;
+        }, context: AuthContext) => Promise<any[]>;
     };
     Mutation: {
         castAwardVote: (_: any, { awardId }: any, context: AuthContext) => Promise<{

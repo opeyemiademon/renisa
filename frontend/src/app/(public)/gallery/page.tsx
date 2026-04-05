@@ -7,26 +7,22 @@ import { getGallery, getGalleryAlbums, getGalleryYears } from '@/lib/api_service
 import { buildImageUrl } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
 import { GalleryItem } from '@/types'
-import { SAMPLE_GALLERY } from '@/lib/sampleData'
 
 export default function GalleryPage() {
   const [selectedAlbum, setSelectedAlbum] = useState<string>('')
   const [selectedYear, setSelectedYear] = useState<number | undefined>()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const [page, setPage] = useState(1)
 
   const { data: albums } = useQuery({ queryKey: ['gallery-albums'], queryFn: getGalleryAlbums })
   const { data: apiYears } = useQuery({ queryKey: ['gallery-years'], queryFn: getGalleryYears })
   
   const { data: galleryData, isLoading } = useQuery({
-    queryKey: ['gallery', selectedAlbum, selectedYear, page],
+    queryKey: ['gallery', selectedAlbum, selectedYear],
     queryFn: () => getGallery({ albumName: selectedAlbum || undefined, year: selectedYear}),
   })
 
-  const apiItems = galleryData?.data || []
-  const items: GalleryItem[] = apiItems.length > 0
-    ? apiItems
-    : (!selectedAlbum && !selectedYear && page === 1 ? SAMPLE_GALLERY as unknown as GalleryItem[] : [])
+  const apiItems = Array.isArray(galleryData) ? galleryData : []
+  const items: GalleryItem[] = apiItems
 
   // Derive years from items when API has none
   const years: number[] = apiYears && apiYears.length > 0
@@ -82,7 +78,7 @@ export default function GalleryPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Filter by Year</p>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => { setSelectedYear(undefined); setPage(1) }}
+                  onClick={() => setSelectedYear(undefined)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     !selectedYear ? 'bg-[#0d4a25] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -92,7 +88,7 @@ export default function GalleryPage() {
                 {years.map((yr) => (
                   <button
                     key={yr}
-                    onClick={() => { setSelectedYear(yr); setPage(1) }}
+                    onClick={() => setSelectedYear(yr)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       selectedYear === yr ? 'bg-[#0d4a25] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
@@ -110,7 +106,7 @@ export default function GalleryPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Filter by Album</p>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => { setSelectedAlbum(''); setPage(1) }}
+                  onClick={() => setSelectedAlbum('')}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     selectedAlbum === '' ? 'bg-[#1a6b3a] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -120,7 +116,7 @@ export default function GalleryPage() {
                 {albums.map((album) => (
                   <button
                     key={album}
-                    onClick={() => { setSelectedAlbum(album); setPage(1) }}
+                    onClick={() => setSelectedAlbum(album)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       selectedAlbum === album ? 'bg-[#1a6b3a] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
@@ -181,16 +177,6 @@ export default function GalleryPage() {
                 </div>
               ))}
 
-              {galleryData && page < galleryData.totalPages && (
-                <div className="text-center mt-4">
-                  <button
-                    onClick={() => setPage((p) => p + 1)}
-                    className="bg-[#1a6b3a] text-white px-6 py-3 rounded-lg hover:bg-[#0d4a25] transition-colors text-sm font-medium"
-                  >
-                    Load More
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>

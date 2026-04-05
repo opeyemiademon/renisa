@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Twitter, Linkedin, Facebook, Instagram, ArrowLeft, Calendar } from 'lucide-react'
 import Link from 'next/link'
-import { getLeadershipMember } from '@/lib/api_services/leadershipApiServices'
+import { getLeadershipBySlug, getLeadershipMember } from '@/lib/api_services/leadershipApiServices'
 import { buildImageUrl, formatDate } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
 
@@ -15,33 +15,40 @@ interface LeadershipProfileProps {
 
 export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfileProps) {
   const { data: member, isLoading } = useQuery({
-    queryKey: ['leadership-member', slug],
-    queryFn: () => getLeadershipMember(slug),
+    queryKey: ['leadership-profile', slug],
+    queryFn: async () => {
+      const bySlug = await getLeadershipBySlug(slug)
+      if (bySlug) return bySlug
+      return getLeadershipMember(slug)
+    },
   })
 
   if (isLoading) return <PageLoader />
-  if (!member) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Member not found</p>
-    </div>
-  )
+  if (!member) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Member not found</p>
+      </div>
+    )
+  }
+
+  const bioText = (member as { memberId?: { bio?: string } }).memberId?.bio || member.bio
+  const tenureLabel = member.tenure
+    ? member.tenure
+    : member.tenureStart
+      ? `${formatDate(member.tenureStart, 'MMM yyyy')}${member.tenureEnd ? ` – ${formatDate(member.tenureEnd, 'MMM yyyy')}` : ' – Present'}`
+      : '—'
 
   return (
     <div className="bg-white min-h-screen">
-      {/* Cover Photo */}
       <div className="relative h-56 md:h-72 bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a]">
         {member.coverPhoto && (
-          <img
-            src={buildImageUrl(member.coverPhoto)}
-            alt="Cover"
-            className="w-full h-full object-cover opacity-60"
-          />
+          <img src={buildImageUrl(member.coverPhoto)} alt="Cover" className="w-full h-full object-cover opacity-60" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Link */}
         <div className="pt-4 mb-6">
           <Link href={backHref} className="flex items-center gap-2 text-[#1a6b3a] hover:text-[#0d4a25] text-sm font-medium">
             <ArrowLeft className="w-4 h-4" />
@@ -49,7 +56,6 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
           </Link>
         </div>
 
-        {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
           <div className="relative -mt-16 sm:-mt-20 flex-shrink-0">
             <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white shadow-lg overflow-hidden bg-[#1a6b3a]">
@@ -68,12 +74,8 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
             {member.state && <p className="text-gray-500 text-sm">{member.state}</p>}
             <div className="flex items-center gap-1.5 text-gray-400 text-sm mt-2">
               <Calendar className="w-4 h-4" />
-              <span>
-                Tenure: {formatDate(member.tenureStart, 'MMM yyyy')}
-                {member.tenureEnd ? ` – ${formatDate(member.tenureEnd, 'MMM yyyy')}` : ' – Present'}
-              </span>
+              <span>Tenure: {tenureLabel}</span>
             </div>
-            {/* Social Links */}
             {member.socialLinks && (
               <div className="flex gap-3 mt-3">
                 {member.socialLinks.twitter && (
@@ -101,18 +103,13 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
           </div>
         </div>
 
-        {/* Bio */}
-        {member.bio && (
+        {bioText && (
           <div className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 font-serif mb-4">Biography</h2>
-            <div
-              className="rich-text text-gray-600 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: member.bio }}
-            />
+            <div className="rich-text text-gray-600 leading-relaxed whitespace-pre-wrap">{bioText}</div>
           </div>
         )}
 
-        {/* Gallery */}
         {member.galleryImages && member.galleryImages.length > 0 && (
           <div className="mb-12">
             <h2 className="text-xl font-bold text-gray-900 font-serif mb-4">Gallery</h2>

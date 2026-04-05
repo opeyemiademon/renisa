@@ -1,17 +1,27 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Eye, CheckCircle, XCircle, Truck, Search, ChevronDown, ChevronUp,
-  RotateCcw, X,
+  RotateCcw, X, MoreVertical, CreditCard, Trash2, Download, Image as ImageIcon,
 } from 'lucide-react'
 import {
   getAllIDCardRequests,
+  getIDCardSettings,
   approveIDCardRequest,
   rejectIDCardRequest,
   updateIDCardDeliveryStatus,
+  approveIDCardPayment,
+  deleteIDCardRequest,
 } from '@/lib/api_services/idCardApiServices'
+import { downloadMemberIdCardPdf } from '@/lib/idCardPdf'
+import { resolveIdCardPhotoForExport } from '@/lib/idCardPhoto'
+import { buildMemberForIdCardPreview } from '@/lib/idCardMember'
+import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
+import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
+import type { Member } from '@/types'
 import { Badge } from '@/components/shared/Badge'
 import { Button } from '@/components/shared/Button'
 import { Select } from '@/components/shared/Select'
@@ -33,15 +43,103 @@ const emptyFilter: FilterState = {
   adminStatus: '', paymentStatus: '', requestType: '', memberName: '', dateFrom: '', dateTo: '',
 }
 
+function RowMenu({ row, onAction }: { row: any; onAction: (action: string, row: any) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const items = [
+    row.paymentStatus !== 'paid' && {
+      key: 'approve_payment',
+      label: 'Approve Payment',
+      icon: CreditCard,
+      className: 'text-green-700 hover:bg-green-50',
+    },
+    row.adminStatus === 'pending' && row.paymentStatus === 'paid' && {
+      key: 'approve_card',
+      label: 'Approve ID Card',
+      icon: CheckCircle,
+      className: 'text-blue-700 hover:bg-blue-50',
+    },
+    row.adminStatus === 'pending' && row.paymentStatus === 'paid' && {
+      key: 'reject_card',
+      label: 'Reject ID Card',
+      icon: XCircle,
+      className: 'text-red-600 hover:bg-red-50',
+    },
+    row.photo && {
+      key: 'preview_photo',
+      label: 'Preview Photo',
+      icon: ImageIcon,
+      className: 'text-gray-700 hover:bg-gray-50',
+    },
+    row.adminStatus === 'approved' && {
+      key: 'download_card',
+      label: 'Download PDF',
+      icon: Download,
+      className: 'text-primary hover:bg-primary/5',
+    },
+    row.requestType === 'physical' && row.adminStatus === 'approved' && {
+      key: 'update_delivery',
+      label: 'Update Delivery',
+      icon: Truck,
+      className: 'text-orange-700 hover:bg-orange-50',
+    },
+    {
+      key: 'delete',
+      label: 'Delete Request',
+      icon: Trash2,
+      className: 'text-red-600 hover:bg-red-50',
+      divider: true,
+    },
+  ].filter(Boolean) as Array<{ key: string; label: string; icon: React.ElementType; className: string; divider?: boolean }>
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-8 z-50 w-48 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+          {items.map((item, i) => {
+            const Icon = item.icon
+            return (
+              <div key={item.key}>
+                {item.divider && i > 0 && <div className="border-t border-gray-100 my-0.5" />}
+                <button
+                  onClick={() => { setOpen(false); onAction(item.key, row) }}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium transition-colors ${item.className}`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {item.label}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function IDCardRequestsPage() {
   const queryClient = useQueryClient()
 
-  // filter state
   const [filter, setFilter] = useState<FilterState>(emptyFilter)
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(emptyFilter)
   const [filtersOpen, setFiltersOpen] = useState(true)
-
-  // live search
   const [liveSearch, setLiveSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(20)
 
@@ -51,9 +149,14 @@ export default function IDCardRequestsPage() {
   const [rejectReason, setRejectReason] = useState('')
   const [deliveryModal, setDeliveryModal] = useState<string | null>(null)
   const [deliveryStatus, setDeliveryStatus] = useState('processing')
+  const [deleteModal, setDeleteModal] = useState<string | null>(null)
+  const [downloadModal, setDownloadModal] = useState<any | null>(null)
+  const frontCardRef = useRef<HTMLDivElement>(null)
+  const backCardRef = useRef<HTMLDivElement>(null)
+  const [pdfExport, setPdfExport] = useState<{ member: Member; photoUrl: string } | null>(null)
+  const [pdfWorking, setPdfWorking] = useState(false)
 
   const setField = (f: keyof FilterState, v: string) => setFilter((p) => ({ ...p, [f]: v }))
-
   const hasActiveFilters = Object.values(appliedFilter).some(Boolean)
 
   const { data, isLoading, isFetching } = useQuery({
@@ -63,6 +166,19 @@ export default function IDCardRequestsPage() {
       paymentStatus: appliedFilter.paymentStatus || undefined,
     }),
   })
+
+  const { data: idCardSettings } = useQuery({
+    queryKey: ['id-card-settings'],
+    queryFn: getIDCardSettings,
+  })
+
+  const previewSettings = idCardSettings
+    ? {
+        headerText: idCardSettings.headerText,
+        footerText: idCardSettings.footerText,
+        validityYears: idCardSettings.validityYears,
+      }
+    : null
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['id-card-requests'] })
 
@@ -84,9 +200,66 @@ export default function IDCardRequestsPage() {
     onError: (err: Error) => toast.error(err.message),
   })
 
+  const approvePaymentMutation = useMutation({
+    mutationFn: (id: string) => approveIDCardPayment(id),
+    onSuccess: () => { toast.success('Payment approved'); invalidate() },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteIDCardRequest(id),
+    onSuccess: () => { toast.success('Request deleted'); setDeleteModal(null); invalidate() },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const handleAction = (action: string, row: any) => {
+    switch (action) {
+      case 'approve_payment': approvePaymentMutation.mutate(row.id); break
+      case 'approve_card': approveMutation.mutate(row.id); break
+      case 'reject_card': setRejectModal(row.id); setRejectReason(''); break
+      case 'preview_photo': setPhotoModal(row.photo); break
+      case 'download_card': setDownloadModal(row); break
+      case 'update_delivery': setDeliveryModal(row.id); setDeliveryStatus(row.deliveryStatus || 'processing'); break
+      case 'delete': setDeleteModal(row.id); break
+    }
+  }
+
+  const handleAdminDownloadPdf = async (row: any) => {
+    const tid = toast.loading('Preparing ID card PDF…')
+    setPdfWorking(true)
+    try {
+      const m = row.memberId
+      if (!m || typeof m !== 'object') {
+        throw new Error('Member details are missing for this request.')
+      }
+      const member = buildMemberForIdCardPreview(m)
+      const photoSrc = await resolveIdCardPhotoForExport(row.photo, m.profilePicture)
+      const safeNum = member.memberNumber.replace(/[^\w.-]+/g, '-') || 'member'
+      flushSync(() => {
+        setPdfExport({ member, photoUrl: photoSrc })
+      })
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())))
+      const front = frontCardRef.current
+      const back = backCardRef.current
+      if (!front || !back) {
+        throw new Error('Card preview is not ready. Please try again.')
+      }
+      await downloadMemberIdCardPdf(front, back, `RENISA-ID-${safeNum}`)
+      toast.success('PDF downloaded')
+      setDownloadModal(null)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not create PDF')
+    } finally {
+      toast.dismiss(tid)
+      flushSync(() => {
+        setPdfExport(null)
+      })
+      setPdfWorking(false)
+    }
+  }
+
   const allRequests = (data || []) as any[]
 
-  // client-side filter for type, memberName, date range + live search
   const filtered = useMemo(() => {
     let rows = allRequests
 
@@ -96,8 +269,8 @@ export default function IDCardRequestsPage() {
     if (appliedFilter.memberName) {
       const q = appliedFilter.memberName.toLowerCase()
       rows = rows.filter((r: any) =>
-        `${r.member?.firstName} ${r.member?.lastName}`.toLowerCase().includes(q) ||
-        r.member?.memberNumber?.toLowerCase().includes(q)
+        `${r.memberId?.firstName} ${r.memberId?.lastName}`.toLowerCase().includes(q) ||
+        r.memberId?.memberNumber?.toLowerCase().includes(q)
       )
     }
 
@@ -115,8 +288,8 @@ export default function IDCardRequestsPage() {
     if (liveSearch.trim()) {
       const q = liveSearch.toLowerCase()
       rows = rows.filter((r: any) =>
-        `${r.member?.firstName} ${r.member?.lastName}`.toLowerCase().includes(q) ||
-        r.member?.memberNumber?.toLowerCase().includes(q) ||
+        `${r.memberId?.firstName} ${r.memberId?.lastName}`.toLowerCase().includes(q) ||
+        r.memberId?.memberNumber?.toLowerCase().includes(q) ||
         r.requestType?.toLowerCase().includes(q) ||
         r.adminStatus?.toLowerCase().includes(q)
       )
@@ -132,6 +305,31 @@ export default function IDCardRequestsPage() {
 
   return (
     <div className="space-y-5">
+      {pdfExport && (
+        <div
+          aria-hidden
+          style={{
+            position: 'fixed',
+            left: -12000,
+            top: 0,
+            width: 336,
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+            backgroundColor: '#ffffff',
+          }}
+        >
+          <IDCardFrontPreview
+            ref={frontCardRef}
+            member={pdfExport.member}
+            photoUrl={pdfExport.photoUrl || undefined}
+            settings={previewSettings}
+          />
+          <IDCardBackPreview ref={backCardRef} member={pdfExport.member} settings={previewSettings} />
+        </div>
+      )}
+
       <div>
         <h2 className="text-xl font-semibold text-gray-900">ID Card Requests</h2>
         {hasActiveFilters && (
@@ -139,7 +337,7 @@ export default function IDCardRequestsPage() {
         )}
       </div>
 
-      {/* Filter Panel — same style as members page */}
+      {/* Filter Panel */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <button
           onClick={() => setFiltersOpen(!filtersOpen)}
@@ -177,9 +375,6 @@ export default function IDCardRequestsPage() {
                   { value: 'pending', label: 'Pending' },
                   { value: 'approved', label: 'Approved' },
                   { value: 'rejected', label: 'Rejected' },
-                  { value: 'processing', label: 'Processing' },
-                  { value: 'dispatched', label: 'Dispatched' },
-                  { value: 'delivered', label: 'Delivered' },
                 ]}
               />
               <Select
@@ -231,7 +426,7 @@ export default function IDCardRequestsPage() {
         )}
       </div>
 
-      {/* Toolbar: live search left */}
+      {/* Live search */}
       <div className="flex items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -266,7 +461,7 @@ export default function IDCardRequestsPage() {
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Payment</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Date</th>
-                <th className="w-10 px-3 py-3"></th>
+                <th className="w-12 px-3 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -292,14 +487,14 @@ export default function IDCardRequestsPage() {
                       <span className="text-xs text-gray-400 font-mono">{idx + 1}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{row.member?.firstName} {row.member?.lastName}</p>
-                      <p className="text-xs text-gray-400">{row.member?.memberNumber}</p>
+                      <p className="font-medium text-gray-900">{row.memberId?.firstName} {row.memberId?.lastName}</p>
+                      <p className="text-xs text-gray-400">{row.memberId?.memberNumber}</p>
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={row.requestType}>{row.requestType}</Badge>
                     </td>
                     <td className="px-4 py-3">
-                      {row.photo && (
+                      {row.photo ? (
                         <button onClick={() => setPhotoModal(row.photo)} className="hover:opacity-80">
                           <img
                             src={buildImageUrl(row.photo)}
@@ -307,6 +502,8 @@ export default function IDCardRequestsPage() {
                             className="w-10 h-10 rounded-lg object-cover border border-gray-200"
                           />
                         </button>
+                      ) : (
+                        <span className="text-gray-300 text-xs">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -317,44 +514,7 @@ export default function IDCardRequestsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(row.createdAt)}</td>
                     <td className="px-3 py-3">
-                      <div className="flex items-center gap-1">
-                        {row.photo && (
-                          <button
-                            onClick={() => setPhotoModal(row.photo)}
-                            className="p-1.5 rounded hover:bg-gray-100 text-gray-500"
-                            title="View photo"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        )}
-                        {row.adminStatus === 'pending' && row.paymentStatus === 'paid' && (
-                          <>
-                            <button
-                              onClick={() => approveMutation.mutate(row.id)}
-                              className="p-1.5 rounded hover:bg-green-50 text-green-600"
-                              title="Approve"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => { setRejectModal(row.id); setRejectReason('') }}
-                              className="p-1.5 rounded hover:bg-red-50 text-red-600"
-                              title="Reject"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {row.requestType === 'physical' && row.adminStatus === 'approved' && (
-                          <button
-                            onClick={() => { setDeliveryModal(row.id); setDeliveryStatus(row.deliveryStatus || 'processing') }}
-                            className="p-1.5 rounded hover:bg-blue-50 text-blue-600"
-                            title="Update delivery"
-                          >
-                            <Truck className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                      <RowMenu row={row} onAction={handleAction} />
                     </td>
                   </tr>
                 ))
@@ -429,6 +589,55 @@ export default function IDCardRequestsPage() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Delete Confirm Modal */}
+      <Modal isOpen={!!deleteModal} onClose={() => setDeleteModal(null)} title="Delete ID Card Request" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete this ID card request? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setDeleteModal(null)} className="flex-1">Cancel</Button>
+            <Button
+              variant="danger"
+              onClick={() => deleteMutation.mutate(deleteModal!)}
+              loading={deleteMutation.isPending}
+              className="flex-1"
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Download ID Card PDF (same jsPDF + preview flow as member portal) */}
+      <Modal isOpen={!!downloadModal} onClose={() => !pdfWorking && setDownloadModal(null)} title="Download ID Card" size="sm">
+        {downloadModal && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              ID card for{' '}
+              <span className="font-medium text-gray-900">
+                {downloadModal.memberId?.firstName} {downloadModal.memberId?.lastName}
+              </span>
+              {downloadModal.memberId?.memberNumber ? (
+                <span className="text-gray-500"> · {downloadModal.memberId.memberNumber}</span>
+              ) : null}
+            </p>
+            <p className="text-xs text-gray-500">
+              Generates a two-page PDF (front and back) at standard ID card size, matching the member app card design.
+            </p>
+            <Button
+              className="w-full"
+              iconLeft={<Download className="w-4 h-4" />}
+              loading={pdfWorking}
+              disabled={pdfWorking}
+              onClick={() => handleAdminDownloadPdf(downloadModal)}
+            >
+              Download PDF
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   )

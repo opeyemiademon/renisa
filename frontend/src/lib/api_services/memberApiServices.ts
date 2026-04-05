@@ -210,3 +210,36 @@ export const getNewMembers = async (limit = 10): Promise<Member[]> => {
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.getNewMembers
 }
+
+const PUBLIC_PROFILE_FIELDS = `
+  id firstName lastName middleName memberNumber sport state stateOfOrigin city
+  profilePicture isAlumni bio gender createdAt
+`
+
+export type PublicMemberProfile = {
+  id: string
+  firstName: string
+  lastName: string
+  middleName?: string
+  memberNumber?: string
+  sport?: string
+  state?: string
+  stateOfOrigin?: string
+  city?: string
+  profilePicture?: string
+  isAlumni?: boolean
+  bio?: string
+  gender?: string
+  createdAt: string
+}
+
+export const getPublicMemberProfile = async (id: string): Promise<PublicMemberProfile | null> => {
+  const query = `
+    query GetPublicMemberProfile($id: ID!) {
+      getPublicMemberProfile(id: $id) { ${PUBLIC_PROFILE_FIELDS} }
+    }
+  `
+  const response = await graphqlClient.post('', { query, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getPublicMemberProfile
+}

@@ -3,9 +3,9 @@ import { IDCardSettings, IDCardRequest, MutationResponse } from '@/types'
 
 const REQUEST_FIELDS = `
   id requestType photo uploadedPhoto paymentStatus paymentRef
-  adminStatus rejectionReason deliveryStatus cardUrl generatedCardFront
-  amount paidAt createdAt updatedAt
-  member { id firstName lastName memberNumber sport state }
+  adminStatus rejectionReason deliveryStatus cardUrl generatedCardFront generatedCardBack
+  amount paidAt createdAt
+  memberId { id firstName lastName middleName memberNumber sport state status profilePicture  }
 `
 
 export const getIDCardSettings = async (): Promise<IDCardSettings> => {
@@ -39,10 +39,12 @@ export const requestIDCard = async (data: {
   photo?: string
   uploadedPhoto?: string
   deliveryAddress?: string
+  generatedCardFront?: string
+  generatedCardBack?: string
 }): Promise<IDCardRequest> => {
   const mutation = `
     mutation RequestIDCard($data: RequestIDCardInput!) {
-      requestIDCard(data: $data) { success message data { ${REQUEST_FIELDS} } }
+      requestIDCard(data: $data) { success message data {id} }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
@@ -97,7 +99,7 @@ export const manualIDCardPayment = async (data: {
   const mutation = `
     mutation ManualIDCardPayment($requestId: ID!, $referenceNumber: String!, $notes: String) {
       manualIDCardPayment(requestId: $requestId, referenceNumber: $referenceNumber, notes: $notes) {
-        success message data { ${REQUEST_FIELDS} }
+        success message data {id}
       }
     }
   `
@@ -173,6 +175,28 @@ export const getMyIDCardRequests = async (): Promise<IDCardRequest[]> => {
   const response = await graphqlClient.post('', { query })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.getMyIDCardRequests
+}
+
+export const approveIDCardPayment = async (id: string): Promise<MutationResponse> => {
+  const mutation = `
+    mutation ApproveIDCardPayment($id: ID!) {
+      approveIDCardPayment(id: $id) { success message }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.approveIDCardPayment
+}
+
+export const deleteIDCardRequest = async (id: string): Promise<MutationResponse> => {
+  const mutation = `
+    mutation DeleteIDCardRequest($id: ID!) {
+      deleteIDCardRequest(id: $id) { success message }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.deleteIDCardRequest
 }
 
 export const getAllIDCardRequests = async (params?: {

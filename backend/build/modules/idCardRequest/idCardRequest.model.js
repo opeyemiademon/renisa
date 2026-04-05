@@ -4,7 +4,7 @@ const idCardRequestSchema = new Schema({
     memberId: { type: Schema.Types.ObjectId, ref: 'Member', required: true },
     requestType: { type: String, enum: ['online', 'physical'], required: true },
     uploadedPhoto: { type: String },
-    amount: { type: Number, required: true },
+    amount: { type: Number },
     paymentRef: { type: String },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
     paidAt: { type: Date },

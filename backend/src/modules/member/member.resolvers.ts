@@ -1,10 +1,14 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import Member from './member.model.js';
 import MemberCode from '../memberCode/memberCode.model.js';
-import { TOKEN_SECRET, TOKEN_EXPIRY, STATIC_BASE_URL } from '../../utils/constants.js';
+import Event from '../event/event.model.js';
+import Gallery from '../gallery/gallery.model.js';
+import Award from '../award/award.model.js';
+import { TOKEN_SECRET, TOKEN_EXPIRY, STATIC_BASE_URL, MEMBER_PORTAL_URL } from '../../utils/constants.js';
 import { requireMemberAuth, requireAdminAuth, AuthContext } from '../../middleware/auth.js';
-import { sendEmail, welcomeTemplate } from '../../utils/emailService.js';
+import { sendEmail, welcomeTemplate, passwordResetTemplate } from '../../utils/emailService.js';
 import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
 import { createNotification } from '../../utils/createNotification.js';
 import { createMemberNotification } from '../../utils/createMemberNotification.js';
@@ -94,6 +98,50 @@ const memberResolvers = {
       return await Member.find().sort({ createdAt: -1 }).limit(limit).select('-password');
     },
 
+    getPublicSiteStats: async () => {
+      const [activeMembers, alumniMembers, publishedEvents, galleryPhotos, awardedHonors] =
+        await Promise.all([
+          Member.countDocuments({ membershipStatus: 'active' }),
+          Member.countDocuments({ isAlumni: true }),
+          Event.countDocuments({ status: 'published' }),
+          Gallery.countDocuments({}),
+          Award.countDocuments({ status: 'awarded' }),
+        ]);
+      return {
+        activeMembers,
+        alumniMembers,
+        publishedEvents,
+        galleryPhotos,
+        awardedHonors,
+      };
+    },
+
+    getPublicMemberProfile: async (_: any, { id }: { id: string }) => {
+      const m = await Member.findById(id)
+        .select(
+          'firstName lastName middleName memberNumber sport state stateOfOrigin city profilePicture isAlumni bio gender createdAt membershipStatus',
+        )
+        .lean();
+      if (!m || (m as any).membershipStatus === 'suspended') return null;
+      const doc = m as any;
+      return {
+        id: doc._id.toString(),
+        firstName: doc.firstName,
+        lastName: doc.lastName,
+        middleName: doc.middleName || null,
+        memberNumber: doc.memberNumber || null,
+        sport: doc.sport || null,
+        state: doc.state || null,
+        stateOfOrigin: doc.stateOfOrigin || null,
+        city: doc.city || null,
+        profilePicture: doc.profilePicture || null,
+        isAlumni: !!doc.isAlumni,
+        bio: doc.bio || null,
+        gender: doc.gender || null,
+        createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : new Date().toISOString(),
+      };
+    },
+
     me: async (_: any, __: any, context: AuthContext) => {
       requireMemberAuth(context);
       return await Member.findById(context.member!.id).select('-password');
@@ -173,6 +221,74 @@ const memberResolvers = {
         signOptions
       );
       return { token, member };
+    },
+
+    requestMemberPasswordReset: async (_: any, { email }: { email: string }) => {
+      const generic = {
+        success: true,
+        message: 'If an account exists for that email, you will receive reset instructions shortly.',
+      };
+      const normalized = email.trim().toLowerCase();
+      if (!normalized) return generic;
+
+      const member = await Member.findOne({ email: normalized }).select(
+        '+passwordResetTokenHash +passwordResetExpires firstName lastName email membershipStatus',
+      );
+      if (!member || ['suspended', 'deceased'].includes(member.membershipStatus)) {
+        return generic;
+      }
+
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const hash = crypto.createHash('sha256').update(rawToken).digest('hex');
+      const expires = new Date(Date.now() + 60 * 60 * 1000);
+      await Member.findByIdAndUpdate(member._id, {
+        passwordResetTokenHash: hash,
+        passwordResetExpires: expires,
+      });
+
+      const base = MEMBER_PORTAL_URL.replace(/\/$/, '');
+      const resetUrl = `${base}/reset-password?token=${encodeURIComponent(rawToken)}`;
+      const displayName = `${member.firstName} ${member.lastName}`.trim() || 'Member';
+      const sent = await sendEmail(
+        member.email,
+        'Reset your RENISA password',
+        passwordResetTemplate(displayName, resetUrl),
+      );
+      if (!sent) console.error('Password reset email failed for', member.email);
+      return generic;
+    },
+
+    resetMemberPassword: async (_: any, { data }: { data: { token: string; newPassword: string } }) => {
+      const { token, newPassword } = data;
+      if (!token || typeof newPassword !== 'string' || newPassword.length < 8) {
+        return {
+          success: false,
+          message: 'Invalid or expired reset link, or password is too short (minimum 8 characters).',
+        };
+      }
+      const hash = crypto.createHash('sha256').update(token).digest('hex');
+      const member = await Member.findOne({
+        passwordResetTokenHash: hash,
+        passwordResetExpires: { $gt: new Date() },
+      }).select('+passwordResetTokenHash +passwordResetExpires +password membershipStatus');
+
+      if (!member) {
+        return {
+          success: false,
+          message: 'This reset link is invalid or has expired. Please request a new one.',
+        };
+      }
+      if (member.membershipStatus === 'suspended' || member.membershipStatus === 'deceased') {
+        return { success: false, message: 'This account cannot reset its password.' };
+      }
+
+      const hashed = await bcrypt.hash(newPassword, 10);
+      await Member.findByIdAndUpdate(member._id, {
+        password: hashed,
+        passwordResetTokenHash: null,
+        passwordResetExpires: null,
+      });
+      return { success: true, message: 'Your password has been reset. You can sign in now.' };
     },
 
     adminRegisterMember: async (_: any, { data }: { data: any }, context: AuthContext) => {
@@ -278,7 +394,11 @@ const memberResolvers = {
       const valid = await bcrypt.compare(currentPassword, member.password);
       if (!valid) throw new Error('Current password is incorrect');
       const hashed = await bcrypt.hash(newPassword, 10);
-      await Member.findByIdAndUpdate(context.member!.id, { password: hashed });
+      await Member.findByIdAndUpdate(context.member!.id, {
+        password: hashed,
+        passwordResetTokenHash: null,
+        passwordResetExpires: null,
+      });
       return { success: true, message: 'Password changed successfully' };
     },
 

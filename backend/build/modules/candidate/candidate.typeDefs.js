@@ -5,15 +5,19 @@ const candidateTypeDefs = gql `
     electionId: Election!
     positionId: ElectoralPosition!
     memberId: Member!
-    # derived field resolvers
     member: Member
     position: ElectoralPosition
     manifesto: String
     formPaymentRef: String
     formPaymentStatus: String!
     isApproved: Boolean!
+    isRejected: Boolean!
+    rejectionReason: String
     approvedBy: AdminUser
+    reviewedBy: AdminUser
+    reviewedAt: String
     profilePicture: String
+    manifestoSubmitted: Boolean!
     status: String
     createdAt: String!
     updatedAt: String!
@@ -23,27 +27,29 @@ const candidateTypeDefs = gql `
     success: Boolean!
     message: String!
     data: Candidate
-    authorizationUrl: String
+    candidateId: ID
   }
 
   input SubmitCandidacyInput {
     electionId: ID!
     positionId: ID!
-    manifesto: String
+    manifesto: String!
     profilePicture: String
   }
 
   extend type Query {
     getCandidates(electionId: ID!, positionId: ID): [Candidate!]!
     getCandidate(id: ID!): Candidate
+    getBallotCandidates(electionId: ID!): [Candidate!]!
   }
 
   extend type Mutation {
-    purchaseCandidateForm(electionId: ID!, positionId: ID!): CandidateResponse!
-    verifyCandidateFormPayment(paystackRef: String!): CandidateResponse!
+    applyForPosition(electionId: ID!, positionId: ID!): CandidateResponse!
+    confirmCandidateFormPayment(candidateId: ID!, reference: String!): CandidateResponse!
+    manualCandidateFormPayment(candidateId: ID!, referenceNumber: String!, notes: String): CandidateResponse!
     submitCandidacy(data: SubmitCandidacyInput!): CandidateResponse!
     approveCandidate(id: ID!): CandidateResponse!
-    rejectCandidate(id: ID!): CandidateResponse!
+    rejectCandidate(id: ID!, reason: String): CandidateResponse!
   }
 `;
 export default candidateTypeDefs;

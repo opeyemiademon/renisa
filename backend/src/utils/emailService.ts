@@ -169,3 +169,35 @@ export const donationInvoiceTemplate = (donorName: string, invoiceNumber: string
 </body>
 </html>
 `;
+
+export const passwordResetTemplate = (name: string, resetUrl: string): string => {
+  const safeName = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const safeUrl = resetUrl.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Reset your password - RENISA</title></head>
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; margin:0; padding:20px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden;">
+    <div style="background:#1a6b3a; padding:30px; text-align:center;">
+      <h1 style="color:#d4a017; margin:0;">RENISA</h1>
+      <p style="color:#fff; margin:5px 0 0;">Password reset</p>
+    </div>
+    <div style="padding:30px;">
+      <p style="color:#374151;">Hello ${safeName},</p>
+      <p style="color:#374151;">We received a request to reset the password for your member account. Click the button below to choose a new password. This link expires in <strong>1 hour</strong>.</p>
+      <div style="text-align:center; margin:28px 0;">
+        <a href="${safeUrl}" style="background:#d4a017; color:#0d4a25; padding:14px 28px; text-decoration:none; border-radius:8px; font-size:16px; font-weight:bold; display:inline-block;">Reset password</a>
+      </div>
+      <p style="color:#6b7280; font-size:13px;">If the button does not work, copy and paste this link into your browser:</p>
+      <p style="color:#1a6b3a; font-size:12px; word-break:break-all;">${safeUrl}</p>
+      <p style="color:#9ca3af; font-size:12px; margin-top:24px;">If you did not request this, you can ignore this email. Your password will stay the same.</p>
+    </div>
+    <div style="background:#1a6b3a; padding:20px; text-align:center;">
+      <p style="color:#fff; margin:0; font-size:12px;">© ${new Date().getFullYear()} RENISA. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+};

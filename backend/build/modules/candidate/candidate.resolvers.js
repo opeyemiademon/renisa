@@ -3,23 +3,31 @@ import { v4 as uuidv4 } from 'uuid';
 import Candidate from './candidate.model.js';
 import Election from '../election/election.model.js';
 import ElectoralPosition from '../electoralPosition/electoralPosition.model.js';
-import Member from '../member/member.model.js';
 import { requireMemberAuth, requireAdminAuth } from '../../middleware/auth.js';
+import { createMemberNotification } from '../../utils/createMemberNotification.js';
+import { createNotification } from '../../utils/createNotification.js';
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
-const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
 const populateCandidate = (q) => q
-    .populate('memberId', 'firstName lastName profilePicture memberNumber')
-    .populate('positionId', 'title formFee maxCandidates')
-    .populate('electionId', 'title status');
+    .populate('memberId', 'firstName lastName profilePicture memberNumber email')
+    .populate('positionId', 'title formFee maxCandidates description')
+    .populate('electionId', 'title status year')
+    .populate('approvedBy', 'name email')
+    .populate('reviewedBy', 'name email');
 const candidateResolvers = {
     Candidate: {
         member: (parent) => parent.memberId,
         position: (parent) => parent.positionId,
         status: (parent) => {
+            if (parent.isRejected)
+                return 'rejected';
             if (parent.isApproved)
                 return 'approved';
+            if (parent.manifestoSubmitted)
+                return 'submitted';
             if (parent.formPaymentStatus === 'paid')
-                return 'pending';
+                return 'paid';
+            if (parent.formPaymentStatus === 'manual_pending')
+                return 'manual_pending';
             return 'unpaid';
         },
     },
@@ -33,70 +41,88 @@ const candidateResolvers = {
         getCandidate: async (_, { id }) => {
             return await populateCandidate(Candidate.findById(id));
         },
+        getBallotCandidates: async (_, { electionId }, context) => {
+            requireMemberAuth(context);
+            return await populateCandidate(Candidate.find({ electionId, isApproved: true }).sort({ createdAt: 1 }));
+        },
     },
     Mutation: {
-        purchaseCandidateForm: async (_, { electionId, positionId }, context) => {
+        // Member initiates application — creates record, returns candidateId + formFee
+        // Frontend handles Paystack inline popup
+        applyForPosition: async (_, { electionId, positionId }, context) => {
             requireMemberAuth(context);
-            const member = await Member.findById(context.member.id);
-            if (!member)
-                throw new Error('Member not found');
+            const election = await Election.findById(electionId);
+            if (!election || election.status !== 'active')
+                throw new Error('Nominations are not open for this election');
             const position = await ElectoralPosition.findById(positionId);
             if (!position)
                 throw new Error('Position not found');
-            const election = await Election.findById(electionId);
-            if (!election || election.status !== 'active')
-                throw new Error('Nominations are not open');
-            const existing = await Candidate.findOne({ electionId, positionId, memberId: member._id });
-            if (existing)
+            // Cannot apply for same position
+            const samePosition = await Candidate.findOne({ electionId, positionId, memberId: context.member.id });
+            if (samePosition && !samePosition.isRejected) {
                 throw new Error('You have already applied for this position');
+            }
+            // Cannot have more than one non-rejected application per election
+            const anyActive = await Candidate.findOne({
+                electionId,
+                memberId: context.member.id,
+                isRejected: { $ne: true },
+            });
+            if (anyActive) {
+                throw new Error('You already have an active application in this election. You can only apply for one position at a time.');
+            }
             const formPaymentRef = `RENISA-FORM-${uuidv4().slice(0, 8).toUpperCase()}`;
             const candidate = await Candidate.create({
                 electionId,
                 positionId,
-                memberId: member._id,
+                memberId: context.member.id,
                 formPaymentRef,
-                formPaymentStatus: 'pending',
+                formPaymentStatus: position.formFee > 0 ? 'pending' : 'paid',
+                manifestoSubmitted: false,
             });
-            if (position.formFee > 0) {
-                try {
-                    const response = await axios.post('https://api.paystack.co/transaction/initialize', {
-                        email: member.email,
-                        amount: position.formFee * 100,
-                        reference: formPaymentRef,
-                        callback_url: PAYSTACK_CALLBACK_URL,
-                        metadata: { candidateId: candidate._id.toString(), type: 'candidate_form' },
-                    }, { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } });
-                    return {
-                        success: true,
-                        message: 'Form fee payment initiated',
-                        data: candidate,
-                        authorizationUrl: response.data.data.authorization_url,
-                    };
-                }
-                catch {
-                    await Candidate.findByIdAndDelete(candidate._id);
-                    throw new Error('Failed to initialize form payment');
-                }
-            }
-            await Candidate.findByIdAndUpdate(candidate._id, { formPaymentStatus: 'paid' });
-            return { success: true, message: 'Candidacy form obtained', data: candidate };
+            await createNotification('new_member', 'New Candidacy Application', `A member has applied for ${position.title} in ${election.title}`, String(candidate._id), 'Candidate');
+            return {
+                success: true,
+                message: position.formFee > 0 ? 'Application created. Please pay the form fee.' : 'Application created.',
+                data: await populateCandidate(Candidate.findById(candidate._id)),
+                candidateId: String(candidate._id),
+            };
         },
-        verifyCandidateFormPayment: async (_, { paystackRef }, context) => {
+        confirmCandidateFormPayment: async (_, { candidateId, reference }, context) => {
             requireMemberAuth(context);
-            const candidate = await Candidate.findOne({ formPaymentRef: paystackRef });
+            const candidate = await Candidate.findById(candidateId);
             if (!candidate)
-                throw new Error('Candidate record not found');
+                throw new Error('Application not found');
+            if (candidate.memberId.toString() !== context.member.id)
+                throw new Error('Unauthorized');
+            if (candidate.formPaymentStatus === 'paid')
+                throw new Error('Payment already confirmed');
             try {
-                const response = await axios.get(`https://api.paystack.co/transaction/verify/${paystackRef}`, { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } });
-                if (response.data.data.status === 'success') {
-                    const updated = await Candidate.findByIdAndUpdate(candidate._id, { formPaymentStatus: 'paid' }, { new: true });
-                    return { success: true, message: 'Form payment verified', data: updated };
-                }
-                return { success: false, message: 'Payment not successful' };
+                const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } });
+                if (response.data.data.status !== 'success')
+                    throw new Error('Payment was not successful');
+                const updated = await populateCandidate(Candidate.findByIdAndUpdate(candidateId, { formPaymentRef: reference, formPaymentStatus: 'paid' }, { new: true }));
+                return { success: true, message: 'Form payment confirmed', data: updated };
             }
-            catch {
-                throw new Error('Failed to verify form payment');
+            catch (err) {
+                throw new Error(err.message || 'Failed to verify payment');
             }
+        },
+        manualCandidateFormPayment: async (_, { candidateId, referenceNumber, notes }, context) => {
+            requireMemberAuth(context);
+            const candidate = await Candidate.findById(candidateId);
+            if (!candidate)
+                throw new Error('Application not found');
+            if (candidate.memberId.toString() !== context.member.id)
+                throw new Error('Unauthorized');
+            if (candidate.formPaymentStatus === 'paid')
+                throw new Error('Payment already confirmed');
+            const updated = await populateCandidate(Candidate.findByIdAndUpdate(candidateId, {
+                formPaymentRef: `MANUAL-${referenceNumber.toUpperCase()}`,
+                formPaymentStatus: 'manual_pending',
+                ...(notes && { manifesto: notes }),
+            }, { new: true }));
+            return { success: true, message: 'Manual payment submitted. Admin will verify shortly.', data: updated };
         },
         submitCandidacy: async (_, { data }, context) => {
             requireMemberAuth(context);
@@ -104,27 +130,56 @@ const candidateResolvers = {
                 electionId: data.electionId,
                 positionId: data.positionId,
                 memberId: context.member.id,
+                isRejected: { $ne: true },
             });
             if (!candidate)
                 throw new Error('No active candidacy application found');
             if (candidate.formPaymentStatus !== 'paid')
-                throw new Error('Form fee not paid');
-            const updated = await populateCandidate(Candidate.findByIdAndUpdate(candidate._id, { manifesto: data.manifesto, profilePicture: data.profilePicture }, { new: true }));
-            return { success: true, message: 'Candidacy submitted', data: updated };
+                throw new Error('Form fee not yet confirmed');
+            const updated = await populateCandidate(Candidate.findByIdAndUpdate(candidate._id, {
+                manifesto: data.manifesto,
+                ...(data.profilePicture && { profilePicture: data.profilePicture }),
+                manifestoSubmitted: true,
+            }, { new: true }));
+            await createNotification('new_member', 'Candidacy Manifesto Submitted', `A candidate has submitted their manifesto for review`, String(candidate._id), 'Candidate');
+            return { success: true, message: 'Candidacy submitted for review', data: updated };
         },
         approveCandidate: async (_, { id }, context) => {
             requireAdminAuth(context);
-            const candidate = await populateCandidate(Candidate.findByIdAndUpdate(id, { isApproved: true, approvedBy: context.admin.id }, { new: true }));
+            const candidate = await Candidate.findById(id).populate('memberId', 'firstName lastName');
             if (!candidate)
                 throw new Error('Candidate not found');
-            return { success: true, message: 'Candidate approved', data: candidate };
+            const updated = await populateCandidate(Candidate.findByIdAndUpdate(id, {
+                isApproved: true,
+                isRejected: false,
+                rejectionReason: undefined,
+                approvedBy: context.admin.id,
+                reviewedBy: context.admin.id,
+                reviewedAt: new Date(),
+            }, { new: true }));
+            const member = candidate.memberId;
+            const position = await ElectoralPosition.findById(candidate.positionId).lean();
+            await createMemberNotification(String(member._id), 'election', 'Candidacy Approved', `Your application for ${position?.title || 'the position'} has been approved. You are now a candidate on the ballot.`, '/member/elections');
+            return { success: true, message: 'Candidate approved', data: updated };
         },
-        rejectCandidate: async (_, { id }, context) => {
+        rejectCandidate: async (_, { id, reason }, context) => {
             requireAdminAuth(context);
-            const candidate = await populateCandidate(Candidate.findByIdAndUpdate(id, { isApproved: false }, { new: true }));
+            const candidate = await Candidate.findById(id).populate('memberId', 'firstName lastName');
             if (!candidate)
                 throw new Error('Candidate not found');
-            return { success: true, message: 'Candidate rejected', data: candidate };
+            const updated = await populateCandidate(Candidate.findByIdAndUpdate(id, {
+                isApproved: false,
+                isRejected: true,
+                rejectionReason: reason || 'Application did not meet requirements',
+                reviewedBy: context.admin.id,
+                reviewedAt: new Date(),
+            }, { new: true }));
+            const member = candidate.memberId;
+            const position = await ElectoralPosition.findById(candidate.positionId).lean();
+            await createMemberNotification(String(member._id), 'election', 'Candidacy Rejected', reason
+                ? `Your application for ${position?.title || 'the position'} was rejected: ${reason}`
+                : `Your application for ${position?.title || 'the position'} was not approved. You may apply for another position.`, '/member/elections');
+            return { success: true, message: 'Candidate rejected', data: updated };
         },
     },
 };

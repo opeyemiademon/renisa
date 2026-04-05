@@ -196,15 +196,17 @@ export interface LeadershipMember {
   id: string
   groupId: string
   group?: LeadershipGroupInfo
+  memberId?: { id?: string; firstName?: string; lastName?: string; profilePicture?: string; bio?: string; sport?: string; state?: string; memberNumber?: string }
   name: string
-  slug: string
+  slug?: string | null
   position: string
   bio?: string
   profilePicture?: string
   coverPhoto?: string
   galleryImages?: string[]
   state?: string
-  tenureStart: string
+  tenure?: string
+  tenureStart?: string
   tenureEnd?: string
   isCurrent: boolean
   socialLinks?: {
@@ -241,10 +243,14 @@ export interface Executive {
   name: string
   position: string
   photo?: string
-  tenure: string
+  profilePicture?: string
+  tenure?: string
   sport?: string
   bio?: string
   socialLinks?: { platform: string; url: string }[]
+  member?: { sport?: string; firstName?: string; lastName?: string; profilePicture?: string; memberNumber?: string }
+  /** Populated member from API, or ID string when creating/updating */
+  memberId?: string | { id?: string; sport?: string; firstName?: string; lastName?: string; profilePicture?: string; memberNumber?: string }
   displayOrder: number
   order?: number
   createdAt: string
@@ -257,6 +263,11 @@ export interface AwardCategory {
   id: string
   name: string
   description?: string
+  icon?: string
+  isActive?: boolean
+  pollActive?: boolean
+  votingStartDate?: string
+  votingEndDate?: string
   createdAt: string
   updatedAt: string
 }
@@ -298,9 +309,23 @@ export interface IDCardSettings {
   updatedAt: string
 }
 
+/** Populated `memberId` when ID card queries include member subfields */
+export interface IDCardRequestMemberRef {
+  id: string
+  firstName: string
+  lastName: string
+  middleName?: string
+  memberNumber?: string
+  sport?: string
+  state?: string
+  status?: string
+  profilePicture?: string
+  createdAt?: string
+}
+
 export interface IDCardRequest {
   id: string
-  memberId: string
+  memberId: string | IDCardRequestMemberRef
   member?: Pick<Member, 'id' | 'firstName' | 'lastName' | 'memberNumber' | 'sport' | 'state'>
   requestType: IDCardType
   photo: string
@@ -310,6 +335,8 @@ export interface IDCardRequest {
   rejectionReason?: string
   deliveryStatus?: IDCardDeliveryStatus
   cardUrl?: string
+  generatedCardFront?: string
+  generatedCardBack?: string
   approvedBy?: string
   approvedAt?: string
   createdAt: string

@@ -1,6 +1,7 @@
 import Vote from './vote.model.js';
 import Election from '../election/election.model.js';
 import Candidate from '../candidate/candidate.model.js';
+import ElectoralPosition from '../electoralPosition/electoralPosition.model.js';
 import Payment from '../payment/payment.model.js';
 import Member from '../member/member.model.js';
 import mongoose from 'mongoose';
@@ -14,48 +15,70 @@ const voteResolvers = {
       const election = await Election.findById(electionId);
       if (!election) throw new Error('Election not found');
 
-      const positionMap = new Map<string, string>();
-      for (const pos of election.positions as any[]) {
-        positionMap.set(pos._id.toString(), pos.title);
-      }
+      const oId = new mongoose.Types.ObjectId(electionId);
+      const positions = await ElectoralPosition.find({ electionId: oId }).sort({ createdAt: 1 }).lean();
 
-      const results = await Vote.aggregate([
-        { $match: { electionId: new mongoose.Types.ObjectId(electionId) } },
-        {
-          $lookup: {
-            from: 'candidates',
-            localField: 'candidateId',
-            foreignField: '_id',
-            as: 'candidate',
-          },
-        },
-        { $unwind: '$candidate' },
-        {
-          $lookup: {
-            from: 'members',
-            localField: 'candidate.memberId',
-            foreignField: '_id',
-            as: 'member',
-          },
-        },
-        { $unwind: { path: '$member', preserveNullAndEmptyArrays: true } },
+      const voteRows = await Vote.aggregate([
+        { $match: { electionId: oId } },
         {
           $group: {
             _id: { candidateId: '$candidateId', positionId: '$positionId' },
-            candidateName: { $first: { $concat: ['$member.firstName', ' ', '$member.lastName'] } },
             voteCount: { $sum: 1 },
           },
         },
-        { $sort: { '_id.positionId': 1, voteCount: -1 } },
       ]);
 
-      return results.map((r: any) => ({
-        candidateId: r._id.candidateId.toString(),
-        candidateName: r.candidateName || 'Unknown',
-        positionId: r._id.positionId.toString(),
-        positionTitle: positionMap.get(r._id.positionId.toString()) || 'Unknown Position',
-        voteCount: r.voteCount,
-      }));
+      const countKey = (positionId: string, candidateId: string) => `${positionId}|${candidateId}`;
+      const voteCountMap = new Map<string, number>();
+      for (const row of voteRows) {
+        voteCountMap.set(
+          countKey(row._id.positionId.toString(), row._id.candidateId.toString()),
+          row.voteCount
+        );
+      }
+
+      const approvedCandidates = await Candidate.find({ electionId: oId, isApproved: true })
+        .populate('memberId', 'firstName lastName')
+        .lean();
+
+      const candidatesByPosition = new Map<string, any[]>();
+      for (const c of approvedCandidates) {
+        const pid = (c.positionId as any).toString();
+        if (!candidatesByPosition.has(pid)) candidatesByPosition.set(pid, []);
+        candidatesByPosition.get(pid)!.push(c);
+      }
+
+      return positions.map((pos: any) => {
+        const pid = pos._id.toString();
+        const cands = candidatesByPosition.get(pid) || [];
+        const tallies = cands.map((c: any) => {
+          const member = c.memberId as any;
+          const name = member
+            ? `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Unknown'
+            : 'Unknown';
+          const cid = c._id.toString();
+          const voteCount = voteCountMap.get(countKey(pid, cid)) || 0;
+          return { candidateId: cid, candidateName: name, voteCount };
+        });
+
+        tallies.sort((a, b) => b.voteCount - a.voteCount);
+
+        const totalVotes = tallies.reduce((s, t) => s + t.voteCount, 0);
+
+        const candidates = tallies.map((t) => ({
+          candidateId: t.candidateId,
+          candidateName: t.candidateName,
+          voteCount: t.voteCount,
+          percentage: totalVotes > 0 ? Math.round((t.voteCount / totalVotes) * 1000) / 10 : 0,
+        }));
+
+        return {
+          positionId: pid,
+          positionTitle: pos.title || 'Position',
+          totalVotes,
+          candidates,
+        };
+      });
     },
 
     hasVoted: async (_: any, { electionId }: any, context: AuthContext) => {
@@ -155,8 +178,13 @@ const voteResolvers = {
       if (alreadyVoted) throw new Error('You have already voted in this election');
 
       for (const { positionId, candidateId } of votes) {
-        const candidate = await Candidate.findOne({ _id: candidateId, electionId, positionId });
-        if (!candidate) throw new Error(`Candidate not found for position ${positionId}`);
+        const candidate = await Candidate.findOne({
+          _id: candidateId,
+          electionId,
+          positionId,
+          isApproved: true,
+        });
+        if (!candidate) throw new Error(`Candidate not found or not on the ballot for this position`);
 
         await Vote.create({
           electionId,

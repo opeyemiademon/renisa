@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Play, Square, CheckCircle, Plus, Users, BarChart2 } from 'lucide-react'
+import { ArrowLeft, Play, Square, CheckCircle, Plus, Users, BarChart2, ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { getElection, updateElectionStatus, addElectoralPosition, getElectionResults } from '@/lib/api_services/electionApiServices'
 import { getCandidatesForElection, approveCandidate } from '@/lib/api_services/candidateApiServices'
@@ -169,6 +169,16 @@ export default function ElectionDetailPage() {
             {election.description && (
               <p className="text-gray-600 text-sm mt-4 pt-4 border-t border-gray-100">{election.description}</p>
             )}
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <Link href={`/admin/elections/${id}/applications`}>
+                <Button variant="outline" size="sm" iconLeft={<ClipboardList className="w-4 h-4" />}>
+                  Review candidacy applications
+                </Button>
+              </Link>
+              <p className="text-xs text-gray-500 mt-2">
+                Approve or reject applications after members pay and submit. Approved names appear on the member ballot.
+              </p>
+            </div>
           </div>
 
           {/* Positions */}

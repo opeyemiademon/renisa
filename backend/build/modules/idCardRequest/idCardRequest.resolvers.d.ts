@@ -8,17 +8,17 @@ declare const idCardRequestResolvers: {
     Query: {
         getMyIDCardRequests: (_: any, __: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             memberId: import("mongoose").Types.ObjectId;
-            amount: number;
-            requestType: "online" | "physical";
             paymentStatus: "pending" | "failed" | "paid";
+            requestType: "online" | "physical";
             adminStatus: "approved" | "rejected" | "pending";
             downloadCount: number;
+            amount?: number | null | undefined;
             paidAt?: NativeDate | null | undefined;
-            uploadedPhoto?: string | null | undefined;
-            paymentRef?: string | null | undefined;
+            rejectionReason?: string | null | undefined;
             reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
             reviewedAt?: NativeDate | null | undefined;
-            rejectionReason?: string | null | undefined;
+            uploadedPhoto?: string | null | undefined;
+            paymentRef?: string | null | undefined;
             generatedCardFront?: string | null | undefined;
             generatedCardBack?: string | null | undefined;
             deliveryAddress?: string | null | undefined;
@@ -28,17 +28,17 @@ declare const idCardRequestResolvers: {
             timestamps: true;
         }> & {
             memberId: import("mongoose").Types.ObjectId;
-            amount: number;
-            requestType: "online" | "physical";
             paymentStatus: "pending" | "failed" | "paid";
+            requestType: "online" | "physical";
             adminStatus: "approved" | "rejected" | "pending";
             downloadCount: number;
+            amount?: number | null | undefined;
             paidAt?: NativeDate | null | undefined;
-            uploadedPhoto?: string | null | undefined;
-            paymentRef?: string | null | undefined;
+            rejectionReason?: string | null | undefined;
             reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
             reviewedAt?: NativeDate | null | undefined;
-            rejectionReason?: string | null | undefined;
+            uploadedPhoto?: string | null | undefined;
+            paymentRef?: string | null | undefined;
             generatedCardFront?: string | null | undefined;
             generatedCardBack?: string | null | undefined;
             deliveryAddress?: string | null | undefined;
@@ -51,17 +51,17 @@ declare const idCardRequestResolvers: {
         })[]>;
         getAllIDCardRequests: (_: any, { adminStatus, paymentStatus }: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             memberId: import("mongoose").Types.ObjectId;
-            amount: number;
-            requestType: "online" | "physical";
             paymentStatus: "pending" | "failed" | "paid";
+            requestType: "online" | "physical";
             adminStatus: "approved" | "rejected" | "pending";
             downloadCount: number;
+            amount?: number | null | undefined;
             paidAt?: NativeDate | null | undefined;
-            uploadedPhoto?: string | null | undefined;
-            paymentRef?: string | null | undefined;
+            rejectionReason?: string | null | undefined;
             reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
             reviewedAt?: NativeDate | null | undefined;
-            rejectionReason?: string | null | undefined;
+            uploadedPhoto?: string | null | undefined;
+            paymentRef?: string | null | undefined;
             generatedCardFront?: string | null | undefined;
             generatedCardBack?: string | null | undefined;
             deliveryAddress?: string | null | undefined;
@@ -71,17 +71,17 @@ declare const idCardRequestResolvers: {
             timestamps: true;
         }> & {
             memberId: import("mongoose").Types.ObjectId;
-            amount: number;
-            requestType: "online" | "physical";
             paymentStatus: "pending" | "failed" | "paid";
+            requestType: "online" | "physical";
             adminStatus: "approved" | "rejected" | "pending";
             downloadCount: number;
+            amount?: number | null | undefined;
             paidAt?: NativeDate | null | undefined;
-            uploadedPhoto?: string | null | undefined;
-            paymentRef?: string | null | undefined;
+            rejectionReason?: string | null | undefined;
             reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
             reviewedAt?: NativeDate | null | undefined;
-            rejectionReason?: string | null | undefined;
+            uploadedPhoto?: string | null | undefined;
+            paymentRef?: string | null | undefined;
             generatedCardFront?: string | null | undefined;
             generatedCardBack?: string | null | undefined;
             deliveryAddress?: string | null | undefined;
@@ -96,17 +96,17 @@ declare const idCardRequestResolvers: {
             id: string;
         }, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             memberId: import("mongoose").Types.ObjectId;
-            amount: number;
-            requestType: "online" | "physical";
             paymentStatus: "pending" | "failed" | "paid";
+            requestType: "online" | "physical";
             adminStatus: "approved" | "rejected" | "pending";
             downloadCount: number;
+            amount?: number | null | undefined;
             paidAt?: NativeDate | null | undefined;
-            uploadedPhoto?: string | null | undefined;
-            paymentRef?: string | null | undefined;
+            rejectionReason?: string | null | undefined;
             reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
             reviewedAt?: NativeDate | null | undefined;
-            rejectionReason?: string | null | undefined;
+            uploadedPhoto?: string | null | undefined;
+            paymentRef?: string | null | undefined;
             generatedCardFront?: string | null | undefined;
             generatedCardBack?: string | null | undefined;
             deliveryAddress?: string | null | undefined;
@@ -116,17 +116,17 @@ declare const idCardRequestResolvers: {
             timestamps: true;
         }> & {
             memberId: import("mongoose").Types.ObjectId;
-            amount: number;
-            requestType: "online" | "physical";
             paymentStatus: "pending" | "failed" | "paid";
+            requestType: "online" | "physical";
             adminStatus: "approved" | "rejected" | "pending";
             downloadCount: number;
+            amount?: number | null | undefined;
             paidAt?: NativeDate | null | undefined;
-            uploadedPhoto?: string | null | undefined;
-            paymentRef?: string | null | undefined;
+            rejectionReason?: string | null | undefined;
             reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
             reviewedAt?: NativeDate | null | undefined;
-            rejectionReason?: string | null | undefined;
+            uploadedPhoto?: string | null | undefined;
+            paymentRef?: string | null | undefined;
             generatedCardFront?: string | null | undefined;
             generatedCardBack?: string | null | undefined;
             deliveryAddress?: string | null | undefined;
@@ -146,17 +146,17 @@ declare const idCardRequestResolvers: {
             message: string;
             data: import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -166,66 +166,17 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
-                generatedCardFront?: string | null | undefined;
-                generatedCardBack?: string | null | undefined;
-                deliveryAddress?: string | null | undefined;
-                deliveryStatus?: "pending" | "processing" | "dispatched" | "delivered" | null | undefined;
-                trackingInfo?: string | null | undefined;
-            } & import("mongoose").DefaultTimestampProps & {
-                _id: import("mongoose").Types.ObjectId;
-            } & {
-                __v: number;
-            };
-        }>;
-        initiateIDCardPayment: (_: any, { requestId }: any, context: AuthContext) => Promise<{
-            success: boolean;
-            message: string;
-            authorizationUrl: any;
-            reference: string;
-            data: import("mongoose").Document<unknown, {}, {
-                memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
-                paymentStatus: "pending" | "failed" | "paid";
-                adminStatus: "approved" | "rejected" | "pending";
-                downloadCount: number;
-                paidAt?: NativeDate | null | undefined;
                 uploadedPhoto?: string | null | undefined;
                 paymentRef?: string | null | undefined;
-                reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
-                reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
-                generatedCardFront?: string | null | undefined;
-                generatedCardBack?: string | null | undefined;
-                deliveryAddress?: string | null | undefined;
-                deliveryStatus?: "pending" | "processing" | "dispatched" | "delivered" | null | undefined;
-                trackingInfo?: string | null | undefined;
-            } & import("mongoose").DefaultTimestampProps, {}, {
-                timestamps: true;
-            }> & {
-                memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
-                paymentStatus: "pending" | "failed" | "paid";
-                adminStatus: "approved" | "rejected" | "pending";
-                downloadCount: number;
-                paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
-                reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
-                reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -242,17 +193,17 @@ declare const idCardRequestResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -262,17 +213,17 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -291,17 +242,17 @@ declare const idCardRequestResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -311,17 +262,17 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -338,17 +289,17 @@ declare const idCardRequestResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -358,17 +309,17 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -385,17 +336,17 @@ declare const idCardRequestResolvers: {
             message: string;
             data: import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -405,17 +356,17 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -432,17 +383,17 @@ declare const idCardRequestResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -452,17 +403,17 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -474,22 +425,24 @@ declare const idCardRequestResolvers: {
                 __v: number;
             }) | null;
         }>;
-        manualIDCardPayment: (_: any, { requestId, referenceNumber, notes }: any, context: AuthContext) => Promise<{
+        approveIDCardPayment: (_: any, { id }: {
+            id: string;
+        }, context: AuthContext) => Promise<{
             success: boolean;
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
-                rejectionReason?: string | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;
@@ -499,17 +452,71 @@ declare const idCardRequestResolvers: {
                 timestamps: true;
             }> & {
                 memberId: import("mongoose").Types.ObjectId;
-                amount: number;
-                requestType: "online" | "physical";
                 paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
                 adminStatus: "approved" | "rejected" | "pending";
                 downloadCount: number;
+                amount?: number | null | undefined;
                 paidAt?: NativeDate | null | undefined;
-                uploadedPhoto?: string | null | undefined;
-                paymentRef?: string | null | undefined;
+                rejectionReason?: string | null | undefined;
                 reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
                 reviewedAt?: NativeDate | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
+                generatedCardFront?: string | null | undefined;
+                generatedCardBack?: string | null | undefined;
+                deliveryAddress?: string | null | undefined;
+                deliveryStatus?: "pending" | "processing" | "dispatched" | "delivered" | null | undefined;
+                trackingInfo?: string | null | undefined;
+            } & import("mongoose").DefaultTimestampProps & {
+                _id: import("mongoose").Types.ObjectId;
+            } & {
+                __v: number;
+            }) | null;
+        }>;
+        deleteIDCardRequest: (_: any, { id }: {
+            id: string;
+        }, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: null;
+        }>;
+        manualIDCardPayment: (_: any, { requestId, referenceNumber, notes }: any, context: AuthContext) => Promise<{
+            success: boolean;
+            message: string;
+            data: (import("mongoose").Document<unknown, {}, {
+                memberId: import("mongoose").Types.ObjectId;
+                paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
+                adminStatus: "approved" | "rejected" | "pending";
+                downloadCount: number;
+                amount?: number | null | undefined;
+                paidAt?: NativeDate | null | undefined;
                 rejectionReason?: string | null | undefined;
+                reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
+                reviewedAt?: NativeDate | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
+                generatedCardFront?: string | null | undefined;
+                generatedCardBack?: string | null | undefined;
+                deliveryAddress?: string | null | undefined;
+                deliveryStatus?: "pending" | "processing" | "dispatched" | "delivered" | null | undefined;
+                trackingInfo?: string | null | undefined;
+            } & import("mongoose").DefaultTimestampProps, {}, {
+                timestamps: true;
+            }> & {
+                memberId: import("mongoose").Types.ObjectId;
+                paymentStatus: "pending" | "failed" | "paid";
+                requestType: "online" | "physical";
+                adminStatus: "approved" | "rejected" | "pending";
+                downloadCount: number;
+                amount?: number | null | undefined;
+                paidAt?: NativeDate | null | undefined;
+                rejectionReason?: string | null | undefined;
+                reviewedBy?: import("mongoose").Types.ObjectId | null | undefined;
+                reviewedAt?: NativeDate | null | undefined;
+                uploadedPhoto?: string | null | undefined;
+                paymentRef?: string | null | undefined;
                 generatedCardFront?: string | null | undefined;
                 generatedCardBack?: string | null | undefined;
                 deliveryAddress?: string | null | undefined;

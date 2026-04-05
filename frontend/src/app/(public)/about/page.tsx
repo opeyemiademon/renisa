@@ -1,8 +1,30 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { Trophy, Target, Eye, History, Users, Star, Calendar, Medal, HeartHandshake, BookOpen, ShieldCheck, Lightbulb } from 'lucide-react'
+import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
 
 export default function AboutPage() {
+  const { data: siteStats } = useQuery({
+    queryKey: ['public-site-stats'],
+    queryFn: getPublicSiteStats,
+    staleTime: 60_000,
+  })
+
+  const statsRow = siteStats
+    ? [
+        { icon: <Users className="w-6 h-6" />, value: String(siteStats.activeMembers), label: 'Active members' },
+        { icon: <Calendar className="w-6 h-6" />, value: String(siteStats.publishedEvents), label: 'Published stories' },
+        { icon: <Trophy className="w-6 h-6" />, value: String(siteStats.galleryPhotos), label: 'Gallery photos' },
+        { icon: <Star className="w-6 h-6" />, value: String(siteStats.awardedHonors), label: 'Honours recorded' },
+      ]
+    : [
+        { icon: <Users className="w-6 h-6" />, value: '—', label: 'Active members' },
+        { icon: <Calendar className="w-6 h-6" />, value: '—', label: 'Published stories' },
+        { icon: <Trophy className="w-6 h-6" />, value: '—', label: 'Gallery photos' },
+        { icon: <Star className="w-6 h-6" />, value: '—', label: 'Honours recorded' },
+      ]
+
   return (
     <div className="bg-white">
       {/* Hero */}
@@ -25,12 +47,7 @@ export default function AboutPage() {
       <section className="py-14 bg-[#1a6b3a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { icon: <Users className="w-6 h-6" />, value: '500+', label: 'Members' },
-              { icon: <Calendar className="w-6 h-6" />, value: '20+', label: 'Years Active' },
-              { icon: <Trophy className="w-6 h-6" />, value: '20+', label: 'Sports' },
-              { icon: <Star className="w-6 h-6" />, value: '100+', label: 'Awardees' },
-            ].map((stat) => (
+            {statsRow.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-[#d4a017] flex justify-center mb-2">{stat.icon}</div>
                 <p className="text-3xl font-bold text-white">{stat.value}</p>

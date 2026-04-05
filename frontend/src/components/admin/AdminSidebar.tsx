@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, UserPlus, Hash, GraduationCap,
   CreditCard, ListChecks, Vote, Crown, Network, Trophy, Heart,
   IdCard, Settings, Calendar, Image, FileText, MessageSquare,
-  ChevronDown, LogOut, Banknote, Gift, UserCog, Medal, Bell
+  ChevronDown, LogOut, Banknote, Gift, UserCog, Medal, Bell, LifeBuoy
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -76,6 +76,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: 'Communications', href: '/admin/communications', icon: MessageSquare },
+  { label: 'Support Tickets', href: '/admin/tickets', icon: LifeBuoy },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
   {
     label: 'System',

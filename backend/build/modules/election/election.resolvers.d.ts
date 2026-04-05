@@ -4,7 +4,7 @@ declare const electionResolvers: {
         getAllElections: (_: any, __: any, context: AuthContext) => Promise<any>;
         getElection: (_: any, { id }: {
             id: string;
-        }) => Promise<any>;
+        }, context: AuthContext) => Promise<any>;
     };
     Mutation: {
         createElection: (_: any, { data }: {

@@ -3,8 +3,9 @@ import { LeadershipGroupInfo, LeadershipMember, MutationResponse } from '@/types
 
 const MEMBER_FIELDS = `
   id
+  slug
   groupId { id name slug }
-  memberId { id firstName lastName profilePicture memberNumber sport state }
+  memberId { id firstName lastName profilePicture memberNumber sport state bio }
   name profilePicture photo title position order
   state tenure isCurrent isActive
   createdAt updatedAt
@@ -60,6 +61,17 @@ export const getLeadershipMember = async (id: string): Promise<LeadershipMember>
   const response = await graphqlClient.post('', { query, variables: { id } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.getLeadership
+}
+
+export const getLeadershipBySlug = async (slug: string): Promise<LeadershipMember | null> => {
+  const query = `
+    query GetLeadershipBySlug($slug: String!) {
+      getLeadershipBySlug(slug: $slug) { ${MEMBER_FIELDS} }
+    }
+  `
+  const response = await graphqlClient.post('', { query, variables: { slug } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getLeadershipBySlug
 }
 
 export const createLeadershipMember = async (data: object): Promise<LeadershipMember> => {

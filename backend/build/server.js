@@ -1,12 +1,15 @@
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
 import express from 'express';
+import { createServer } from 'http';
+import { Server as SocketServer } from 'socket.io';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { initChatSocket } from './modules/chat/chat.socket.js';
 import { MONGO_URL, PORT, UPLOAD_FOLDERS } from './utils/constants.js';
 import { schema } from './schema.js';
 import uploadRoute from './routes/upload.route.js';
@@ -136,10 +139,20 @@ async function initServer() {
         });
     });
     app.use(simpleErrorHandler);
-    app.listen(Number(PORT), '0.0.0.0', () => {
+    const httpServer = createServer(app);
+    const io = new SocketServer(httpServer, {
+        cors: {
+            origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+            credentials: true,
+        },
+        path: '/socket.io',
+    });
+    initChatSocket(io);
+    httpServer.listen(Number(PORT), '0.0.0.0', () => {
         console.log(`Server is running on http://localhost:${PORT}`);
         console.log(`GraphQL endpoint: http://localhost:${PORT}/graphql`);
         console.log(`Upload endpoint: http://localhost:${PORT}/api/upload`);
+        console.log(`Socket.io ready on ws://localhost:${PORT}`);
     });
 }
 initServer().catch(error => {

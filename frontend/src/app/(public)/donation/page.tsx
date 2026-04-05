@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { Heart, Package, CreditCard, HandHeart, Users, Stethoscope, Trophy, BookOpen, Shield } from 'lucide-react'
+import { Heart, Package, CreditCard, Users } from 'lucide-react'
 import {
   getDonationTypes,
   submitPhysicalDonation,
@@ -13,29 +13,13 @@ import { Button } from '@/components/shared/Button'
 import { Modal } from '@/components/shared/Modal'
 import { PageLoader } from '@/components/shared/Spinner'
 import { DonationType } from '@/types'
-import { SAMPLE_DONATION_TYPES } from '@/lib/sampleData'
 import toast from 'react-hot-toast'
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  d1: <HandHeart className="w-6 h-6 text-[#1a6b3a]" />,
-  d2: <Trophy className="w-6 h-6 text-[#1a6b3a]" />,
-  d3: <Stethoscope className="w-6 h-6 text-[#1a6b3a]" />,
-  d4: <Trophy className="w-6 h-6 text-[#1a6b3a]" />,
-  d5: <BookOpen className="w-6 h-6 text-[#1a6b3a]" />,
-  d6: <Shield className="w-6 h-6 text-[#1a6b3a]" />,
-}
+import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
 
 const modeIcon = (mode: string) =>
   mode === 'physical'
     ? <Package className="w-6 h-6 text-[#1a6b3a]" />
     : <CreditCard className="w-6 h-6 text-[#1a6b3a]" />
-
-const IMPACT_STATS = [
-  { value: '500+', label: 'Athletes Supported' },
-  { value: '₦12M+', label: 'Raised This Year' },
-  { value: '36', label: 'States Reached' },
-  { value: '15+', label: 'Years of Service' },
-]
 
 export default function DonationPage() {
   const [selectedType, setSelectedType] = useState<DonationType | null>(null)
@@ -46,7 +30,22 @@ export default function DonationPage() {
     queryFn: () => getDonationTypes(true),
   })
 
-  const types: DonationType[] = apiTypes && apiTypes.length > 0 ? apiTypes : SAMPLE_DONATION_TYPES as unknown as DonationType[]
+  const { data: siteStats } = useQuery({
+    queryKey: ['public-site-stats'],
+    queryFn: getPublicSiteStats,
+    staleTime: 60_000,
+  })
+
+  const types: DonationType[] = (apiTypes || []).filter((t) => t.isActive !== false)
+
+  const impactStats = siteStats
+    ? [
+        { value: String(siteStats.activeMembers), label: 'Active members' },
+        { value: String(siteStats.alumniMembers), label: 'Alumni' },
+        { value: String(siteStats.publishedEvents), label: 'Published stories' },
+        { value: String(siteStats.awardedHonors), label: 'Honours recorded' },
+      ]
+    : []
 
   const openModal = (type: DonationType) => {
     setSelectedType(type)
@@ -74,19 +73,20 @@ export default function DonationPage() {
         </div>
       </section>
 
-      {/* Impact stats */}
-      <section className="bg-[#0d4a25] py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {IMPACT_STATS.map((stat) => (
-              <div key={stat.label}>
-                <p className="text-2xl md:text-3xl font-bold text-[#EBD279]">{stat.value}</p>
-                <p className="text-white/60 text-sm mt-1">{stat.label}</p>
-              </div>
-            ))}
+      {impactStats.length > 0 && (
+        <section className="bg-[#0d4a25] py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              {impactStats.map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl md:text-3xl font-bold text-[#EBD279]">{stat.value}</p>
+                  <p className="text-white/60 text-sm mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Donation types */}
       <section className="py-16">
@@ -99,16 +99,18 @@ export default function DonationPage() {
 
           {isLoading ? (
             <PageLoader />
+          ) : types.length === 0 ? (
+            <p className="text-center text-gray-400 py-16">No donation categories are available at the moment. Please check back later.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {types.map((type, i) => (
+              {types.map((type) => (
                 <div
                   key={type.id}
                   className="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-[#d4a017]/40 hover:shadow-xl transition-all duration-300 flex flex-col"
                 >
                   <div className="flex items-start gap-4 mb-4">
                     <div className="w-12 h-12 bg-[#1a6b3a]/8 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-[#1a6b3a]/15 transition-colors">
-                      {ICON_MAP[type.id] || modeIcon(type.donationMode)}
+                      {modeIcon(type.donationMode || 'monetary')}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-900 text-base leading-tight">{type.name}</h3>

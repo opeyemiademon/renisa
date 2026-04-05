@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import IDCardRequest from './idCardRequest.model.js';
 import IDCardSettings from '../idCardSettings/idCardSettings.model.js';
@@ -22,6 +21,8 @@ const idCardRequestResolvers = {
         getMyIDCardRequests: async (_, __, context) => {
             requireMemberAuth(context);
             return await IDCardRequest.find({ memberId: context.member.id })
+                .populate('memberId', 'firstName lastName memberNumber profilePicture sport state')
+                .populate('reviewedBy', 'name email')
                 .sort({ createdAt: -1 });
         },
         getAllIDCardRequests: async (_, { adminStatus, paymentStatus }, context) => {
@@ -59,45 +60,13 @@ const idCardRequestResolvers = {
                 amount,
                 paymentStatus: 'pending',
                 adminStatus: 'pending',
+                ...(data.generatedCardFront && { generatedCardFront: data.generatedCardFront }),
+                ...(data.generatedCardBack && { generatedCardBack: data.generatedCardBack }),
             });
             const memberDoc = await Member.findById(context.member.id).select('firstName lastName').lean();
             const name = memberDoc ? `${memberDoc.firstName} ${memberDoc.lastName}` : 'A member';
             createNotification('id_card_request', 'New ID Card Request', `${name} has submitted a new ${data.requestType} ID card request.`, request._id.toString(), 'IDCardRequest');
             return { success: true, message: 'ID card request submitted', data: request };
-        },
-        initiateIDCardPayment: async (_, { requestId }, context) => {
-            requireMemberAuth(context);
-            const request = await IDCardRequest.findById(requestId);
-            if (!request)
-                throw new Error('ID card request not found');
-            if (request.memberId.toString() !== context.member.id)
-                throw new Error('Unauthorized');
-            if (request.paymentStatus === 'paid')
-                throw new Error('Payment already completed');
-            const member = await Member.findById(context.member.id);
-            if (!member)
-                throw new Error('Member not found');
-            const paymentRef = `RENISA-ID-${uuidv4().slice(0, 8).toUpperCase()}`;
-            await IDCardRequest.findByIdAndUpdate(requestId, { paymentRef });
-            try {
-                const response = await axios.post('https://api.paystack.co/transaction/initialize', {
-                    email: member.email,
-                    amount: request.amount * 100,
-                    reference: paymentRef,
-                    callback_url: PAYSTACK_CALLBACK_URL,
-                    metadata: { requestId: requestId, type: 'id_card' },
-                }, { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } });
-                return {
-                    success: true,
-                    message: 'Payment initiated',
-                    authorizationUrl: response.data.data.authorization_url,
-                    reference: paymentRef,
-                    data: request,
-                };
-            }
-            catch {
-                throw new Error('Failed to initialize payment');
-            }
         },
         verifyIDCardPayment: async (_, { reference }, context) => {
             requireMemberAuth(context);
@@ -124,29 +93,33 @@ const idCardRequestResolvers = {
             const settings = await IDCardSettings.findOne();
             const validityYears = settings?.validityYears || 1;
             const validUntil = String(new Date().getFullYear() + validityYears);
-            const outputDir = path.join(process.cwd(), 'uploads', UPLOAD_FOLDERS.ID_CARDS);
-            let generatedCardFront;
-            let generatedCardBack;
-            try {
-                const profilePicPath = member.profilePicture
-                    ? path.join(process.cwd(), member.profilePicture.replace(/^\//, ''))
-                    : undefined;
-                const result = await generateIDCard({
-                    memberNumber: member.memberNumber,
-                    firstName: member.firstName,
-                    lastName: member.lastName,
-                    middleName: member.middleName,
-                    sport: member.sport,
-                    state: member.state,
-                    membershipYear: member.membershipYear,
-                    profilePicture: profilePicPath,
-                    validUntil,
-                }, outputDir);
-                generatedCardFront = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.frontPath)}`;
-                generatedCardBack = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.backPath)}`;
-            }
-            catch (err) {
-                console.error('ID card generation error:', err);
+            // Use member-previewed card images if already generated during request submission
+            let generatedCardFront = request.generatedCardFront || undefined;
+            let generatedCardBack = request.generatedCardBack || undefined;
+            // Fall back to server-side generation only if not already captured
+            if (!generatedCardFront || !generatedCardBack) {
+                const outputDir = path.join(process.cwd(), 'uploads', UPLOAD_FOLDERS.ID_CARDS);
+                try {
+                    const profilePicPath = member.profilePicture
+                        ? path.join(process.cwd(), member.profilePicture.replace(/^\//, ''))
+                        : undefined;
+                    const result = await generateIDCard({
+                        memberNumber: member.memberNumber,
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        middleName: member.middleName,
+                        sport: member.sport,
+                        state: member.state,
+                        membershipYear: member.membershipYear,
+                        profilePicture: profilePicPath,
+                        validUntil,
+                    }, outputDir);
+                    generatedCardFront = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.frontPath)}`;
+                    generatedCardBack = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.backPath)}`;
+                }
+                catch (err) {
+                    console.error('ID card generation error:', err);
+                }
             }
             const updated = await IDCardRequest.findByIdAndUpdate(id, {
                 adminStatus: 'approved',
@@ -198,6 +171,26 @@ const idCardRequestResolvers = {
             catch (err) {
                 throw new Error(err.message || 'Failed to verify payment');
             }
+        },
+        approveIDCardPayment: async (_, { id }, context) => {
+            requireAdminAuth(context);
+            const request = await IDCardRequest.findById(id).populate('memberId', 'firstName lastName email');
+            if (!request)
+                throw new Error('Request not found');
+            if (request.paymentStatus === 'paid')
+                throw new Error('Payment is already marked as paid');
+            const updated = await IDCardRequest.findByIdAndUpdate(id, { paymentStatus: 'paid', paidAt: new Date() }, { new: true });
+            const member = request.memberId;
+            createMemberNotification(String(member._id || member), 'payment', 'ID Card Payment Approved', 'Your ID card payment has been approved by admin. Your request is now being processed.', '/member/id-card');
+            return { success: true, message: 'Payment approved successfully', data: updated };
+        },
+        deleteIDCardRequest: async (_, { id }, context) => {
+            requireAdminAuth(context);
+            const request = await IDCardRequest.findById(id);
+            if (!request)
+                throw new Error('Request not found');
+            await IDCardRequest.findByIdAndDelete(id);
+            return { success: true, message: 'ID card request deleted', data: null };
         },
         manualIDCardPayment: async (_, { requestId, referenceNumber, notes }, context) => {
             requireMemberAuth(context);

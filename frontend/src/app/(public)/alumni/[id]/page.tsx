@@ -3,26 +3,20 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, MapPin, Calendar, Hash, Shield, Medal } from 'lucide-react'
-import { getMember } from '@/lib/api_services/memberApiServices'
+import { ArrowLeft, MapPin, Calendar, Hash, Medal } from 'lucide-react'
+import { getPublicMemberProfile } from '@/lib/api_services/memberApiServices'
 import { buildImageUrl, formatDate } from '@/lib/utils'
-import { SAMPLE_NEW_MEMBERS, SAMPLE_ALUMNI } from '@/lib/sampleData'
 
 export default function AlumniProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
 
-  const { data: member, isLoading, isError } = useQuery({
-    queryKey: ['member', id],
-    queryFn: () => getMember(id),
+  const { data: member, isLoading } = useQuery({
+    queryKey: ['public-member-profile', id],
+    queryFn: () => getPublicMemberProfile(id),
     retry: 1,
   })
 
-  // Fallback: find in sample data if the API call fails or returns nothing
-  const fallback = isError || (!isLoading && !member)
-    ? ([...SAMPLE_NEW_MEMBERS, ...SAMPLE_ALUMNI] as any[]).find((m) => m.id === id)
-    : null
-
-  const person = member || fallback
+  const person = member
 
   if (isLoading) {
     return (

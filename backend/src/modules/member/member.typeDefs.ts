@@ -115,6 +115,16 @@ const memberTypeDefs = gql`
     newPassword: String!
   }
 
+  input ResetMemberPasswordInput {
+    token: String!
+    newPassword: String!
+  }
+
+  type MemberPasswordResetResponse {
+    success: Boolean!
+    message: String!
+  }
+
   input UpdateMemberInput {
     firstName: String
     lastName: String
@@ -140,6 +150,31 @@ const memberTypeDefs = gql`
     message: String
   }
 
+  type PublicSiteStats {
+    activeMembers: Int!
+    alumniMembers: Int!
+    publishedEvents: Int!
+    galleryPhotos: Int!
+    awardedHonors: Int!
+  }
+
+  type PublicMemberProfile {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    middleName: String
+    memberNumber: String
+    sport: String
+    state: String
+    stateOfOrigin: String
+    city: String
+    profilePicture: String
+    isAlumni: Boolean
+    bio: String
+    gender: String
+    createdAt: String!
+  }
+
   type Query {
     getAllMembers(search: String, status: String, memberNumber: String, memberCode: String, email: String, gender: String, state: String, dateFrom: String, dateTo: String, name: String): [Member!]!
     getMember(id: ID!): Member
@@ -147,12 +182,16 @@ const memberTypeDefs = gql`
     checkMemberCode(code: String!): CheckMemberCodeResponse
     getAlumni: [Member!]!
     getNewMembers(limit: Int): [Member!]!
+    getPublicSiteStats: PublicSiteStats!
+    getPublicMemberProfile(id: ID!): PublicMemberProfile
     me: Member
   }
 
   type Mutation {
     loginMember(data: MemberLoginInput!): MemberAuthPayload!
     registerMember(data: RegisterMemberInput!): MemberAuthPayload!
+    requestMemberPasswordReset(email: String!): MemberPasswordResetResponse!
+    resetMemberPassword(data: ResetMemberPasswordInput!): MemberPasswordResetResponse!
     adminRegisterMember(data: AdminRegisterMemberInput!): MemberResponse!
     updateMember(id: ID!, data: UpdateMemberInput!): MemberResponse!
     updateMemberStatus(id: ID!, status: String!): MemberResponse!

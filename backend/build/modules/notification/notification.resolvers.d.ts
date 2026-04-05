@@ -11,7 +11,7 @@ declare const notificationResolvers: {
             id: string;
         }, context: AuthContext) => Promise<{
             id: string;
-            type: "new_member" | "new_payment" | "id_card_request";
+            type: "new_member" | "new_payment" | "id_card_request" | "support_ticket";
             message: string;
             title: string;
             isRead: boolean;

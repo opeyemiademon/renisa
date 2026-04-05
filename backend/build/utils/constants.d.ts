@@ -16,6 +16,7 @@ export declare const UPLOAD_FOLDERS: {
     readonly ID_CARD_PHOTOS: "id-card-photos";
     readonly ID_CARDS: "id-cards";
     readonly INVOICES: "invoices";
+    readonly TICKETS: "tickets";
     readonly TEMP: "temp";
 };
 //# sourceMappingURL=constants.d.ts.map

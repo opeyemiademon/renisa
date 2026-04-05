@@ -10,7 +10,6 @@ import { Badge } from '@/components/shared/Badge'
 import { PageLoader } from '@/components/shared/Spinner'
 import { useAppSelector } from '@/hooks/redux'
 import toast from 'react-hot-toast'
-import { SAMPLE_AWARDS } from '@/lib/sampleData'
 
 export default function AwardeesPage() {
   const [selectedYear, setSelectedYear] = useState<number | undefined>()
@@ -20,7 +19,11 @@ export default function AwardeesPage() {
 
   const { data: awardsData, isLoading } = useQuery({
     queryKey: ['awards', selectedYear, selectedCategory],
-    queryFn: () => getAllAwards(),
+    queryFn: () =>
+      getAllAwards({
+        ...(selectedYear != null ? { year: selectedYear } : {}),
+        ...(selectedCategory ? { categoryId: selectedCategory } : {}),
+      }),
   })
   const { data: categories } = useQuery({ queryKey: ['award-categories'], queryFn: getAwardCategories })
 
@@ -33,8 +36,7 @@ export default function AwardeesPage() {
     onError: (err: Error) => toast.error(err.message || 'Failed to cast vote'),
   })
 
-  const apiAwards = awardsData?.data || []
-  const awards: any[] = apiAwards.length > 0 ? apiAwards : (!selectedYear && !selectedCategory ? SAMPLE_AWARDS : [])
+  const awards: any[] = awardsData || []
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i)
 
   return (

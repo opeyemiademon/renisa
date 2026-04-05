@@ -67,8 +67,8 @@ export const loginAdmin = async (data: {
 
 export const forgotPassword = async (email: string): Promise<MutationResponse> => {
   const mutation = `
-    mutation ForgotPassword($email: String!) {
-      forgotPassword(email: $email) {
+    mutation RequestMemberPasswordReset($email: String!) {
+      requestMemberPasswordReset(email: $email) {
         success
         message
       }
@@ -76,16 +76,16 @@ export const forgotPassword = async (email: string): Promise<MutationResponse> =
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { email } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.forgotPassword
+  return response.data.data.requestMemberPasswordReset
 }
 
 export const resetPassword = async (data: {
   token: string
-  password: string
+  newPassword: string
 }): Promise<MutationResponse> => {
   const mutation = `
-    mutation ResetPassword($data: ResetPasswordInput!) {
-      resetPassword(data: $data) {
+    mutation ResetMemberPassword($data: ResetMemberPasswordInput!) {
+      resetMemberPassword(data: $data) {
         success
         message
       }
@@ -93,7 +93,7 @@ export const resetPassword = async (data: {
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.resetPassword
+  return response.data.data.resetMemberPassword
 }
 
 export const changePassword = async (data: {

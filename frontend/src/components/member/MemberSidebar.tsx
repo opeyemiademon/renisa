@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, User, CreditCard, Vote, IdCard, Award, LogOut, Bell } from 'lucide-react'
+import { LayoutDashboard, User, CreditCard, Vote, IdCard, Award, LogOut, Bell, LifeBuoy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { logout } from '@/lib/store/authSlice'
@@ -16,6 +16,7 @@ const navItems = [
   { label: 'ID Card', href: '/member/id-card', icon: IdCard },
   { label: 'Awards', href: '/member/awards', icon: Award },
   { label: 'Notifications', href: '/member/notifications', icon: Bell },
+  { label: 'Support', href: '/member/tickets', icon: LifeBuoy },
 ]
 
 export function MemberSidebar() {

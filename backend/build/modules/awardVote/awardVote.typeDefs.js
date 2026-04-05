@@ -43,6 +43,7 @@ const awardVoteTypeDefs = gql `
     getAwardVoteResults(awardId: ID): [AwardVoteResult!]!
     getAwardWinnersReport(year: Int): [CategoryWinner!]!
     hasVotedForAward(awardId: ID!): Boolean!
+    getMyAwardVotes(year: Int): [String!]!
   }
 
   extend type Mutation {

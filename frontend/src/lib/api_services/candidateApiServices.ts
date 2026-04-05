@@ -1,14 +1,18 @@
 import graphqlClient from './graphqlClient'
-import { Candidate, MutationResponse } from '@/types'
+import { MutationResponse } from '@/types'
 
 const CANDIDATE_FIELDS = `
-  id manifesto profilePicture isApproved formPaymentRef formPaymentStatus createdAt updatedAt
-  member { id firstName lastName memberNumber profilePicture }
-  position { id title formFee maxCandidates }
-  electionId { id title status }
+  id manifesto profilePicture isApproved isRejected rejectionReason
+  formPaymentRef formPaymentStatus manifestoSubmitted status
+  createdAt updatedAt
+  member { id firstName lastName memberNumber profilePicture email }
+  position { id title formFee maxCandidates description }
+  electionId { id title status year }
+  reviewedBy { id name }
+  reviewedAt
 `
 
-export const getCandidatesForElection = async (electionId: string): Promise<Candidate[]> => {
+export const getCandidatesForElection = async (electionId: string) => {
   const query = `
     query GetCandidates($electionId: ID!) {
       getCandidates(electionId: $electionId) { ${CANDIDATE_FIELDS} }
@@ -19,7 +23,7 @@ export const getCandidatesForElection = async (electionId: string): Promise<Cand
   return response.data.data.getCandidates
 }
 
-export const getCandidate = async (id: string): Promise<Candidate> => {
+export const getCandidate = async (id: string) => {
   const query = `
     query GetCandidate($id: ID!) {
       getCandidate(id: $id) { ${CANDIDATE_FIELDS} }
@@ -30,31 +34,57 @@ export const getCandidate = async (id: string): Promise<Candidate> => {
   return response.data.data.getCandidate
 }
 
-export const purchaseCandidateForm = async (
-  electionId: string,
-  positionId: string
-): Promise<{ authorizationUrl?: string; success: boolean; message: string }> => {
+export const getBallotCandidates = async (electionId: string) => {
+  const query = `
+    query GetBallotCandidates($electionId: ID!) {
+      getBallotCandidates(electionId: $electionId) { ${CANDIDATE_FIELDS} }
+    }
+  `
+  const response = await graphqlClient.post('', { query, variables: { electionId } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getBallotCandidates
+}
+
+export const applyForPosition = async (electionId: string, positionId: string) => {
   const mutation = `
-    mutation PurchaseCandidateForm($electionId: ID!, $positionId: ID!) {
-      purchaseCandidateForm(electionId: $electionId, positionId: $positionId) {
-        success message authorizationUrl
+    mutation ApplyForPosition($electionId: ID!, $positionId: ID!) {
+      applyForPosition(electionId: $electionId, positionId: $positionId) {
+        success message candidateId
+        data { ${CANDIDATE_FIELDS} }
       }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { electionId, positionId } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.purchaseCandidateForm
+  return response.data.data.applyForPosition
 }
 
-export const verifyCandidateFormPayment = async (paystackRef: string): Promise<MutationResponse> => {
+export const confirmCandidateFormPayment = async (candidateId: string, reference: string) => {
   const mutation = `
-    mutation VerifyCandidateFormPayment($paystackRef: String!) {
-      verifyCandidateFormPayment(paystackRef: $paystackRef) { success message }
+    mutation ConfirmCandidateFormPayment($candidateId: ID!, $reference: String!) {
+      confirmCandidateFormPayment(candidateId: $candidateId, reference: $reference) {
+        success message
+        data { ${CANDIDATE_FIELDS} }
+      }
     }
   `
-  const response = await graphqlClient.post('', { query: mutation, variables: { paystackRef } })
+  const response = await graphqlClient.post('', { query: mutation, variables: { candidateId, reference } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.verifyCandidateFormPayment
+  return response.data.data.confirmCandidateFormPayment
+}
+
+export const manualCandidateFormPayment = async (candidateId: string, referenceNumber: string, notes?: string) => {
+  const mutation = `
+    mutation ManualCandidateFormPayment($candidateId: ID!, $referenceNumber: String!, $notes: String) {
+      manualCandidateFormPayment(candidateId: $candidateId, referenceNumber: $referenceNumber, notes: $notes) {
+        success message
+        data { ${CANDIDATE_FIELDS} }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { candidateId, referenceNumber, notes } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.manualCandidateFormPayment
 }
 
 export const submitCandidacy = async (data: {
@@ -62,10 +92,13 @@ export const submitCandidacy = async (data: {
   positionId: string
   manifesto: string
   profilePicture?: string
-}): Promise<MutationResponse> => {
+}) => {
   const mutation = `
     mutation SubmitCandidacy($data: SubmitCandidacyInput!) {
-      submitCandidacy(data: $data) { success message }
+      submitCandidacy(data: $data) {
+        success message
+        data { ${CANDIDATE_FIELDS} }
+      }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })
@@ -84,13 +117,13 @@ export const approveCandidate = async (id: string): Promise<MutationResponse> =>
   return response.data.data.approveCandidate
 }
 
-export const rejectCandidate = async (id: string): Promise<MutationResponse> => {
+export const rejectCandidate = async (id: string, reason?: string): Promise<MutationResponse> => {
   const mutation = `
-    mutation RejectCandidate($id: ID!) {
-      rejectCandidate(id: $id) { success message }
+    mutation RejectCandidate($id: ID!, $reason: String) {
+      rejectCandidate(id: $id, reason: $reason) { success message }
     }
   `
-  const response = await graphqlClient.post('', { query: mutation, variables: { id } })
+  const response = await graphqlClient.post('', { query: mutation, variables: { id, reason } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
   return response.data.data.rejectCandidate
 }

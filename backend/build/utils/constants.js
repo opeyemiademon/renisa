@@ -32,6 +32,7 @@ export const UPLOAD_FOLDERS = {
     ID_CARD_PHOTOS: 'id-card-photos',
     ID_CARDS: 'id-cards',
     INVOICES: 'invoices',
+    TICKETS: 'tickets',
     TEMP: 'temp',
 };
 //# sourceMappingURL=constants.js.map

@@ -11,12 +11,18 @@ const voteTypeDefs = gql`
     createdAt: String!
   }
 
-  type VoteResult {
-    candidateId: String!
+  type CandidateVoteTally {
+    candidateId: ID!
     candidateName: String!
-    positionId: String!
-    positionTitle: String!
     voteCount: Int!
+    percentage: Float!
+  }
+
+  type ElectionPositionResults {
+    positionId: ID!
+    positionTitle: String!
+    totalVotes: Int!
+    candidates: [CandidateVoteTally!]!
   }
 
   type VoteResponse {
@@ -41,7 +47,7 @@ const voteTypeDefs = gql`
   }
 
   extend type Query {
-    getElectionResults(electionId: ID!): [VoteResult!]!
+    getElectionResults(electionId: ID!): [ElectionPositionResults!]!
     hasVoted(electionId: ID!): Boolean!
     checkMemberEligibility(electionId: ID!): EligibilityResult!
   }

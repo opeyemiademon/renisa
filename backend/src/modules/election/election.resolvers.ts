@@ -9,30 +9,26 @@ const electionResolvers = {
   Query: {
     getAllElections: async (_: any, __: any, context: AuthContext) => {
       if (!context.isAuthenticated) throw new Error('Authentication required');
-      return await populate(Election.find().sort({ createdAt: -1 }));
+      const filter = context.admin ? {} : { status: { $ne: 'draft' as const } };
+      return await populate(Election.find(filter).sort({ createdAt: -1 }));
     },
-    getElection: async (_: any, { id }: { id: string }) => {
-      return await populate(Election.findById(id));
+    getElection: async (_: any, { id }: { id: string }, context: AuthContext) => {
+      const doc = await populate(Election.findById(id));
+      if (!doc) return null;
+      if (!context.admin && (doc as any).status === 'draft') return null;
+      return doc;
     },
   },
 
   Mutation: {
     createElection: async (_: any, { data }: { data: any }, context: AuthContext) => {
       requireAdminAuth(context);
-      const {
-        title, description, year, startDate, endDate,
-        votingStartDate, votingEndDate, eligibilityMinYears,
-        requiresDuesPayment, positions,
-      } = data;
+      const { title, description, year, eligibilityMinYears, requiresDuesPayment, positions } = data;
 
       const election = await Election.create({
         title,
         description,
         year: year || new Date().getFullYear(),
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        votingStartDate: votingStartDate ? new Date(votingStartDate) : undefined,
-        votingEndDate: votingEndDate ? new Date(votingEndDate) : undefined,
         eligibilityMinYears: eligibilityMinYears ?? 1,
         requiresDuesPayment: requiresDuesPayment ?? true,
         createdBy: context.admin!.id,

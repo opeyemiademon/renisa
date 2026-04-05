@@ -13,147 +13,20 @@ import { getFeaturedEvents } from '@/lib/api_services/eventApiServices'
 import { getGallery } from '@/lib/api_services/galleryApiServices'
 import { getAllAwards } from '@/lib/api_services/awardApiServices'
 import { getHeroSlides } from '@/lib/api_services/heroSlideApiServices'
+import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
 import { formatDate, buildImageUrl } from '@/lib/utils'
 
-// ─── Fallback Hero Slides (used when no slides in database) ──────────────────
-
-const FALLBACK_SLIDES = [
-  {
-    id: 'f1',
-    imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1920&q=85&auto=format&fit=crop',
-    tag: 'Celebrating Our Heroes',
-    title: "Nigeria's Sports Legends",
-    subtitle: 'Honoring four decades of athletic excellence and national pride on the world stage.',
-    caption: 'RENISA — Where Champions Come Home',
-    ctaText: 'Become a Member',
-    ctaLink: '/registration',
-  },
-  {
-    id: 'f2',
-    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&q=85&auto=format&fit=crop',
-    tag: 'Football Legacy',
-    title: 'The Beautiful Game Lives On',
-    subtitle: "From local pitches to the World Cup — Nigeria's Super Eagles veterans led the way with pride.",
-    caption: 'Preserving the Super Eagles Legacy Since 2003',
-    ctaText: 'Become a Member',
-    ctaLink: '/registration',
-  },
-  {
-    id: 'f3',
-    imageUrl: 'https://images.unsplash.com/photo-1546519638405-a2b03ac5f4bf?w=1920&q=85&auto=format&fit=crop',
-    tag: 'Basketball Excellence',
-    title: 'Champions of the Court',
-    subtitle: "Nigeria's basketball pioneers who broke continental barriers and inspired millions nationwide.",
-    caption: 'African Basketball Champions — 1988 · 2003 · 2015',
-    ctaText: 'Become a Member',
-    ctaLink: '/registration',
-  },
-  {
-    id: 'f4',
-    imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1920&q=85&auto=format&fit=crop',
-    tag: 'Boxing Heritage',
-    title: 'Warriors of the Ring',
-    subtitle: 'Nigerian boxing legends who conquered the world and put Africa on the global map forever.',
-    caption: "Dick Tiger · Hogan Bassey — Nigeria's Boxing Immortals",
-    ctaText: 'Become a Member',
-    ctaLink: '/registration',
-  },
-  {
-    id: 'f5',
-    imageUrl: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1920&q=85&auto=format&fit=crop',
-    tag: 'Athletics Glory',
-    title: 'Running to Greatness',
-    subtitle: 'From Chioma Ajunwa to Tobi Amusan — defining Olympic excellence for generations to come.',
-    caption: "Nigeria's Athletics — Forever in the Record Books",
-    ctaText: 'Become a Member',
-    ctaLink: '/registration',
-  },
-]
-
-// ─── Demo Data ────────────────────────────────────────────────────────────────
-
-const SAMPLE_EXECUTIVES = [
-  {
-    id: 'x1', name: 'Chief Emmanuel Adeyemi', position: 'President', sport: 'Football',
-    photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x2', name: 'Dr. Amaka Okafor', position: 'Vice President', sport: 'Athletics',
-    photo: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x3', name: 'Barr. Chukwuemeka Nwosu', position: 'Secretary General', sport: 'Boxing',
-    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x4', name: 'Mrs. Fatima Bello', position: 'Treasurer', sport: 'Table Tennis',
-    photo: 'https://images.unsplash.com/photo-1551717704-3f7bfc166498?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x5', name: 'Engr. Biodun Afolabi', position: 'Public Relations Officer', sport: 'Tennis',
-    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x6', name: 'Prof. Ngozi Adichie-Eze', position: 'Welfare Officer', sport: 'Swimming',
-    photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x7', name: 'Dr. Kayode Olawale', position: 'Legal Adviser', sport: 'Cricket',
-    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'x8', name: 'Alhaji Sule Musa', position: 'Financial Secretary', sport: 'Weightlifting',
-    photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80&auto=format&fit=crop&crop=face',
-  },
-]
-
-const SAMPLE_EVENTS = [
-  {
-    id: 'e1', slug: '#', eventType: 'event', eventDate: '2025-07-18',
-    title: 'RENISA Annual Awards Night 2025',
-    excerpt: 'A grand evening celebrating our sports legends with awards, speeches and cultural performances.',
-    coverImage: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=800&q=80&auto=format&fit=crop',
-  },
-  {
-    id: 'e2', slug: '#', eventType: 'event', eventDate: '2025-08-22',
-    title: 'Veterans Sports Day — Lagos',
-    excerpt: 'Retired athletes across disciplines come together for camaraderie, light sports and networking.',
-    coverImage: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80&auto=format&fit=crop',
-  },
-  {
-    id: 'e3', slug: '#', eventType: 'announcement', eventDate: '2025-09-10',
-    title: 'RENISA National Leadership Summit',
-    excerpt: 'A two-day summit bringing together RENISA leadership, members and stakeholders to chart the future.',
-    coverImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80&auto=format&fit=crop',
-  },
-]
-
-const SAMPLE_GALLERY = [
-  { id: 'g1', url: 'https://images.unsplash.com/photo-1546519638405-a2b03ac5f4bf?w=700&q=80&auto=format&fit=crop', title: 'Basketball Tournament Finals' },
-  { id: 'g2', url: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=700&q=80&auto=format&fit=crop', title: 'Athletics Championship 2024' },
-  { id: 'g3', url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=700&q=80&auto=format&fit=crop', title: 'Football Exhibition Match' },
-  { id: 'g4', url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=700&q=80&auto=format&fit=crop', title: 'National Stadium Anniversary' },
-  { id: 'g5', url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&q=80&auto=format&fit=crop', title: 'Boxing Veterans Gala' },
-  { id: 'g6', url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=700&q=80&auto=format&fit=crop', title: 'RENISA Football Legends Day' },
-]
-
-const SAMPLE_AWARDS = [
-  {
-    id: 'a1', title: 'Lifetime Achievement Award', recipientName: 'Sunday Oliseh', year: 2024,
-    category: { name: 'Football' },
-    recipientPhoto: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=300&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'a2', title: 'Excellence in Athletics', recipientName: 'Chioma Ajunwa', year: 2024,
-    category: { name: 'Athletics' },
-    recipientPhoto: 'https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=300&q=80&auto=format&fit=crop&crop=face',
-  },
-  {
-    id: 'a3', title: 'Legend of the Year', recipientName: 'Dick Tiger Jr.', year: 2024,
-    category: { name: 'Boxing' },
-    recipientPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80&auto=format&fit=crop&crop=face',
-  },
-]
+/** Shown only when no hero slides exist in the CMS (no external stock photos). */
+const PLACEHOLDER_HERO_SLIDE = {
+  id: 'placeholder',
+  imageUrl: '',
+  tag: 'RENISA',
+  title: "Nigeria's Retired Sports Community",
+  subtitle: 'Honouring excellence, preserving legacy, and supporting our sports heroes.',
+  caption: 'Association of Retired Nigerian Sports Men & Women',
+  ctaText: 'Become a Member',
+  ctaLink: '/registration',
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -171,9 +44,14 @@ export default function HomePage() {
   const { data: eventsData } = useQuery({ queryKey: ['featured-events'], queryFn: getFeaturedEvents })
   const { data: galleryData } = useQuery({ queryKey: ['gallery-preview'], queryFn: () => getGallery() })
   const { data: awardsData } = useQuery({ queryKey: ['awards-preview'], queryFn: () => getAllAwards() })
+  const { data: siteStats } = useQuery({
+    queryKey: ['public-site-stats'],
+    queryFn: getPublicSiteStats,
+    staleTime: 60_000,
+  })
 
   // ── Derived values from queries ──
-  const heroSlides = slidesData && slidesData.length > 0 ? slidesData : FALLBACK_SLIDES
+  const heroSlides = slidesData && slidesData.length > 0 ? slidesData : [PLACEHOLDER_HERO_SLIDE]
   const slideCount = heroSlides.length
 
   // ── Slide navigation (useCallback after derived values is valid) ──
@@ -198,21 +76,52 @@ export default function HomePage() {
   }, [slideCount, currentSlide])
 
   // ── Other derived data ──
-  const apiExecutives = (executivesData || []).map((e: any) => ({
-    id: e.id, name: e.name, position: e.title, sport: '', photo: e.photo,
-  }))
-  const featuredEvents = (eventsData || []).slice(0, 3)
-  const galleryItems = (galleryData?.data || []).slice(0, 6)
-  const awards = (awardsData?.data || []).slice(0, 3)
+  const apiExecutives = (executivesData || []).map((e: any) => {
+    const mid = e.memberId
+    const sportMid = typeof mid === 'object' && mid != null ? mid.sport : undefined
+    return {
+      id: e.id,
+      name: e.name,
+      position: e.title || e.position,
+      sport: e.sport || e.member?.sport || sportMid || '',
+      photo: e.photo || e.profilePicture,
+    }
+  })
+  const featuredEvents = (eventsData || [])
+    .filter((e: any) => e.status === 'published')
+    .slice(0, 3)
+  const galleryList = Array.isArray(galleryData) ? galleryData : []
+  const galleryItems = galleryList.slice(0, 6)
+  const awards = (awardsData || []).slice(0, 3)
 
-  const displayExecutives = apiExecutives.length > 0 ? apiExecutives : SAMPLE_EXECUTIVES
-  const displayEvents = featuredEvents.length > 0 ? featuredEvents : SAMPLE_EVENTS
-  const displayGallery = galleryItems.length > 0
-    ? galleryItems.map((g: any) => ({ id: g.id, url: buildImageUrl(g.imageUrl), title: g.title }))
-    : SAMPLE_GALLERY
-  const displayAwards = awards.length > 0 ? awards : SAMPLE_AWARDS
+  const displayExecutives = apiExecutives
+  const displayEvents = featuredEvents
+  const displayGallery = galleryItems.map((g: any) => ({
+    id: g.id,
+    url: g.imageUrl?.startsWith('http') ? g.imageUrl : buildImageUrl(g.imageUrl),
+    title: g.title,
+  }))
+  const displayAwards = awards
+
+  const presidentExec =
+    displayExecutives.find((e) => /president/i.test(e.position) && !/vice/i.test(e.position)) ||
+    displayExecutives[0]
 
   const slide = heroSlides[currentSlide] ?? heroSlides[0]
+
+  const statBarItems = siteStats
+    ? [
+        { label: 'Active members', value: String(siteStats.activeMembers), icon: <Users className="w-5 h-5" /> },
+        { label: 'Alumni', value: String(siteStats.alumniMembers), icon: <Calendar className="w-5 h-5" /> },
+        { label: 'Gallery photos', value: String(siteStats.galleryPhotos), icon: <Trophy className="w-5 h-5" /> },
+        { label: 'Honours recorded', value: String(siteStats.awardedHonors), icon: <Star className="w-5 h-5" /> },
+      ]
+    : [
+        { label: 'Active members', value: '—', icon: <Users className="w-5 h-5" /> },
+        { label: 'Alumni', value: '—', icon: <Calendar className="w-5 h-5" /> },
+        { label: 'Gallery photos', value: '—', icon: <Trophy className="w-5 h-5" /> },
+        { label: 'Honours recorded', value: '—', icon: <Star className="w-5 h-5" /> },
+      ]
 
   return (
     <div className="bg-white">
@@ -232,7 +141,11 @@ export default function HomePage() {
             className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: i === currentSlide ? 1 : 0, zIndex: i === currentSlide ? 1 : 0 }}
           >
-            <img src={s.imageUrl} alt={s.title} className="w-full h-full object-cover" />
+            {s.imageUrl ? (
+              <img src={s.imageUrl.startsWith('http') ? s.imageUrl : buildImageUrl(s.imageUrl)} alt={s.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-[#0d4a25] via-[#1a6b3a] to-[#0a3a1c]" />
+            )}
           </div>
         ))}
 
@@ -339,12 +252,7 @@ export default function HomePage() {
       <section className="bg-[#0d4a25] border-b-4 border-[#EBD279]/60 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 divide-x divide-white/10">
-            {[
-              { label: 'Registered Members', value: '500+', icon: <Users className="w-5 h-5" /> },
-              { label: 'Years of Excellence', value: '20+', icon: <Calendar className="w-5 h-5" /> },
-              { label: 'Sports Represented', value: '20+', icon: <Trophy className="w-5 h-5" /> },
-              { label: 'Award Recipients', value: '100+', icon: <Star className="w-5 h-5" /> },
-            ].map((stat) => (
+            {statBarItems.map((stat) => (
               <div key={stat.label} className="text-center px-4">
                 <div className="flex justify-center mb-2 text-[#EBD279]">{stat.icon}</div>
                 <p className="text-3xl font-bold text-white">{stat.value}</p>
@@ -363,11 +271,9 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Image collage with logo badge */}
             <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80&auto=format&fit=crop"
-                alt="Nigerian football legends"
-                className="rounded-2xl w-full h-96 object-cover shadow-2xl"
-              />
+              <div className="rounded-2xl w-full h-96 bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] shadow-2xl flex items-center justify-center p-8">
+                <Image src="/logo.png" alt="RENISA" width={200} height={200} className="opacity-90" />
+              </div>
            
               
               {/* Est. pill */}
@@ -430,17 +336,20 @@ Nigeria’s rich sporting heritage.
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
                 {/* Large photo */}
-                <div className="w-72 h-80 rounded-2xl overflow-hidden shadow-2xl">
-                  <img
-                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80&auto=format&fit=crop&crop=face"
-                    alt="National President"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-72 h-80 rounded-2xl overflow-hidden shadow-2xl bg-[#1a6b3a] flex items-center justify-center">
+                  {presidentExec?.photo ? (
+                    <img
+                      src={presidentExec.photo.startsWith('http') ? presidentExec.photo : buildImageUrl(presidentExec.photo)}
+                      alt={presidentExec.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-[#EBD279] text-6xl font-bold">{presidentExec?.name?.charAt(0) || 'R'}</span>
+                  )}
                 </div>
-                {/* Name plate */}
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[#0d4a25] text-white rounded-xl px-6 py-3 shadow-xl whitespace-nowrap text-center min-w-[200px]">
-                  <p className="font-bold text-sm font-serif">Chief Emmanuel Adeyemi</p>
-                  <p className="text-[#EBD279] text-[10px] uppercase tracking-widest mt-0.5">National President</p>
+                  <p className="font-bold text-sm font-serif">{presidentExec?.name || 'National President'}</p>
+                  <p className="text-[#EBD279] text-[10px] uppercase tracking-widest mt-0.5">{presidentExec?.position || 'Leadership'}</p>
                 </div>
                 {/* Gold accent ring */}
                 <div className="absolute -top-3 -left-3 w-16 h-16 rounded-full border-2 border-[#EBD279] opacity-40" />
@@ -526,6 +435,9 @@ Nigeria’s rich sporting heritage.
 
           {/* Executive grid — shows ALL executives */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 lg:gap-12">
+            {displayExecutives.length === 0 && (
+              <p className="col-span-full text-center text-white/60 py-8">Leadership roster will appear here once published.</p>
+            )}
             {displayExecutives.map((exec, i) => (
               <div key={exec.id} className="group text-center">
                 {/* Photo ring */}
@@ -606,6 +518,9 @@ Nigeria’s rich sporting heritage.
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
+            {displayEvents.length === 0 && (
+              <p className="col-span-full text-center text-gray-400 py-8">No published updates yet.</p>
+            )}
             {displayEvents.map((event: any) => (
               <Link key={event.id} href={event.slug && event.slug !== '#' ? `/events/${event.slug}` : '/events'}>
                 <div className="group rounded-2xl overflow-hidden border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 bg-white h-full">
@@ -625,7 +540,7 @@ Nigeria’s rich sporting heritage.
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#EBD279] opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute top-3 left-3">
                       <span className="bg-[#0d4a25]/90 backdrop-blur-sm text-[#EBD279] text-xs font-semibold px-3 py-1 rounded-full capitalize">
-                        {event.eventType}
+                        {(event as { eventType?: string }).eventType || 'News'}
                       </span>
                     </div>
                   </div>
@@ -671,6 +586,9 @@ Nigeria’s rich sporting heritage.
 
           {/* Masonry-style grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {displayGallery.length === 0 && (
+              <p className="col-span-full text-center text-gray-400 py-8">Gallery photos will appear here when added.</p>
+            )}
             {displayGallery.map((item:any, i:number) => (
               <Link key={item.id} href="/gallery">
                 <div className={`rounded-xl overflow-hidden bg-gray-100 cursor-pointer group ${i === 0 ? 'md:row-span-2' : ''}`}>
@@ -716,6 +634,9 @@ Nigeria’s rich sporting heritage.
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
+            {displayAwards.length === 0 && (
+              <p className="col-span-full text-center text-gray-400 py-8">Award recipients will be listed here from the database.</p>
+            )}
             {displayAwards.map((award: any) => (
               <div key={award.id} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
                 {/* Gold top stripe */}
@@ -777,13 +698,7 @@ Nigeria’s rich sporting heritage.
       {/* ═══════════════════════════════════════════════════════
           CTA — Join RENISA
       ═══════════════════════════════════════════════════════ */}
-      <section className="relative py-28 overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1920&q=80&auto=format&fit=crop"
-          alt="Sports event"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-[#0d4a25]/88" />
+      <section className="relative py-28 overflow-hidden bg-gradient-to-br from-[#0a3a1c] via-[#0d4a25] to-[#1a6b3a]">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EBD279] via-[#d4a017] to-[#EBD279]" />
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

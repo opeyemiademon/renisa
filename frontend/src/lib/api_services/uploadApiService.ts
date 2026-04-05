@@ -10,14 +10,16 @@ export interface UploadResponse {
 
 export const uploadFile = async (
   file: File,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  folder?: string
 ): Promise<UploadResponse> => {
   const formData = new FormData()
   formData.append('file', file)
 
   const token = getToken()
+  const url = folder ? `${API_URL}/api/upload?folder=${folder}` : `${API_URL}/api/upload`
 
-  const response = await axios.post<UploadResponse>(`${API_URL}/api/upload`, formData, {
+  const response = await axios.post<UploadResponse>(url, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
