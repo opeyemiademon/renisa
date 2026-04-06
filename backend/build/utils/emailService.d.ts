@@ -5,4 +5,5 @@ export declare const welcomeTemplate: (name: string, memberNumber: string) => st
 export declare const paymentReceiptTemplate: (name: string, amount: number, type: string, ref: string) => string;
 export declare const idCardStatusTemplate: (name: string, status: string, reason?: string) => string;
 export declare const donationInvoiceTemplate: (donorName: string, invoiceNumber: string, amount: number, paymentLink: string) => string;
+export declare const passwordResetTemplate: (name: string, resetUrl: string) => string;
 //# sourceMappingURL=emailService.d.ts.map

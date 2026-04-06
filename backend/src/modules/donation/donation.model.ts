@@ -21,6 +21,7 @@ const donationSchema = new Schema({
   paymentMethod: { type: String, enum: ['paystack', 'bank_transfer'] },
   paymentStatus: { type: String, enum: ['pending', 'successful', 'failed'], default: 'pending' },
   paystackRef: { type: String },
+  manualTransferReference: { type: String, trim: true },
   paidAt: { type: Date },
   notes: { type: String },
   adminNotes: { type: String },

@@ -29,6 +29,9 @@ function CreateEventForm() {
     coverImage: '',
     photoBase64: '',
     isFeatured: false,
+    eventType: 'news' as 'news' | 'event' | 'announcement',
+    eventDate: '',
+    venue: '',
   })
 
   const setField = (f: string, v: any) => setForm((p) => ({ ...p, [f]: v }))
@@ -62,6 +65,9 @@ function CreateEventForm() {
         coverImage: existingEvent.coverImage || '',
         photoBase64: '',
         isFeatured: existingEvent.isFeatured || false,
+        eventType: (existingEvent.eventType as 'news' | 'event' | 'announcement') || 'news',
+        eventDate: existingEvent.eventDate ? existingEvent.eventDate.slice(0, 10) : '',
+        venue: existingEvent.venue || '',
       })
     }
   }, [existingEvent])
@@ -71,7 +77,16 @@ function CreateEventForm() {
   }
 
   const mutation = useMutation({
-    mutationFn: () => editId ? updateEvent(editId, form) : createEvent(form),
+    mutationFn: () => {
+      const { photoBase64, eventDate, venue, ...rest } = form
+      const data = {
+        ...rest,
+        photoBase64: photoBase64 || undefined,
+        eventDate: eventDate || undefined,
+        venue: venue.trim() || undefined,
+      }
+      return editId ? updateEvent(editId, data) : createEvent(data)
+    },
     onSuccess: () => {
       toast.success(editId ? 'Event updated' : 'Event created')
       queryClient.invalidateQueries({ queryKey: ['events-admin'] })
@@ -123,6 +138,28 @@ function CreateEventForm() {
         </div>
         <Input label="Title" value={form.title} onChange={(e) => handleTitleChange(e.target.value)} />
         <Input label="URL Slug" value={form.slug} onChange={(e) => setField('slug', e.target.value)} helperText="Auto-generated from title" />
+        <Select
+          label="Type"
+          value={form.eventType}
+          onChange={(e) => setField('eventType', e.target.value as typeof form.eventType)}
+          options={[
+            { value: 'news', label: 'News' },
+            { value: 'event', label: 'Event' },
+            { value: 'announcement', label: 'Announcement' },
+          ]}
+        />
+        <Input
+          label="Event date (optional)"
+          type="date"
+          value={form.eventDate}
+          onChange={(e) => setField('eventDate', e.target.value)}
+        />
+        <Input
+          label="Venue (optional)"
+          value={form.venue}
+          onChange={(e) => setField('venue', e.target.value)}
+          placeholder="Location or online"
+        />
         <Input label="Short Excerpt" placeholder="Brief event summary..." value={form.excerpt} onChange={(e) => setField('excerpt', e.target.value)} />
         <div className="flex items-center gap-3">
           <input

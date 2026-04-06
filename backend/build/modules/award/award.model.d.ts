@@ -1,35 +1,35 @@
 import mongoose from 'mongoose';
 declare const Award: mongoose.Model<{
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "nominated" | "voting" | "awarded";
+    memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
+    image?: string | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
-    image?: string | null | undefined;
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "nominated" | "voting" | "awarded";
+    memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
+    image?: string | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
-    image?: string | null | undefined;
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
 }> & {
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "nominated" | "voting" | "awarded";
+    memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
+    image?: string | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
-    image?: string | null | undefined;
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
@@ -39,35 +39,35 @@ declare const Award: mongoose.Model<{
     timestamps: true;
 }, {
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "nominated" | "voting" | "awarded";
+    memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
+    image?: string | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
-    image?: string | null | undefined;
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "nominated" | "voting" | "awarded";
+    memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
+    image?: string | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
-    image?: string | null | undefined;
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
 }>> & mongoose.FlatRecord<{
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "nominated" | "voting" | "awarded";
+    memberId: mongoose.Types.ObjectId;
     categoryId: mongoose.Types.ObjectId;
     votingEnabled: boolean;
+    image?: string | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
-    image?: string | null | undefined;
     nominatedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;

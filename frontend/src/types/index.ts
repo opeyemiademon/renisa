@@ -202,6 +202,8 @@ export interface LeadershipMember {
   position: string
   bio?: string
   profilePicture?: string
+  /** Leadership-specific image; GraphQL also exposes as photo */
+  photo?: string
   coverPhoto?: string
   galleryImages?: string[]
   state?: string
@@ -277,8 +279,9 @@ export interface Award {
   title: string
   recipientName: string
   recipientPhoto?: string
-  categoryId: string
+  categoryId: string | AwardCategory
   category?: AwardCategory
+  status?: string
   year: number
   description?: string
   votingEnabled: boolean
@@ -293,6 +296,25 @@ export interface AwardVote {
   memberId: string
   awardId: string
   createdAt: string
+}
+
+/** Matches admin Award Winners report / getAwardWinnersReport */
+export interface AwardWinnerInfo {
+  awardId: string
+  recipientName: string
+  recipientPhoto?: string | null
+  memberNumber?: string | null
+  voteCount: number
+}
+
+export interface CategoryWinner {
+  categoryId: string
+  categoryName: string
+  winner: AwardWinnerInfo | null
+  nominees: AwardWinnerInfo[]
+  pollActive: boolean
+  votingStartDate?: string | null
+  votingEndDate?: string | null
 }
 
 // ==================== ID Card ====================
@@ -355,6 +377,8 @@ export interface Event {
   eventDate?: string
   venue?: string
   eventType: EventType
+  views?: number
+  publishedAt?: string
   type?: string
   status: EventStatus
   isFeatured: boolean
@@ -398,6 +422,17 @@ export interface Communication {
   createdAt: string
 }
 
+export interface ContactMessage {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  read: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 // ==================== Donation ====================
 
 export interface DonationType {
@@ -416,6 +451,8 @@ export interface DonationInvoice {
   donationId: string
   invoiceNumber: string
   amount: number
+  currency?: string
+  pdfUrl?: string
   paystackReference?: string
   paymentUrl?: string
   status: PaymentStatus
@@ -430,8 +467,19 @@ export interface Donation {
   donorEmail?: string
   donorPhone?: string
   description?: string
+  notes?: string
+  adminNotes?: string
   amount?: number
+  currency?: string
   items?: string
+  physicalItems?: string
+  quantity?: number
+  estimatedValue?: number
+  preferredDropoffDate?: string
+  paymentMethod?: string
+  paymentStatus?: string
+  paystackRef?: string
+  manualTransferReference?: string
   isMonetary: boolean
   status: DonationStatus
   acknowledgedBy?: string

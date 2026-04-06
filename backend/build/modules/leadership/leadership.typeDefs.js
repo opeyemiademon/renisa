@@ -6,6 +6,7 @@ const leadershipTypeDefs = gql `
     group: LeadershipGroup
     memberId: Member!
     member: Member
+    slug: String
     # Derived at resolve-time from member
     name: String!
     profilePicture: String
@@ -57,6 +58,7 @@ const leadershipTypeDefs = gql `
   extend type Query {
     getAllLeadership(groupId: ID, groupSlug: String, isCurrent: Boolean, state: String): [Leadership!]!
     getLeadership(id: ID!): Leadership
+    getLeadershipBySlug(slug: String!): Leadership
   }
 
   extend type Mutation {

@@ -11,9 +11,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -23,9 +23,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -38,9 +38,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -50,9 +50,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -67,9 +67,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -79,9 +79,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -96,9 +96,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -108,9 +108,9 @@ declare const galleryResolvers: {
             isFeatured: boolean;
             imageUrl: string;
             description?: string | null | undefined;
+            eventDate?: NativeDate | null | undefined;
             thumbnailUrl?: string | null | undefined;
             albumName?: string | null | undefined;
-            eventDate?: NativeDate | null | undefined;
             uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -130,9 +130,9 @@ declare const galleryResolvers: {
                 isFeatured: boolean;
                 imageUrl: string;
                 description?: string | null | undefined;
+                eventDate?: NativeDate | null | undefined;
                 thumbnailUrl?: string | null | undefined;
                 albumName?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
                 uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -142,9 +142,9 @@ declare const galleryResolvers: {
                 isFeatured: boolean;
                 imageUrl: string;
                 description?: string | null | undefined;
+                eventDate?: NativeDate | null | undefined;
                 thumbnailUrl?: string | null | undefined;
                 albumName?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
                 uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -163,9 +163,9 @@ declare const galleryResolvers: {
                 isFeatured: boolean;
                 imageUrl: string;
                 description?: string | null | undefined;
+                eventDate?: NativeDate | null | undefined;
                 thumbnailUrl?: string | null | undefined;
                 albumName?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
                 uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -175,9 +175,9 @@ declare const galleryResolvers: {
                 isFeatured: boolean;
                 imageUrl: string;
                 description?: string | null | undefined;
+                eventDate?: NativeDate | null | undefined;
                 thumbnailUrl?: string | null | undefined;
                 albumName?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
                 uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -194,9 +194,9 @@ declare const galleryResolvers: {
                 isFeatured: boolean;
                 imageUrl: string;
                 description?: string | null | undefined;
+                eventDate?: NativeDate | null | undefined;
                 thumbnailUrl?: string | null | undefined;
                 albumName?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
                 uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -206,9 +206,9 @@ declare const galleryResolvers: {
                 isFeatured: boolean;
                 imageUrl: string;
                 description?: string | null | undefined;
+                eventDate?: NativeDate | null | undefined;
                 thumbnailUrl?: string | null | undefined;
                 albumName?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
                 uploadedBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;

@@ -1,23 +1,68 @@
 'use client'
 
-import { useState } from 'react'
-import { Mail, Phone, MapPin, Send } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { Mail, Phone, MapPin, Send, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { Input, Textarea } from '@/components/shared/Input'
+import { submitContactMessage } from '@/lib/api_services/contactMessageApiServices'
 import toast from 'react-hot-toast'
+
+const CAPTCHA_MIN = 1
+const CAPTCHA_MAX = 20
+
+function randomPair() {
+  return {
+    a: CAPTCHA_MIN + Math.floor(Math.random() * (CAPTCHA_MAX - CAPTCHA_MIN + 1)),
+    b: CAPTCHA_MIN + Math.floor(Math.random() * (CAPTCHA_MAX - CAPTCHA_MIN + 1)),
+  }
+}
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
-  const [loading, setLoading] = useState(false)
+  const [captcha, setCaptcha] = useState(randomPair)
+  const [captchaAnswer, setCaptchaAnswer] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const regenCaptcha = useCallback(() => {
+    setCaptcha(randomPair())
+    setCaptchaAnswer('')
+  }, [])
+
+  const sendMutation = useMutation({
+    mutationFn: () =>
+      submitContactMessage({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        subject: form.subject.trim(),
+        message: form.message.trim(),
+        captchaA: captcha.a,
+        captchaB: captcha.b,
+        captchaAnswer: Number(String(captchaAnswer).trim()),
+      }),
+    onSuccess: () => {
+      toast.success('Message sent! We will get back to you soon.')
+      setForm({ name: '', email: '', subject: '', message: '' })
+      regenCaptcha()
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+      regenCaptcha()
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1000))
-    toast.success('Message sent! We will get back to you soon.')
-    setForm({ name: '', email: '', subject: '', message: '' })
-    setLoading(false)
+    const ans = Number(String(captchaAnswer).trim())
+    if (!Number.isFinite(ans) || String(captchaAnswer).trim() === '') {
+      toast.error('Please answer the verification question')
+      return
+    }
+    if (ans !== captcha.a + captcha.b) {
+      toast.error('Incorrect answer. Please try again.')
+      regenCaptcha()
+      return
+    }
+    sendMutation.mutate()
   }
 
   return (
@@ -37,7 +82,6 @@ export default function ContactPage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
             <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-900 font-serif mb-6">
                 Send a Message
@@ -75,13 +119,42 @@ export default function ContactPage() {
                   rows={5}
                   required
                 />
-                <Button type="submit" loading={loading} iconLeft={<Send className="w-4 h-4" />}>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-gray-800">
+                      Quick check: what is {captcha.a} + {captcha.b}?
+                    </p>
+                    <button
+                      type="button"
+                      onClick={regenCaptcha}
+                      className="p-2 text-gray-500 hover:text-[#1a6b3a] rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition-colors"
+                      title="New question"
+                      aria-label="New math question"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <Input
+                    label="Your answer"
+                    type="number"
+                    inputMode="numeric"
+                    value={captchaAnswer}
+                    onChange={(e) => setCaptchaAnswer(e.target.value)}
+                    placeholder="Enter the sum"
+                    required
+                    className="max-w-[200px]"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  loading={sendMutation.isPending}
+                  iconLeft={<Send className="w-4 h-4" />}
+                >
                   Send Message
                 </Button>
               </form>
             </div>
 
-            {/* Contact Info */}
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 font-serif mb-6">
@@ -136,7 +209,6 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Map placeholder */}
               <div className="bg-gray-200 rounded-xl h-56 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <MapPin className="w-10 h-10 mx-auto mb-2" />

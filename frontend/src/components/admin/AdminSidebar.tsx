@@ -7,7 +7,7 @@ import NextImage from 'next/image'
 import {
   LayoutDashboard, Users, UserPlus, Hash, GraduationCap,
   CreditCard, ListChecks, Vote, Crown, Network, Trophy, Heart,
-  IdCard, Settings, Calendar, Image, FileText, MessageSquare,
+  IdCard, Settings, Calendar, Image, FileText, MessageSquare, Mail,
   ChevronDown, LogOut, Banknote, Gift, UserCog, Medal, Bell, LifeBuoy
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -76,6 +76,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: 'Communications', href: '/admin/communications', icon: MessageSquare },
+  { label: 'Contact Messages', href: '/admin/contact-messages', icon: Mail },
   { label: 'Support Tickets', href: '/admin/tickets', icon: LifeBuoy },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
   {

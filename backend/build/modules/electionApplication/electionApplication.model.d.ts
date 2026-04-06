@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 declare const ElectionApplication: mongoose.Model<{
-    memberId: mongoose.Types.ObjectId;
     status: "approved" | "rejected" | "pending";
+    memberId: mongoose.Types.ObjectId;
     electionId: mongoose.Types.ObjectId;
     positionId: mongoose.Types.ObjectId;
     paymentStatus: "pending" | "failed" | "paid";
@@ -16,8 +16,8 @@ declare const ElectionApplication: mongoose.Model<{
     rejectedBy?: mongoose.Types.ObjectId | null | undefined;
     rejectedAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
-    memberId: mongoose.Types.ObjectId;
     status: "approved" | "rejected" | "pending";
+    memberId: mongoose.Types.ObjectId;
     electionId: mongoose.Types.ObjectId;
     positionId: mongoose.Types.ObjectId;
     paymentStatus: "pending" | "failed" | "paid";
@@ -34,8 +34,8 @@ declare const ElectionApplication: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
 }> & {
-    memberId: mongoose.Types.ObjectId;
     status: "approved" | "rejected" | "pending";
+    memberId: mongoose.Types.ObjectId;
     electionId: mongoose.Types.ObjectId;
     positionId: mongoose.Types.ObjectId;
     paymentStatus: "pending" | "failed" | "paid";
@@ -56,8 +56,8 @@ declare const ElectionApplication: mongoose.Model<{
 }, mongoose.Schema<any, mongoose.Model<any, any, any, any, any, any>, {}, {}, {}, {}, {
     timestamps: true;
 }, {
-    memberId: mongoose.Types.ObjectId;
     status: "approved" | "rejected" | "pending";
+    memberId: mongoose.Types.ObjectId;
     electionId: mongoose.Types.ObjectId;
     positionId: mongoose.Types.ObjectId;
     paymentStatus: "pending" | "failed" | "paid";
@@ -72,8 +72,8 @@ declare const ElectionApplication: mongoose.Model<{
     rejectedBy?: mongoose.Types.ObjectId | null | undefined;
     rejectedAt?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
-    memberId: mongoose.Types.ObjectId;
     status: "approved" | "rejected" | "pending";
+    memberId: mongoose.Types.ObjectId;
     electionId: mongoose.Types.ObjectId;
     positionId: mongoose.Types.ObjectId;
     paymentStatus: "pending" | "failed" | "paid";
@@ -90,8 +90,8 @@ declare const ElectionApplication: mongoose.Model<{
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
 }>> & mongoose.FlatRecord<{
-    memberId: mongoose.Types.ObjectId;
     status: "approved" | "rejected" | "pending";
+    memberId: mongoose.Types.ObjectId;
     electionId: mongoose.Types.ObjectId;
     positionId: mongoose.Types.ObjectId;
     paymentStatus: "pending" | "failed" | "paid";

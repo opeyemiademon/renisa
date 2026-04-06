@@ -15,6 +15,8 @@ export const TOKEN_SECRET = process.env.TOKEN_SECRET ?? 'renisa-secret-key';
 export const TOKEN_EXPIRY = normalizeExpiresIn(process.env.TOKEN_EXPIRY);
 export const ADMIN_TOKEN_EXPIRY = normalizeExpiresIn(process.env.ADMIN_TOKEN_EXPIRY || '24h');
 export const STATIC_BASE_URL = process.env.STATIC_BASE_URL || 'http://localhost:4000';
+/** Public member site (Next.js) — used in password-reset emails */
+export const MEMBER_PORTAL_URL = process.env.MEMBER_PORTAL_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
 export const NIGERIAN_STATES = [
     'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa',
     'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo',

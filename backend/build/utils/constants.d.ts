@@ -5,6 +5,8 @@ export declare const TOKEN_SECRET: string;
 export declare const TOKEN_EXPIRY: SignOptions['expiresIn'];
 export declare const ADMIN_TOKEN_EXPIRY: SignOptions['expiresIn'];
 export declare const STATIC_BASE_URL: string;
+/** Public member site (Next.js) — used in password-reset emails */
+export declare const MEMBER_PORTAL_URL: string;
 export declare const NIGERIAN_STATES: readonly ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"];
 export type NigerianState = typeof NIGERIAN_STATES[number];
 export declare const UPLOAD_FOLDERS: {

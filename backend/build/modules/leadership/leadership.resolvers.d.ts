@@ -13,6 +13,9 @@ declare const leadershipResolvers: {
         getLeadership: (_: any, { id }: {
             id: string;
         }) => Promise<any>;
+        getLeadershipBySlug: (_: any, { slug }: {
+            slug: string;
+        }) => Promise<any>;
     };
     Mutation: {
         createLeadership: (_: any, { data }: {

@@ -8,10 +8,10 @@ declare const Election: mongoose.Model<{
     requiresDuesPayment: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
-    startDate?: NativeDate | null | undefined;
-    endDate?: NativeDate | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
+    startDate?: NativeDate | null | undefined;
+    endDate?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     year: number;
     title: string;
@@ -21,10 +21,10 @@ declare const Election: mongoose.Model<{
     requiresDuesPayment: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
-    startDate?: NativeDate | null | undefined;
-    endDate?: NativeDate | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
+    startDate?: NativeDate | null | undefined;
+    endDate?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
 }> & {
@@ -36,10 +36,10 @@ declare const Election: mongoose.Model<{
     requiresDuesPayment: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
-    startDate?: NativeDate | null | undefined;
-    endDate?: NativeDate | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
+    startDate?: NativeDate | null | undefined;
+    endDate?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -55,10 +55,10 @@ declare const Election: mongoose.Model<{
     requiresDuesPayment: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
-    startDate?: NativeDate | null | undefined;
-    endDate?: NativeDate | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
+    startDate?: NativeDate | null | undefined;
+    endDate?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     year: number;
     title: string;
@@ -68,10 +68,10 @@ declare const Election: mongoose.Model<{
     requiresDuesPayment: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
-    startDate?: NativeDate | null | undefined;
-    endDate?: NativeDate | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
+    startDate?: NativeDate | null | undefined;
+    endDate?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
 }>> & mongoose.FlatRecord<{
@@ -83,10 +83,10 @@ declare const Election: mongoose.Model<{
     requiresDuesPayment: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
-    startDate?: NativeDate | null | undefined;
-    endDate?: NativeDate | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
     votingEndDate?: NativeDate | null | undefined;
+    startDate?: NativeDate | null | undefined;
+    endDate?: NativeDate | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;
 } & {

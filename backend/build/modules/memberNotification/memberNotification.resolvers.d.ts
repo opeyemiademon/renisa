@@ -14,8 +14,8 @@ declare const memberNotificationResolvers: {
             type: string;
             message: string;
             title: string;
-            isRead: boolean;
             memberId: import("mongoose").Types.ObjectId;
+            isRead: boolean;
             link?: string | null | undefined;
             createdAt: NativeDate;
             updatedAt: NativeDate;

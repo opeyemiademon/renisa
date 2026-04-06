@@ -8,12 +8,11 @@ import { cn } from '@/lib/utils'
 
 const leadershipLinks = [
   { label: 'Board of Trustees', href: '/leadership/board-of-trustees' },
-  { label: 'National Executives', href: '/leadership/national-executives' },
+  { label: 'National Executives', href: '/executives' },
   { label: 'State Executives', href: '/leadership/state-executives' },
-  { label: 'Executives', href: '/executives' },
   { label: 'Directorate', href: '/leadership/directorate' },
 ]
-
+ 
 const mediaLinks = [
   { label: 'Gallery', href: '/gallery' },
   { label: 'Event', href: '/events' },
@@ -26,13 +25,13 @@ const navLinks = [
   { label: 'About', href: '/about' },
   { label: 'Media', href: '/gallery', children: mediaLinks},
   { label: 'Leadership', href: '/leadership', children: leadershipLinks },
-  { label: 'Alumni', href: '/alumni' },
+
   { label: 'Donation', href: '/donation' },
 ]
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [leadershipOpen, setLeadershipOpen] = useState(false)
+  const [mobileOpenSection, setMobileOpenSection] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
 
@@ -83,6 +82,7 @@ export function Navbar() {
                 link.children ? (
                   <div key={link.label} className="relative group">
                     <button
+                      type="button"
                       className={cn(
                         'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/8 transition-colors',
                         pathname.startsWith(link.href) && 'bg-white/12 text-white'
@@ -91,21 +91,23 @@ export function Navbar() {
                       {link.label}
                       <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180 duration-200" />
                     </button>
-                    <div className="absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 translate-y-1 group-hover:translate-y-0">
-                      {/* Gold top stripe on dropdown */}
-                      <div className="h-0.5 bg-gradient-to-r from-[#EBD279] to-[#d4a017]" />
-                      {link.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={cn(
-                            'block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#0d4a25]/5 hover:text-[#0d4a25] transition-colors',
-                            pathname === child.href && 'bg-[#0d4a25]/5 text-[#0d4a25] font-semibold'
-                          )}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
+                    {/* pt-2 = hover bridge (no gap); avoids menu closing before pointer reaches links */}
+                    <div className="absolute top-full left-0 z-50 w-52 pt-2 opacity-0 pointer-events-none translate-y-0 transition-all duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
+                      <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
+                        <div className="h-0.5 bg-gradient-to-r from-[#EBD279] to-[#d4a017]" />
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={cn(
+                              'block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#0d4a25]/5 hover:text-[#0d4a25] transition-colors',
+                              pathname === child.href && 'bg-[#0d4a25]/5 text-[#0d4a25] font-semibold'
+                            )}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -140,7 +142,11 @@ export function Navbar() {
                 </button>
               </Link>
               <button
-                onClick={() => setMobileOpen(!mobileOpen)}
+                type="button"
+                onClick={() => {
+                  setMobileOpen((o) => !o)
+                  setMobileOpenSection(null)
+                }}
                 className="lg:hidden p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 aria-label="Toggle menu"
               >
@@ -159,21 +165,30 @@ export function Navbar() {
               link.children ? (
                 <div key={link.label}>
                   <button
-                    onClick={() => setLeadershipOpen(!leadershipOpen)}
+                    type="button"
+                    onClick={() =>
+                      setMobileOpenSection((prev) => (prev === link.label ? null : link.label))
+                    }
                     className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/8 transition-colors"
                   >
                     {link.label}
                     <ChevronDown
-                      className={cn('w-4 h-4 transition-transform duration-200', leadershipOpen && 'rotate-180')}
+                      className={cn(
+                        'w-4 h-4 transition-transform duration-200',
+                        mobileOpenSection === link.label && 'rotate-180'
+                      )}
                     />
                   </button>
-                  {leadershipOpen && (
+                  {mobileOpenSection === link.label && (
                     <div className="ml-4 mt-1 space-y-0.5 border-l-2 border-[#EBD279]/30 pl-3 mb-1">
                       {link.children.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
-                          onClick={() => setMobileOpen(false)}
+                          onClick={() => {
+                            setMobileOpen(false)
+                            setMobileOpenSection(null)
+                          }}
                           className="block px-3 py-2 text-sm text-white/70 hover:text-[#EBD279] rounded-lg hover:bg-white/5 transition-colors"
                         >
                           {child.label}

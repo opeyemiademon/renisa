@@ -21,7 +21,7 @@ const PLACEHOLDER_HERO_SLIDE = {
   id: 'placeholder',
   imageUrl: '',
   tag: 'RENISA',
-  title: "Nigeria's Retired Sports Community",
+  title: "Retired Nigerian Women & Men Sports Association (RENISA)",
   subtitle: 'Honouring excellence, preserving legacy, and supporting our sports heroes.',
   caption: 'Association of Retired Nigerian Sports Men & Women',
   ctaText: 'Become a Member',
@@ -43,7 +43,10 @@ export default function HomePage() {
   const { data: executivesData } = useQuery({ queryKey: ['executives-preview'], queryFn: getAllExecutives })
   const { data: eventsData } = useQuery({ queryKey: ['featured-events'], queryFn: getFeaturedEvents })
   const { data: galleryData } = useQuery({ queryKey: ['gallery-preview'], queryFn: () => getGallery() })
-  const { data: awardsData } = useQuery({ queryKey: ['awards-preview'], queryFn: () => getAllAwards() })
+  const { data: awardsData } = useQuery({
+    queryKey: ['awards-preview', 'home-3'],
+    queryFn: () => getAllAwards({ limit: 3 }),
+  })
   const { data: siteStats } = useQuery({
     queryKey: ['public-site-stats'],
     queryFn: getPublicSiteStats,
@@ -92,8 +95,6 @@ export default function HomePage() {
     .slice(0, 3)
   const galleryList = Array.isArray(galleryData) ? galleryData : []
   const galleryItems = galleryList.slice(0, 6)
-  const awards = (awardsData || []).slice(0, 3)
-
   const displayExecutives = apiExecutives
   const displayEvents = featuredEvents
   const displayGallery = galleryItems.map((g: any) => ({
@@ -101,7 +102,7 @@ export default function HomePage() {
     url: g.imageUrl?.startsWith('http') ? g.imageUrl : buildImageUrl(g.imageUrl),
     title: g.title,
   }))
-  const displayAwards = awards
+  const displayAwards = awardsData || []
 
   const presidentExec =
     displayExecutives.find((e) => /president/i.test(e.position) && !/vice/i.test(e.position)) ||
@@ -270,9 +271,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Image collage with logo badge */}
+          
+          
             <div className="relative">
-              <div className="rounded-2xl w-full h-96 bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] shadow-2xl flex items-center justify-center p-8">
-                <Image src="/logo.png" alt="RENISA" width={200} height={200} className="opacity-90" />
+              <div className="rounded-2xl w-full h-96 bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] shadow-2xl flex items-center justify-center ">
+                <Image src="/stadium.jpg" alt="RENISA" width={200} height={200} className="opacity-90 w-full" />
               </div>
            
               
@@ -536,6 +539,8 @@ Nigeria’s rich sporting heritage.
                         <Calendar className="w-12 h-12 text-white/30" />
                       </div>
                     )}
+
+                    
                     {/* Gold top stripe */}
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#EBD279] opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute top-3 left-3">
@@ -548,11 +553,12 @@ Nigeria’s rich sporting heritage.
                     <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-[#0d4a25] transition-colors line-clamp-2 text-base">
                       {event.title}
                     </h3>
+
                     <p className="text-gray-500 text-sm line-clamp-2">{event.excerpt}</p>
-                    {event.eventDate && (
+                    {event.createdAt && (
                       <div className="flex items-center gap-1.5 mt-3 text-gray-400 text-xs">
                         <Calendar className="w-3.5 h-3.5" />
-                        {formatDate(event.eventDate)}
+                        {formatDate(event.createdAt)}
                       </div>
                     )}
                   </div>

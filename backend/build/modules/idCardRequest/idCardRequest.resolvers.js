@@ -1,16 +1,26 @@
 import axios from 'axios';
-import path from 'path';
 import IDCardRequest from './idCardRequest.model.js';
 import IDCardSettings from '../idCardSettings/idCardSettings.model.js';
 import Member from '../member/member.model.js';
 import { requireMemberAuth, requireAdminAuth } from '../../middleware/auth.js';
-import { generateIDCard } from '../../utils/idCardGenerator.js';
+import { processBase64Upload, ALLOWED_IMAGE_TYPES } from '../../utils/fileUpload.js';
 import { sendEmail, idCardStatusTemplate } from '../../utils/emailService.js';
 import { UPLOAD_FOLDERS } from '../../utils/constants.js';
 import { createNotification } from '../../utils/createNotification.js';
 import { createMemberNotification } from '../../utils/createMemberNotification.js';
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL || 'http://localhost:3000/payment/callback';
+async function persistIdCardPreviewPng(input, filePrefix) {
+    if (!input || typeof input !== 'string')
+        return undefined;
+    const trimmed = input.trim();
+    if (trimmed.startsWith('/uploads/'))
+        return trimmed;
+    if (!trimmed.startsWith('data:image'))
+        return undefined;
+    const fileName = await processBase64Upload(trimmed, UPLOAD_FOLDERS.ID_CARDS, ALLOWED_IMAGE_TYPES, filePrefix);
+    return `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${fileName}`;
+}
 const idCardRequestResolvers = {
     IDCardRequest: {
         member: (parent) => parent.memberId,
@@ -21,7 +31,7 @@ const idCardRequestResolvers = {
         getMyIDCardRequests: async (_, __, context) => {
             requireMemberAuth(context);
             return await IDCardRequest.find({ memberId: context.member.id })
-                .populate('memberId', 'firstName lastName memberNumber profilePicture sport state')
+                .populate('memberId', 'firstName lastName middleName memberNumber profilePicture sport state status createdAt')
                 .populate('reviewedBy', 'name email')
                 .sort({ createdAt: -1 });
         },
@@ -52,6 +62,19 @@ const idCardRequestResolvers = {
             if (!settings || !settings.isEnabled)
                 throw new Error('ID card requests are currently disabled');
             const amount = data.requestType === 'online' ? settings.onlineFee : settings.physicalFee;
+            const prefix = `id-${String(context.member.id).slice(-8)}`;
+            let generatedCardFront;
+            let generatedCardBack;
+            try {
+                generatedCardFront = await persistIdCardPreviewPng(data.generatedCardFront, `${prefix}-front`);
+                generatedCardBack = await persistIdCardPreviewPng(data.generatedCardBack, `${prefix}-back`);
+            }
+            catch (e) {
+                throw new Error(e?.message || 'Failed to save ID card preview images');
+            }
+            if (!generatedCardFront || !generatedCardBack) {
+                throw new Error('Both sides of the ID card preview are required. Open the preview step and submit again from the app.');
+            }
             const request = await IDCardRequest.create({
                 memberId: context.member.id,
                 requestType: data.requestType,
@@ -60,8 +83,8 @@ const idCardRequestResolvers = {
                 amount,
                 paymentStatus: 'pending',
                 adminStatus: 'pending',
-                ...(data.generatedCardFront && { generatedCardFront: data.generatedCardFront }),
-                ...(data.generatedCardBack && { generatedCardBack: data.generatedCardBack }),
+                ...(generatedCardFront && { generatedCardFront }),
+                ...(generatedCardBack && { generatedCardBack }),
             });
             const memberDoc = await Member.findById(context.member.id).select('firstName lastName').lean();
             const name = memberDoc ? `${memberDoc.firstName} ${memberDoc.lastName}` : 'A member';
@@ -90,47 +113,15 @@ const idCardRequestResolvers = {
             if (!request)
                 throw new Error('Request not found');
             const member = request.memberId;
-            const settings = await IDCardSettings.findOne();
-            const validityYears = settings?.validityYears || 1;
-            const validUntil = String(new Date().getFullYear() + validityYears);
-            // Use member-previewed card images if already generated during request submission
-            let generatedCardFront = request.generatedCardFront || undefined;
-            let generatedCardBack = request.generatedCardBack || undefined;
-            // Fall back to server-side generation only if not already captured
-            if (!generatedCardFront || !generatedCardBack) {
-                const outputDir = path.join(process.cwd(), 'uploads', UPLOAD_FOLDERS.ID_CARDS);
-                try {
-                    const profilePicPath = member.profilePicture
-                        ? path.join(process.cwd(), member.profilePicture.replace(/^\//, ''))
-                        : undefined;
-                    const result = await generateIDCard({
-                        memberNumber: member.memberNumber,
-                        firstName: member.firstName,
-                        lastName: member.lastName,
-                        middleName: member.middleName,
-                        sport: member.sport,
-                        state: member.state,
-                        membershipYear: member.membershipYear,
-                        profilePicture: profilePicPath,
-                        validUntil,
-                    }, outputDir);
-                    generatedCardFront = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.frontPath)}`;
-                    generatedCardBack = `/uploads/${UPLOAD_FOLDERS.ID_CARDS}/${path.basename(result.backPath)}`;
-                }
-                catch (err) {
-                    console.error('ID card generation error:', err);
-                }
-            }
+            // Card artwork is always the member app preview (PNGs saved at request time). Do not regenerate server-side.
             const updated = await IDCardRequest.findByIdAndUpdate(id, {
                 adminStatus: 'approved',
                 reviewedBy: context.admin.id,
                 reviewedAt: new Date(),
-                generatedCardFront,
-                generatedCardBack,
             }, { new: true });
             sendEmail(member.email, 'Your RENISA ID Card is Ready', idCardStatusTemplate(`${member.firstName} ${member.lastName}`, 'approved')).catch(console.error);
             createMemberNotification(String(request.memberId._id || request.memberId), 'id_card_approved', 'ID Card Approved', 'Your ID card request has been approved. You can now download your digital ID card.', '/member/id-card');
-            return { success: true, message: 'ID card request approved and card generated', data: updated };
+            return { success: true, message: 'ID card request approved', data: updated };
         },
         rejectIDCardRequest: async (_, { id, reason }, context) => {
             requireAdminAuth(context);

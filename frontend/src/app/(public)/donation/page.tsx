@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { Heart, Package, CreditCard, Users } from 'lucide-react'
+import { Heart, Package, CreditCard, Users, Landmark } from 'lucide-react'
 import {
   getDonationTypes,
   submitPhysicalDonation,
   initiateMonetaryDonation,
+  submitManualMonetaryDonation,
 } from '@/lib/api_services/donationApiServices'
+import { getPublicDonationBankDetails } from '@/lib/donationBankDetails'
 import { Input, Textarea } from '@/components/shared/Input'
 import { Button } from '@/components/shared/Button'
 import { Modal } from '@/components/shared/Modal'
@@ -174,6 +176,7 @@ function DonationModal({
   onClose: () => void
   type: DonationType
 }) {
+  const [payMode, setPayMode] = useState<'paystack' | 'manual'>('paystack')
   const [form, setForm] = useState({
     donorName: '',
     donorEmail: '',
@@ -181,9 +184,11 @@ function DonationModal({
     amount: '',
     description: '',
     items: '',
+    manualTransferReference: '',
   })
 
   const isPhysical = type.donationMode === 'physical'
+  const bank = getPublicDonationBankDetails()
 
   const physicalMutation = useMutation({
     mutationFn: () =>
@@ -202,7 +207,7 @@ function DonationModal({
     onError: (err: Error) => toast.error(err.message),
   })
 
-  const monetaryMutation = useMutation({
+  const paystackMutation = useMutation({
     mutationFn: () =>
       initiateMonetaryDonation({
         donationTypeId: type.id,
@@ -213,25 +218,56 @@ function DonationModal({
         description: form.description || undefined,
       }),
     onSuccess: (data) => {
-      toast.success('Redirecting to payment...')
-      window.location.href = data.authorizationUrl
+      if (data.authorizationUrl) {
+        toast.success('Redirecting to Paystack…')
+        window.location.href = data.authorizationUrl
+        return
+      }
+      toast.error(
+        data.message ||
+          'Online payment could not be started. Configure Paystack on the server or use bank transfer.'
+      )
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const manualMutation = useMutation({
+    mutationFn: () =>
+      submitManualMonetaryDonation({
+        donationTypeId: type.id,
+        donorName: form.donorName,
+        donorEmail: form.donorEmail,
+        donorPhone: form.donorPhone || undefined,
+        amount: Number(form.amount),
+        description: form.description || undefined,
+        manualTransferReference: form.manualTransferReference.trim(),
+      }),
+    onSuccess: () => {
+      toast.success('Thank you! We recorded your transfer and will verify it soon.')
+      onClose()
     },
     onError: (err: Error) => toast.error(err.message),
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.donorName) return toast.error('Enter your name')
+    if (!form.donorName.trim()) return toast.error('Enter your name')
     if (isPhysical) {
       physicalMutation.mutate()
     } else {
-      if (!form.donorEmail) return toast.error('Email is required for monetary donations')
+      if (!form.donorEmail.trim()) return toast.error('Email is required for monetary donations')
       if (!form.amount || Number(form.amount) < 100) return toast.error('Enter a valid amount (min ₦100)')
-      monetaryMutation.mutate()
+      if (payMode === 'manual') {
+        if (!form.manualTransferReference.trim()) return toast.error('Enter your bank transfer reference')
+        manualMutation.mutate()
+      } else {
+        paystackMutation.mutate()
+      }
     }
   }
 
-  const loading = physicalMutation.isPending || monetaryMutation.isPending
+  const loading =
+    physicalMutation.isPending || paystackMutation.isPending || manualMutation.isPending
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Donate: ${type.name}`} size="md">
@@ -263,7 +299,69 @@ function DonationModal({
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
             placeholder="5000"
             required
+            min={100}
           />
+        )}
+        {!isPhysical && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Payment method</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPayMode('paystack')}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-sm transition-all ${
+                  payMode === 'paystack'
+                    ? 'border-[#1a6b3a] bg-[#1a6b3a]/5'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <CreditCard className={`w-5 h-5 ${payMode === 'paystack' ? 'text-[#1a6b3a]' : 'text-gray-400'}`} />
+                <span className="font-semibold text-gray-900">Paystack</span>
+                <span className="text-[10px] text-gray-500 text-center">Card, bank, USSD</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPayMode('manual')}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-sm transition-all ${
+                  payMode === 'manual'
+                    ? 'border-[#1a6b3a] bg-[#1a6b3a]/5'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <Landmark className={`w-5 h-5 ${payMode === 'manual' ? 'text-[#1a6b3a]' : 'text-gray-400'}`} />
+                <span className="font-semibold text-gray-900">Bank transfer</span>
+                <span className="text-[10px] text-gray-500 text-center">Manual / offline</span>
+              </button>
+            </div>
+          </div>
+        )}
+        {payMode === 'manual' && !isPhysical && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-950 space-y-1">
+            <p className="font-semibold text-amber-900">Pay into</p>
+            <p>
+              <span className="text-amber-800/80">Bank: </span>
+              {bank.bankName}
+            </p>
+            <p>
+              <span className="text-amber-800/80">Account name: </span>
+              {bank.accountName}
+            </p>
+            <p>
+              <span className="text-amber-800/80">Account no.: </span>
+              <span className="font-mono font-medium">{bank.accountNumber}</span>
+            </p>
+            <p className="text-xs text-amber-800/90 pt-1">
+              Use your name or the reference below in the transfer narration. After paying, submit the reference
+              your bank gave you.
+            </p>
+            <Input
+              label="Transfer reference (from bank / receipt)"
+              value={form.manualTransferReference}
+              onChange={(e) => setForm({ ...form, manualTransferReference: e.target.value })}
+              placeholder="e.g. NIP txn ref or receipt ID"
+              required
+            />
+          </div>
         )}
         {isPhysical && (
           <Textarea
@@ -285,7 +383,11 @@ function DonationModal({
             Cancel
           </Button>
           <Button type="submit" loading={loading} className="flex-1">
-            {isPhysical ? 'Submit Donation' : 'Proceed to Pay'}
+            {isPhysical
+              ? 'Submit Donation'
+              : payMode === 'manual'
+                ? 'Submit transfer details'
+                : 'Pay with Paystack'}
           </Button>
         </div>
       </form>

@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 declare const HeroSlide: mongoose.Model<{
     isActive: boolean;
     title: string;
-    order: number;
     imageUrl: string;
+    order: number;
     ctaText: string;
     ctaLink: string;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -13,8 +13,8 @@ declare const HeroSlide: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     isActive: boolean;
     title: string;
-    order: number;
     imageUrl: string;
+    order: number;
     ctaText: string;
     ctaLink: string;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -26,8 +26,8 @@ declare const HeroSlide: mongoose.Model<{
 }> & {
     isActive: boolean;
     title: string;
-    order: number;
     imageUrl: string;
+    order: number;
     ctaText: string;
     ctaLink: string;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -43,8 +43,8 @@ declare const HeroSlide: mongoose.Model<{
 }, {
     isActive: boolean;
     title: string;
-    order: number;
     imageUrl: string;
+    order: number;
     ctaText: string;
     ctaLink: string;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -54,8 +54,8 @@ declare const HeroSlide: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     isActive: boolean;
     title: string;
-    order: number;
     imageUrl: string;
+    order: number;
     ctaText: string;
     ctaLink: string;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
@@ -67,8 +67,8 @@ declare const HeroSlide: mongoose.Model<{
 }>> & mongoose.FlatRecord<{
     isActive: boolean;
     title: string;
-    order: number;
     imageUrl: string;
+    order: number;
     ctaText: string;
     ctaLink: string;
     createdBy?: mongoose.Types.ObjectId | null | undefined;

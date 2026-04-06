@@ -1,6 +1,7 @@
 import Leadership from './leadership.model.js';
 import LeadershipGroup from '../leadershipGroup/leadershipGroup.model.js';
 import { requireAdminAuth, AuthContext } from '../../middleware/auth.js';
+import { findLeadershipGroupBySlugParam } from '../../utils/leadershipGroupSlug.js';
 
 const MEMBER_POPULATE = 'firstName lastName profilePicture memberNumber sport state';
 
@@ -36,7 +37,7 @@ const leadershipResolvers = {
     getAllLeadership: async (_: any, { groupId, groupSlug, isCurrent, state }: any) => {
       const filter: any = {};
       if (groupSlug) {
-        const group = await LeadershipGroup.findOne({ slug: groupSlug });
+        const group = await findLeadershipGroupBySlugParam(groupSlug);
         if (group) filter.groupId = group._id;
       } else if (groupId) {
         filter.groupId = groupId;

@@ -9,8 +9,8 @@ declare const paymentResolvers: {
     Query: {
         getAllPayments: (_: any, { memberId, status, year, paymentTypeId, dateFrom, dateTo, reference }: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             year: number;
-            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
+            memberId: import("mongoose").Types.ObjectId;
             amount: number;
             transactionRef: string;
             paymentTypeId: import("mongoose").Types.ObjectId;
@@ -24,8 +24,8 @@ declare const paymentResolvers: {
             timestamps: true;
         }> & {
             year: number;
-            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
+            memberId: import("mongoose").Types.ObjectId;
             amount: number;
             transactionRef: string;
             paymentTypeId: import("mongoose").Types.ObjectId;
@@ -42,8 +42,8 @@ declare const paymentResolvers: {
         })[]>;
         getMemberPayments: (_: any, { memberId }: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             year: number;
-            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
+            memberId: import("mongoose").Types.ObjectId;
             amount: number;
             transactionRef: string;
             paymentTypeId: import("mongoose").Types.ObjectId;
@@ -57,8 +57,8 @@ declare const paymentResolvers: {
             timestamps: true;
         }> & {
             year: number;
-            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
+            memberId: import("mongoose").Types.ObjectId;
             amount: number;
             transactionRef: string;
             paymentTypeId: import("mongoose").Types.ObjectId;
@@ -77,8 +77,8 @@ declare const paymentResolvers: {
             id: string;
         }, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             year: number;
-            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
+            memberId: import("mongoose").Types.ObjectId;
             amount: number;
             transactionRef: string;
             paymentTypeId: import("mongoose").Types.ObjectId;
@@ -92,8 +92,8 @@ declare const paymentResolvers: {
             timestamps: true;
         }> & {
             year: number;
-            memberId: import("mongoose").Types.ObjectId;
             status: "pending" | "successful" | "failed" | "reversed";
+            memberId: import("mongoose").Types.ObjectId;
             amount: number;
             transactionRef: string;
             paymentTypeId: import("mongoose").Types.ObjectId;
@@ -125,8 +125,8 @@ declare const paymentResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -140,8 +140,8 @@ declare const paymentResolvers: {
                 timestamps: true;
             }> & {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -171,8 +171,8 @@ declare const paymentResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -186,8 +186,8 @@ declare const paymentResolvers: {
                 timestamps: true;
             }> & {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -210,8 +210,8 @@ declare const paymentResolvers: {
             message: string;
             data: import("mongoose").Document<unknown, {}, {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -225,8 +225,8 @@ declare const paymentResolvers: {
                 timestamps: true;
             }> & {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -249,8 +249,8 @@ declare const paymentResolvers: {
             message: string;
             data: (import("mongoose").Document<unknown, {}, {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;
@@ -264,8 +264,8 @@ declare const paymentResolvers: {
                 timestamps: true;
             }> & {
                 year: number;
-                memberId: import("mongoose").Types.ObjectId;
                 status: "pending" | "successful" | "failed" | "reversed";
+                memberId: import("mongoose").Types.ObjectId;
                 amount: number;
                 transactionRef: string;
                 paymentTypeId: import("mongoose").Types.ObjectId;

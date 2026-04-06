@@ -2,7 +2,8 @@ import graphqlClient from './graphqlClient'
 import { Event, MutationResponse } from '@/types'
 
 const EVENT_FIELDS = `
-  id title slug excerpt content coverImage status isFeatured createdAt 
+  id title slug excerpt content coverImage status isFeatured views eventDate publishedAt createdAt updatedAt
+  eventType eventDate venue
 `
 
 export const getAllEvents = async (params?: {
@@ -58,7 +59,11 @@ export const getFeaturedEvents = async (): Promise<Event[]> => {
 export const createEvent = async (data: object): Promise<Event> => {
   const mutation = `
     mutation CreateEvent($data: CreateEventInput!) {
-      createEvent(data: $data) { success message  }
+      createEvent(data: $data) {
+        success
+        message
+        data { ${EVENT_FIELDS} }
+      }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { data } })

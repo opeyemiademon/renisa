@@ -3,15 +3,15 @@ declare const MemberNotification: mongoose.Model<{
     type: string;
     message: string;
     title: string;
-    isRead: boolean;
     memberId: mongoose.Types.ObjectId;
+    isRead: boolean;
     link?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     type: string;
     message: string;
     title: string;
-    isRead: boolean;
     memberId: mongoose.Types.ObjectId;
+    isRead: boolean;
     link?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
@@ -19,8 +19,8 @@ declare const MemberNotification: mongoose.Model<{
     type: string;
     message: string;
     title: string;
-    isRead: boolean;
     memberId: mongoose.Types.ObjectId;
+    isRead: boolean;
     link?: string | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
@@ -32,15 +32,15 @@ declare const MemberNotification: mongoose.Model<{
     type: string;
     message: string;
     title: string;
-    isRead: boolean;
     memberId: mongoose.Types.ObjectId;
+    isRead: boolean;
     link?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     type: string;
     message: string;
     title: string;
-    isRead: boolean;
     memberId: mongoose.Types.ObjectId;
+    isRead: boolean;
     link?: string | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
@@ -48,8 +48,8 @@ declare const MemberNotification: mongoose.Model<{
     type: string;
     message: string;
     title: string;
-    isRead: boolean;
     memberId: mongoose.Types.ObjectId;
+    isRead: boolean;
     link?: string | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;

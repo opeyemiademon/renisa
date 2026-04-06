@@ -5,8 +5,8 @@ declare const communicationResolvers: {
             communications: (import("mongoose").Document<unknown, {}, {
                 type: "email" | "sms" | "both";
                 message: string;
-                subject: string;
                 status: "pending" | "failed" | "sent";
+                subject: string;
                 recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
@@ -19,8 +19,8 @@ declare const communicationResolvers: {
             }> & {
                 type: "email" | "sms" | "both";
                 message: string;
-                subject: string;
                 status: "pending" | "failed" | "sent";
+                subject: string;
                 recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
@@ -42,8 +42,8 @@ declare const communicationResolvers: {
         }, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             type: "email" | "sms" | "both";
             message: string;
-            subject: string;
             status: "pending" | "failed" | "sent";
+            subject: string;
             recipients: "state" | "active" | "all" | "specific";
             specificMembers: import("mongoose").Types.ObjectId[];
             sentCount: number;
@@ -56,8 +56,8 @@ declare const communicationResolvers: {
         }> & {
             type: "email" | "sms" | "both";
             message: string;
-            subject: string;
             status: "pending" | "failed" | "sent";
+            subject: string;
             recipients: "state" | "active" | "all" | "specific";
             specificMembers: import("mongoose").Types.ObjectId[];
             sentCount: number;
@@ -80,8 +80,8 @@ declare const communicationResolvers: {
             data: (import("mongoose").Document<unknown, {}, {
                 type: "email" | "sms" | "both";
                 message: string;
-                subject: string;
                 status: "pending" | "failed" | "sent";
+                subject: string;
                 recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;
@@ -94,8 +94,8 @@ declare const communicationResolvers: {
             }> & {
                 type: "email" | "sms" | "both";
                 message: string;
-                subject: string;
                 status: "pending" | "failed" | "sent";
+                subject: string;
                 recipients: "state" | "active" | "all" | "specific";
                 specificMembers: import("mongoose").Types.ObjectId[];
                 sentCount: number;

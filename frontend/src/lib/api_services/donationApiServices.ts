@@ -2,11 +2,14 @@ import graphqlClient from './graphqlClient'
 import { Donation, DonationType, MutationResponse } from '@/types'
 
 const DONATION_FIELDS = `
-  id donorName donorEmail donorPhone amount items description donationMode
-  isMonetary isAcknowledged status acknowledgedAt paymentStatus createdAt updatedAt
+  id donorName donorEmail donorPhone amount currency donationMode
+  items physicalItems description notes adminNotes
+  quantity estimatedValue preferredDropoffDate
+  isMonetary isAcknowledged status acknowledgedAt paymentStatus paymentMethod createdAt updatedAt
+  paystackRef manualTransferReference
   donationType { id name donationMode }
   member { id firstName lastName memberNumber }
-  invoice { id invoiceNumber amount status createdAt }
+  invoice { id invoiceNumber amount currency status pdfUrl createdAt }
 `
 
 export const getDonationTypes = async (activeOnly = true): Promise<DonationType[]> => {
@@ -67,14 +70,28 @@ export const submitPhysicalDonation = async (data: {
   description?: string
   items?: string
 }): Promise<Donation> => {
+  const payload = {
+    donationTypeId: data.donationTypeId,
+    donorName: data.donorName,
+    donorEmail: data.donorEmail,
+    donorPhone: data.donorPhone,
+    notes: data.description,
+    physicalItems: (data.items || '').trim() || 'To be confirmed with donor',
+  }
   const mutation = `
     mutation SubmitPhysicalDonation($data: SubmitPhysicalDonationInput!) {
-      submitPhysicalDonation(data: $data) { ${DONATION_FIELDS} }
+      submitPhysicalDonation(data: $data) {
+        success
+        message
+        data { ${DONATION_FIELDS} }
+      }
     }
   `
-  const response = await graphqlClient.post('', { query: mutation, variables: { data } })
+  const response = await graphqlClient.post('', { query: mutation, variables: { data: payload } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.submitPhysicalDonation
+  const r = response.data.data.submitPhysicalDonation
+  if (!r.success) throw new Error(r.message)
+  return r.data
 }
 
 export const initiateMonetaryDonation = async (data: {
@@ -84,19 +101,78 @@ export const initiateMonetaryDonation = async (data: {
   donorPhone?: string
   amount: number
   description?: string
-}): Promise<{ authorizationUrl: string; reference: string; donationId: string }> => {
+}): Promise<{
+  authorizationUrl?: string
+  invoiceNumber?: string
+  success: boolean
+  message: string
+  donationId?: string
+  paystackRef?: string
+}> => {
+  const payload = {
+    donationTypeId: data.donationTypeId,
+    donorName: data.donorName,
+    donorEmail: data.donorEmail,
+    donorPhone: data.donorPhone,
+    amount: data.amount,
+    notes: data.description,
+  }
   const mutation = `
     mutation InitiateMonetaryDonation($data: InitiateMonetaryDonationInput!) {
       initiateMonetaryDonation(data: $data) {
+        success
+        message
         authorizationUrl
-        reference
-        donationId
+        invoiceNumber
+        data { id paystackRef }
       }
     }
   `
-  const response = await graphqlClient.post('', { query: mutation, variables: { data } })
+  const response = await graphqlClient.post('', { query: mutation, variables: { data: payload } })
   if (response.data.errors) throw new Error(response.data.errors[0].message)
-  return response.data.data.initiateMonetaryDonation
+  const r = response.data.data.initiateMonetaryDonation
+  return {
+    success: r.success,
+    message: r.message,
+    authorizationUrl: r.authorizationUrl || undefined,
+    invoiceNumber: r.invoiceNumber || undefined,
+    donationId: r.data?.id,
+    paystackRef: r.data?.paystackRef || undefined,
+  }
+}
+
+export const submitManualMonetaryDonation = async (data: {
+  donationTypeId: string
+  donorName: string
+  donorEmail: string
+  donorPhone?: string
+  amount: number
+  description?: string
+  manualTransferReference: string
+}): Promise<Donation> => {
+  const payload = {
+    donationTypeId: data.donationTypeId,
+    donorName: data.donorName,
+    donorEmail: data.donorEmail,
+    donorPhone: data.donorPhone,
+    amount: data.amount,
+    notes: data.description,
+    manualTransferReference: data.manualTransferReference.trim(),
+  }
+  const mutation = `
+    mutation SubmitManualMonetaryDonation($data: SubmitManualMonetaryDonationInput!) {
+      submitManualMonetaryDonation(data: $data) {
+        success
+        message
+        data { ${DONATION_FIELDS} }
+      }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { data: payload } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  const r = response.data.data.submitManualMonetaryDonation
+  if (!r.success) throw new Error(r.message)
+  return r.data
 }
 
 export const verifyDonationPayment = async (reference: string): Promise<Donation> => {

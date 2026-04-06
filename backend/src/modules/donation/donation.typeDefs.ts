@@ -26,6 +26,7 @@ const donationTypeDefs = gql`
     paymentMethod: String
     paymentStatus: String!
     paystackRef: String
+    manualTransferReference: String
     paidAt: String
     notes: String
     description: String
@@ -77,6 +78,21 @@ const donationTypeDefs = gql`
     notes: String
   }
 
+  input SubmitManualMonetaryDonationInput {
+    donorName: String!
+    donorEmail: String!
+    donorPhone: String
+    donorAddress: String
+    donorCity: String
+    donorState: String
+    memberId: ID
+    donationTypeId: ID!
+    amount: Float!
+    currency: String
+    notes: String
+    manualTransferReference: String!
+  }
+
   extend type Query {
     getAllDonations(status: String, donationMode: String): [Donation!]!
     getDonation(id: ID!): Donation
@@ -85,6 +101,7 @@ const donationTypeDefs = gql`
   extend type Mutation {
     submitPhysicalDonation(data: SubmitPhysicalDonationInput!): DonationResponse!
     initiateMonetaryDonation(data: InitiateMonetaryDonationInput!): DonationResponse!
+    submitManualMonetaryDonation(data: SubmitManualMonetaryDonationInput!): DonationResponse!
     verifyDonationPayment(reference: String!): DonationResponse!
     acknowledgeDonation(id: ID!, adminNotes: String): DonationResponse!
   }

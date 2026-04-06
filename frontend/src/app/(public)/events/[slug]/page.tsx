@@ -9,10 +9,15 @@ import { PageLoader } from '@/components/shared/Spinner'
 import { Badge } from '@/components/shared/Badge'
 import toast from 'react-hot-toast'
 
-export default function EventDetailPage({ params }: { params: { slug: string } }) {
+import { useParams } from 'next/navigation'
+
+export default function EventDetailPage() {
+
+  const params = useParams()
+  const slug = params.slug as string
   const { data: event, isLoading } = useQuery({
-    queryKey: ['event-by-slug', params.slug],
-    queryFn: () => getEventBySlug(params.slug),
+    queryKey: ['event-by-slug', slug],
+    queryFn: () => getEventBySlug(slug),
   })
 
   const handleShare = () => {
@@ -71,7 +76,7 @@ export default function EventDetailPage({ params }: { params: { slug: string } }
           {ev.eventDate && (
             <span className="flex items-center gap-1.5 text-gray-500 text-sm">
               <Calendar className="w-4 h-4" />
-              {formatDate(ev.eventDate, 'dd MMMM yyyy')}
+              {formatDate(ev.eventDate)}
             </span>
           )}
           {ev.venue && (
@@ -94,7 +99,7 @@ export default function EventDetailPage({ params }: { params: { slug: string } }
         />
 
         <div className="mt-12 pt-6 border-t border-gray-200 text-sm text-gray-400">
-          Published {formatDate(event.createdAt, 'dd MMMM yyyy')}
+          Published {formatDate(event.createdAt)}
         </div>
       </div>
     </div>

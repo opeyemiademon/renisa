@@ -6,11 +6,24 @@ import Link from 'next/link'
 import { getLeadershipBySlug, getLeadershipMember } from '@/lib/api_services/leadershipApiServices'
 import { buildImageUrl, formatDate } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
+import type { LeadershipMember } from '@/types'
 
 interface LeadershipProfileProps {
   slug: string
   backHref: string
   backLabel: string
+}
+
+function displayName(m: LeadershipMember): string {
+  if (m.name?.trim()) return m.name.trim()
+  const mid = m.memberId
+  if (mid) return `${mid.firstName || ''} ${mid.lastName || ''}`.trim() || 'Member'
+  return 'Member'
+}
+
+function profilePhoto(m: LeadershipMember): string | null {
+  const mid = m.memberId
+  return m.profilePicture || m.photo || mid?.profilePicture || null
 }
 
 export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfileProps) {
@@ -32,7 +45,9 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
     )
   }
 
-  const bioText = (member as { memberId?: { bio?: string } }).memberId?.bio || member.bio
+  const name = displayName(member)
+  const pic = profilePhoto(member)
+  const bioText = member.memberId?.bio || member.bio
   const tenureLabel = member.tenure
     ? member.tenure
     : member.tenureStart
@@ -59,17 +74,17 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
         <div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
           <div className="relative -mt-16 sm:-mt-20 flex-shrink-0">
             <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white shadow-lg overflow-hidden bg-[#1a6b3a]">
-              {member.profilePicture ? (
-                <img src={buildImageUrl(member.profilePicture)} alt={member.name} className="w-full h-full object-cover" />
+              {pic ? (
+                <img src={buildImageUrl(pic)} alt={name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-white text-4xl font-bold">{member.name.charAt(0)}</span>
+                  <span className="text-white text-4xl font-bold">{name.charAt(0)}</span>
                 </div>
               )}
             </div>
           </div>
           <div className="mt-2 sm:mt-4">
-            <h1 className="text-3xl font-bold text-gray-900 font-serif">{member.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 font-serif">{name}</h1>
             <p className="text-[#1a6b3a] font-semibold mt-1">{member.position}</p>
             {member.state && <p className="text-gray-500 text-sm">{member.state}</p>}
             <div className="flex items-center gap-1.5 text-gray-400 text-sm mt-2">

@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 declare const Communication: mongoose.Model<{
     type: "email" | "sms" | "both";
     message: string;
-    subject: string;
     status: "pending" | "failed" | "sent";
+    subject: string;
     recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
@@ -14,8 +14,8 @@ declare const Communication: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     type: "email" | "sms" | "both";
     message: string;
-    subject: string;
     status: "pending" | "failed" | "sent";
+    subject: string;
     recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
@@ -28,8 +28,8 @@ declare const Communication: mongoose.Model<{
 }> & {
     type: "email" | "sms" | "both";
     message: string;
-    subject: string;
     status: "pending" | "failed" | "sent";
+    subject: string;
     recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
@@ -46,8 +46,8 @@ declare const Communication: mongoose.Model<{
 }, {
     type: "email" | "sms" | "both";
     message: string;
-    subject: string;
     status: "pending" | "failed" | "sent";
+    subject: string;
     recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
@@ -58,8 +58,8 @@ declare const Communication: mongoose.Model<{
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     type: "email" | "sms" | "both";
     message: string;
-    subject: string;
     status: "pending" | "failed" | "sent";
+    subject: string;
     recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;
@@ -72,8 +72,8 @@ declare const Communication: mongoose.Model<{
 }>> & mongoose.FlatRecord<{
     type: "email" | "sms" | "both";
     message: string;
-    subject: string;
     status: "pending" | "failed" | "sent";
+    subject: string;
     recipients: "state" | "active" | "all" | "specific";
     specificMembers: mongoose.Types.ObjectId[];
     sentCount: number;

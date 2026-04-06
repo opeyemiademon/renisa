@@ -1,8 +1,9 @@
 import graphqlClient from './graphqlClient'
-import { Award, AwardCategory, MutationResponse } from '@/types'
+import type { Award, AwardCategory, CategoryWinner, MutationResponse } from '@/types'
 
 const AWARD_FIELDS = `
   id  year  votingEnabled votingStartDate votingEndDate totalVotes status createdAt
+  recipientName title recipientPhoto
   categoryId { id name pollActive votingStartDate votingEndDate }
   memberId { id firstName lastName profilePicture memberNumber }
 `
@@ -17,10 +18,11 @@ export const getAllAwards = async (params?: {
   votingEnabled?: boolean
   status?: string
   memberName?: string
-}) => {
+  limit?: number
+}): Promise<Award[]> => {
   const query = `
-    query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean, $status: String, $memberName: String) {
-      getAllAwards(year: $year, categoryId: $categoryId, votingEnabled: $votingEnabled, status: $status, memberName: $memberName) {
+    query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean, $status: String, $memberName: String, $limit: Int) {
+      getAllAwards(year: $year, categoryId: $categoryId, votingEnabled: $votingEnabled, status: $status, memberName: $memberName, limit: $limit) {
         ${AWARD_FIELDS}
       }
     }
@@ -178,7 +180,7 @@ export const endCategoryPoll = async (id: string): Promise<MutationResponse> => 
 
 // ── Winners Report ────────────────────────────────────────────────────────────
 
-export const getAwardWinnersReport = async (year?: number) => {
+export const getAwardWinnersReport = async (year?: number): Promise<CategoryWinner[]> => {
   const query = `
     query GetAwardWinnersReport($year: Int) {
       getAwardWinnersReport(year: $year) {

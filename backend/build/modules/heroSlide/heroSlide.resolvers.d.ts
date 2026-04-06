@@ -6,8 +6,8 @@ declare const heroSlideResolvers: {
         }) => Promise<(import("mongoose").Document<unknown, {}, {
             isActive: boolean;
             title: string;
-            order: number;
             imageUrl: string;
+            order: number;
             ctaText: string;
             ctaLink: string;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -19,8 +19,8 @@ declare const heroSlideResolvers: {
         }> & {
             isActive: boolean;
             title: string;
-            order: number;
             imageUrl: string;
+            order: number;
             ctaText: string;
             ctaLink: string;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -37,8 +37,8 @@ declare const heroSlideResolvers: {
         }) => Promise<(import("mongoose").Document<unknown, {}, {
             isActive: boolean;
             title: string;
-            order: number;
             imageUrl: string;
+            order: number;
             ctaText: string;
             ctaLink: string;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -50,8 +50,8 @@ declare const heroSlideResolvers: {
         }> & {
             isActive: boolean;
             title: string;
-            order: number;
             imageUrl: string;
+            order: number;
             ctaText: string;
             ctaLink: string;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -73,8 +73,8 @@ declare const heroSlideResolvers: {
             data: import("mongoose").Document<unknown, {}, {
                 isActive: boolean;
                 title: string;
-                order: number;
                 imageUrl: string;
+                order: number;
                 ctaText: string;
                 ctaLink: string;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -86,8 +86,8 @@ declare const heroSlideResolvers: {
             }> & {
                 isActive: boolean;
                 title: string;
-                order: number;
                 imageUrl: string;
+                order: number;
                 ctaText: string;
                 ctaLink: string;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -106,8 +106,8 @@ declare const heroSlideResolvers: {
             data: import("mongoose").Document<unknown, {}, {
                 isActive: boolean;
                 title: string;
-                order: number;
                 imageUrl: string;
+                order: number;
                 ctaText: string;
                 ctaLink: string;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -119,8 +119,8 @@ declare const heroSlideResolvers: {
             }> & {
                 isActive: boolean;
                 title: string;
-                order: number;
                 imageUrl: string;
+                order: number;
                 ctaText: string;
                 ctaLink: string;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;

@@ -4,27 +4,56 @@ import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { Users, ChevronRight } from 'lucide-react'
 import { getLeadershipGroups } from '@/lib/api_services/leadershipApiServices'
+import { leadershipUrlSegment } from '@/lib/leadershipPublicRoutes'
 import { PageLoader } from '@/components/shared/Spinner'
-
-const groupLinks: Record<string, string> = {
-  'board-of-trustees': '/leadership/board-of-trustees',
-  'national-executives': '/leadership/national-executives',
-  'state-executives': '/leadership/state-executives',
-  directorate: '/leadership/directorate',
-}
 
 const groupColors: Record<string, string> = {
   'board-of-trustees': 'from-[#0d4a25] to-[#1a6b3a]',
   'national-executives': 'from-[#1a6b3a] to-[#2d9a57]',
   'state-executives': 'from-[#d4a017] to-[#e8b830]',
   directorate: 'from-[#2d9a57] to-[#1a6b3a]',
+  bot: 'from-[#0d4a25] to-[#1a6b3a]',
+  nec: 'from-[#1a6b3a] to-[#2d9a57]',
 }
+
+const fallbackGroups = [
+  {
+    slug: 'board-of-trustees',
+    name: 'Board of Trustees',
+    description: 'The highest governing body of RENISA, providing strategic direction and oversight.',
+  },
+  {
+    slug: 'national-executives',
+    name: 'National Executives',
+    description: 'The executive team responsible for day-to-day operations and policy implementation.',
+  },
+  {
+    slug: 'state-executives',
+    name: 'State Executives',
+    description: 'State-level representatives and executives across all 36 states and FCT.',
+  },
+  {
+    slug: 'directorate',
+    name: 'Directorate',
+    description: 'Technical and administrative directors managing key departments.',
+  },
+]
 
 export default function LeadershipPage() {
   const { data: groups, isLoading } = useQuery({
     queryKey: ['leadership-groups'],
     queryFn: getLeadershipGroups,
   })
+
+  const list =
+    groups && groups.length > 0
+      ? groups.map((g) => ({
+          id: g.id,
+          slug: g.slug,
+          name: g.name,
+          description: g.description || '',
+        }))
+      : fallbackGroups.map((g, i) => ({ id: `fallback-${i}`, ...g }))
 
   return (
     <div className="bg-white min-h-screen">
@@ -45,50 +74,33 @@ export default function LeadershipPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <PageLoader />
-          ) : !groups || groups.length === 0 ? (
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                { slug: 'board-of-trustees', name: 'Board of Trustees', description: 'The highest governing body of RENISA, providing strategic direction and oversight.' },
-                { slug: 'national-executives', name: 'National Executives', description: 'The executive team responsible for day-to-day operations and policy implementation.' },
-                { slug: 'state-executives', name: 'State Executives', description: 'State-level representatives and executives across all 36 states and FCT.' },
-                { slug: 'directorate', name: 'Directorate', description: 'Technical and administrative directors managing key departments.' },
-              ].map((group) => (
-                <Link key={group.slug} href={groupLinks[group.slug] || `/leadership/${group.slug}`}>
-                  <div className={`bg-gradient-to-br ${groupColors[group.slug] || 'from-[#1a6b3a] to-[#2d9a57]'} rounded-2xl p-8 text-white hover:opacity-90 transition-opacity cursor-pointer`}>
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 bg-white/15 rounded-xl mb-5">
-                        <Users className="w-7 h-7 text-white" />
-                      </div>
-                      <ChevronRight className="w-6 h-6 text-white/60" />
-                    </div>
-                    <h2 className="text-2xl font-bold font-serif mb-3">{group.name}</h2>
-                    <p className="text-white/80 text-sm leading-relaxed">{group.description}</p>
-                    <div className="mt-6 pt-4 border-t border-white/20">
-                      <span className="text-sm font-medium text-white/90">View Members →</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {groups.map((group) => (
-                <Link key={group.id} href={groupLinks[group.slug] || `/leadership/${group.slug}`}>
-                  <div className={`bg-gradient-to-br ${groupColors[group.slug] || 'from-[#1a6b3a] to-[#2d9a57]'} rounded-2xl p-8 text-white hover:opacity-90 transition-opacity cursor-pointer`}>
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 bg-white/15 rounded-xl mb-5">
-                        <Users className="w-7 h-7 text-white" />
+              {list.map((group) => {
+                const pathSegment = leadershipUrlSegment(group.slug)
+                const gradient = groupColors[pathSegment] || groupColors[group.slug] || 'from-[#1a6b3a] to-[#2d9a57]'
+                return (
+                  <Link key={group.id} href={`/leadership/${pathSegment}`}>
+                    <div
+                      className={`bg-gradient-to-br ${gradient} rounded-2xl p-8 text-white hover:opacity-90 transition-opacity cursor-pointer h-full`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="p-3 bg-white/15 rounded-xl mb-5">
+                          <Users className="w-7 h-7 text-white" />
+                        </div>
+                        <ChevronRight className="w-6 h-6 text-white/60" />
                       </div>
-                      <ChevronRight className="w-6 h-6 text-white/60" />
+                      <h2 className="text-2xl font-bold font-serif mb-3">{group.name}</h2>
+                      <p className="text-white/80 text-sm leading-relaxed min-h-[3rem]">
+                        {group.description || 'View members in this leadership group.'}
+                      </p>
+                      <div className="mt-6 pt-4 border-t border-white/20">
+                        <span className="text-sm font-medium text-white/90">View Members →</span>
+                      </div>
                     </div>
-                    <h2 className="text-2xl font-bold font-serif mb-3">{group.name}</h2>
-                    <p className="text-white/80 text-sm leading-relaxed">{group.description}</p>
-                    <div className="mt-6 pt-4 border-t border-white/20">
-                      <span className="text-sm font-medium text-white/90">View Members →</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                )
+              })}
             </div>
           )}
         </div>

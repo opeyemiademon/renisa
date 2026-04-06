@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 declare const Payment: mongoose.Model<{
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
+    memberId: mongoose.Types.ObjectId;
     amount: number;
     transactionRef: string;
     paymentTypeId: mongoose.Types.ObjectId;
@@ -14,8 +14,8 @@ declare const Payment: mongoose.Model<{
     processedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
+    memberId: mongoose.Types.ObjectId;
     amount: number;
     transactionRef: string;
     paymentTypeId: mongoose.Types.ObjectId;
@@ -29,8 +29,8 @@ declare const Payment: mongoose.Model<{
     timestamps: true;
 }> & {
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
+    memberId: mongoose.Types.ObjectId;
     amount: number;
     transactionRef: string;
     paymentTypeId: mongoose.Types.ObjectId;
@@ -48,8 +48,8 @@ declare const Payment: mongoose.Model<{
     timestamps: true;
 }, {
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
+    memberId: mongoose.Types.ObjectId;
     amount: number;
     transactionRef: string;
     paymentTypeId: mongoose.Types.ObjectId;
@@ -61,8 +61,8 @@ declare const Payment: mongoose.Model<{
     processedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
+    memberId: mongoose.Types.ObjectId;
     amount: number;
     transactionRef: string;
     paymentTypeId: mongoose.Types.ObjectId;
@@ -76,8 +76,8 @@ declare const Payment: mongoose.Model<{
     timestamps: true;
 }>> & mongoose.FlatRecord<{
     year: number;
-    memberId: mongoose.Types.ObjectId;
     status: "pending" | "successful" | "failed" | "reversed";
+    memberId: mongoose.Types.ObjectId;
     amount: number;
     transactionRef: string;
     paymentTypeId: mongoose.Types.ObjectId;

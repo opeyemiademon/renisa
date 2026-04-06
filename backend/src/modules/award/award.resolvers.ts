@@ -39,7 +39,7 @@ const awardResolvers = {
   },
 
   Query: {
-    getAllAwards: async (_: any, { year, status, categoryId, votingEnabled, memberName }: any) => {
+    getAllAwards: async (_: any, { year, status, categoryId, votingEnabled, memberName, limit }: any) => {
       const filter: any = {};
       if (year) filter.year = year;
       if (status) filter.status = status;
@@ -54,12 +54,16 @@ const awardResolvers = {
           $or: [
             { firstName: nameRegex },
             { lastName: nameRegex },
-          ],
+          ], 
         }).select('_id');
         filter.memberId = { $in: members.map((m: any) => m._id) };
       }
 
-      return populate(Award.find(filter)).sort({ year: -1, createdAt: -1 });
+      let q = populate(Award.find(filter)).sort({ year: -1, createdAt: -1 });
+      if (typeof limit === 'number' && limit > 0) {
+        q = q.limit(Math.min(limit, 200));
+      }
+      return q;
     },
 
     getAward: async (_: any, { id }: { id: string }) => {

@@ -19,6 +19,146 @@ const generateInvoiceNumber = (): string => {
   return `RENISA-INV-${year}-${rand}`;
 };
 
+type MonetaryDonationData = {
+  donorName: string;
+  donorEmail: string;
+  donorPhone?: string;
+  donorAddress?: string;
+  donorCity?: string;
+  donorState?: string;
+  memberId?: string;
+  donationTypeId: string;
+  amount: number;
+  currency?: string;
+  notes?: string;
+};
+
+async function runMonetaryDonation(
+  data: MonetaryDonationData,
+  options: { paymentMethod: 'paystack' | 'bank_transfer'; manualTransferReference?: string }
+) {
+  const donationType = await DonationType.findById(data.donationTypeId);
+  if (!donationType) throw new Error('Donation type not found');
+
+  const invoiceNumber = generateInvoiceNumber();
+  const paystackRef =
+    options.paymentMethod === 'paystack'
+      ? `RENISA-DON-${uuidv4().slice(0, 8).toUpperCase()}`
+      : `RENISA-DON-M-${uuidv4().slice(0, 8).toUpperCase()}`;
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 7);
+
+  const donation = await Donation.create({
+    ...data,
+    donationMode: 'monetary',
+    paymentMethod: options.paymentMethod,
+    paymentStatus: 'pending',
+    paystackRef,
+    ...(options.manualTransferReference
+      ? { manualTransferReference: options.manualTransferReference }
+      : {}),
+  });
+
+  const outputPath = path.join(process.cwd(), 'uploads', UPLOAD_FOLDERS.INVOICES, `${invoiceNumber}.pdf`);
+  let pdfUrl: string | undefined;
+  const paymentLinkHint =
+    options.paymentMethod === 'paystack'
+      ? `${FRONTEND_URL}/donate/pay/${paystackRef}`
+      : `${FRONTEND_URL}/contact`;
+
+  try {
+    await generateDonationInvoice(
+      {
+        invoiceNumber,
+        donorName: data.donorName,
+        donorEmail: data.donorEmail,
+        donationTypeName: donationType.name,
+        amount: data.amount,
+        currency: data.currency || 'NGN',
+        dueDate,
+        paymentLink: paymentLinkHint,
+      },
+      outputPath
+    );
+    pdfUrl = `/uploads/${UPLOAD_FOLDERS.INVOICES}/${invoiceNumber}.pdf`;
+  } catch (err) {
+    console.error('Invoice generation error:', err);
+  }
+
+  const invoice = await DonationInvoice.create({
+    invoiceNumber,
+    donationId: donation._id,
+    donorName: data.donorName,
+    donorEmail: data.donorEmail,
+    donationTypeName: donationType.name,
+    amount: data.amount,
+    currency: data.currency || 'NGN',
+    dueDate,
+    status: 'unpaid',
+    pdfUrl,
+  });
+
+  await Donation.findByIdAndUpdate(donation._id, { invoiceId: invoice._id });
+
+  let authorizationUrl: string | undefined;
+
+  if (options.paymentMethod === 'paystack' && data.donorEmail && PAYSTACK_SECRET) {
+    try {
+      const response = await axios.post(
+        'https://api.paystack.co/transaction/initialize',
+        {
+          email: data.donorEmail,
+          amount: data.amount * 100,
+          reference: paystackRef,
+          callback_url: PAYSTACK_CALLBACK_URL,
+          metadata: { donationId: donation._id.toString(), invoiceNumber, type: 'donation' },
+        },
+        { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
+      );
+      authorizationUrl = response.data.data.authorization_url;
+
+      sendEmail(
+        data.donorEmail,
+        `Donation Invoice #${invoiceNumber} - RENISA`,
+        donationInvoiceTemplate(
+          data.donorName,
+          invoiceNumber,
+          data.amount,
+          authorizationUrl || `${FRONTEND_URL}/donation`
+        )
+      ).catch(console.error);
+    } catch (err) {
+      console.error('Paystack init error:', err);
+    }
+  } else if (options.paymentMethod === 'bank_transfer' && data.donorEmail) {
+    const extra = options.manualTransferReference
+      ? `<p>Your stated transfer reference: <strong>${options.manualTransferReference}</strong></p>`
+      : '';
+    sendEmail(
+      data.donorEmail,
+      `Donation received (pending verification) - RENISA`,
+      `<p>Dear ${data.donorName},</p><p>Thank you. We recorded your pledge of <strong>NGN ${data.amount.toLocaleString()}</strong> and will verify your bank transfer shortly.</p>${extra}<p>Invoice: ${invoiceNumber}</p>`
+    ).catch(console.error);
+  }
+
+  const populated = await Donation.findById(donation._id)
+    .populate('donationTypeId', 'name donationMode')
+    .populate('invoiceId');
+
+  return {
+    success: true,
+    message:
+      options.paymentMethod === 'paystack'
+        ? authorizationUrl
+          ? 'Donation invoice generated'
+          : 'Donation recorded; Paystack could not be started. Use bank transfer or try again later.'
+        : 'Donation submitted. We will verify your transfer shortly.',
+    data: populated,
+    authorizationUrl,
+    invoiceNumber,
+  };
+}
+
 const donationResolvers = {
   Donation: {
     member: (parent: any) => parent.memberId,
@@ -29,6 +169,11 @@ const donationResolvers = {
     items: (parent: any) => parent.physicalItems,
     description: (parent: any) => parent.notes,
     acknowledgedAt: (parent: any) => parent.updatedAt,
+    preferredDropoffDate: (parent: any) =>
+      parent.preferredDropoffDate
+        ? new Date(parent.preferredDropoffDate).toISOString()
+        : null,
+    currency: (parent: any) => parent.currency || 'NGN',
   },
 
   Query: {
@@ -40,6 +185,7 @@ const donationResolvers = {
       return await Donation.find(filter)
         .populate('donationTypeId', 'name donationMode')
         .populate('memberId', 'firstName lastName memberNumber')
+        .populate('invoiceId')
         .populate('acknowledgedBy', 'name')
         .sort({ createdAt: -1 });
     },
@@ -54,93 +200,27 @@ const donationResolvers = {
 
   Mutation: {
     submitPhysicalDonation: async (_: any, { data }: { data: any }) => {
-      const donation = await Donation.create({ ...data, donationMode: 'physical', status: 'pending', paymentStatus: 'pending' });
+      const donation = await Donation.create({
+        ...data,
+        donationMode: 'physical',
+        status: 'pending',
+        paymentStatus: 'pending',
+      });
       return { success: true, message: 'Physical donation submitted. We will contact you soon.', data: donation };
     },
 
     initiateMonetaryDonation: async (_: any, { data }: { data: any }) => {
-      const donationType = await DonationType.findById(data.donationTypeId);
-      if (!donationType) throw new Error('Donation type not found');
+      return runMonetaryDonation(data, { paymentMethod: 'paystack' });
+    },
 
-      const invoiceNumber = generateInvoiceNumber();
-      const paystackRef = `RENISA-DON-${uuidv4().slice(0, 8).toUpperCase()}`;
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 7);
-
-      const donation = await Donation.create({
-        ...data,
-        donationMode: 'monetary',
-        paymentMethod: 'paystack',
-        paymentStatus: 'pending',
-        paystackRef,
+    submitManualMonetaryDonation: async (_: any, { data }: { data: any }) => {
+      const ref = data.manualTransferReference?.trim();
+      if (!ref) throw new Error('Bank transfer reference is required');
+      const { manualTransferReference: _m, ...core } = data;
+      return runMonetaryDonation(core, {
+        paymentMethod: 'bank_transfer',
+        manualTransferReference: ref,
       });
-
-      const outputPath = path.join(process.cwd(), 'uploads', UPLOAD_FOLDERS.INVOICES, `${invoiceNumber}.pdf`);
-      let pdfUrl: string | undefined;
-      try {
-        await generateDonationInvoice({
-          invoiceNumber,
-          donorName: data.donorName,
-          donorEmail: data.donorEmail,
-          donationTypeName: donationType.name,
-          amount: data.amount,
-          currency: data.currency || 'NGN',
-          dueDate,
-          paymentLink: `${FRONTEND_URL}/donate/pay/${paystackRef}`,
-        }, outputPath);
-        pdfUrl = `/uploads/${UPLOAD_FOLDERS.INVOICES}/${invoiceNumber}.pdf`;
-      } catch (err) {
-        console.error('Invoice generation error:', err);
-      }
-
-      const invoice = await DonationInvoice.create({
-        invoiceNumber,
-        donationId: donation._id,
-        donorName: data.donorName,
-        donorEmail: data.donorEmail,
-        donationTypeName: donationType.name,
-        amount: data.amount,
-        currency: data.currency || 'NGN',
-        dueDate,
-        status: 'unpaid',
-        pdfUrl,
-      });
-
-      await Donation.findByIdAndUpdate(donation._id, { invoiceId: invoice._id });
-
-      let authorizationUrl: string | undefined;
-      if (data.donorEmail) {
-        try {
-          const response = await axios.post(
-            'https://api.paystack.co/transaction/initialize',
-            {
-              email: data.donorEmail,
-              amount: data.amount * 100,
-              reference: paystackRef,
-              callback_url: PAYSTACK_CALLBACK_URL,
-              metadata: { donationId: donation._id.toString(), invoiceNumber, type: 'donation' },
-            },
-            { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
-          );
-          authorizationUrl = response.data.data.authorization_url;
-
-          sendEmail(
-            data.donorEmail,
-            `Donation Invoice #${invoiceNumber} - RENISA`,
-            donationInvoiceTemplate(data.donorName, invoiceNumber, data.amount, authorizationUrl || `${FRONTEND_URL}/donate`)
-          ).catch(console.error);
-        } catch (err) {
-          console.error('Paystack init error:', err);
-        }
-      }
-
-      return {
-        success: true,
-        message: 'Donation invoice generated',
-        data: donation,
-        authorizationUrl,
-        invoiceNumber,
-      };
     },
 
     verifyDonationPayment: async (_: any, { reference }: any) => {
@@ -149,15 +229,18 @@ const donationResolvers = {
       if (!donation) throw new Error('Donation not found');
 
       try {
-        const response = await axios.get(
-          `https://api.paystack.co/transaction/verify/${paystackRef}`,
-          { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
-        );
+        const response = await axios.get(`https://api.paystack.co/transaction/verify/${paystackRef}`, {
+          headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` },
+        });
         const isSuccessful = response.data.data.status === 'success';
 
         const updated = await Donation.findByIdAndUpdate(
           donation._id,
-          { paymentStatus: isSuccessful ? 'successful' : 'failed', paidAt: isSuccessful ? new Date() : undefined, status: isSuccessful ? 'received' : 'pending' },
+          {
+            paymentStatus: isSuccessful ? 'successful' : 'failed',
+            paidAt: isSuccessful ? new Date() : undefined,
+            status: isSuccessful ? 'received' : 'pending',
+          },
           { new: true }
         );
 

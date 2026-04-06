@@ -18,7 +18,20 @@ const generateUniqueSlug = async (title: string): Promise<string> => {
   return counter === 0 ? slug : `${slug}-${counter}`;
 };
 
+const normalizeEventDates = (data: Record<string, unknown>) => {
+  const out = { ...data } as Record<string, unknown>;
+  if (out.eventDate === '' || out.eventDate === undefined) delete out.eventDate;
+  else if (typeof out.eventDate === 'string') out.eventDate = new Date(out.eventDate);
+  return out;
+};
+
 const eventResolvers = {
+  Event: {
+    eventType: (parent: any) => parent.eventType || 'news',
+    eventDate: (parent: any) =>
+      parent.eventDate ? new Date(parent.eventDate).toISOString() : null,
+  },
+
   Query: {
     getAllEvents: async (_: any, { status }: any) => {
   
@@ -26,17 +39,20 @@ const eventResolvers = {
     },
 
     getEvent: async (_: any, { id }: { id: string }) => {
-      await Event.findByIdAndUpdate(id, { $inc: { views: 1 } });
       return await Event.findById(id);
     },
 
     getEventBySlug: async (_: any, { slug }: { slug: string }) => {
-      await Event.findOneAndUpdate({ slug }, { $inc: { views: 1 } });
-      return await Event.findOne({ slug });
+      const doc = await Event.findOne({ slug });
+      if (doc && doc.status === 'published') {
+        await Event.findOneAndUpdate({ slug, status: 'published' }, { $inc: { views: 1 } });
+        return await Event.findOne({ slug });
+      }
+      return doc;
     },
 
-    getFeaturedEvents: async (_: any, { limit = 5 }: any) => {
-      return await Event.find({ isFeatured: true, status: 'published' }).limit(limit).sort({ publishedAt: -1 });
+    getFeaturedEvents: async (_: any) => {
+      return await Event.find({ isFeatured: true, status: 'published' }).sort({ publishedAt: -1 });
     },
   },
 
@@ -61,7 +77,8 @@ const eventResolvers = {
       }
       
       const slug = await generateUniqueSlug(data.title);
-      const event = await Event.create({ ...rest, coverImage, slug, createdBy: context.admin!.id });
+      const payload = normalizeEventDates(rest);
+      const event = await Event.create({ ...payload, coverImage, slug, createdBy: context.admin!.id });
       return { success: true, message: 'Event created', data: event };
     },
 
@@ -69,7 +86,7 @@ const eventResolvers = {
       requireAdminAuth(context);
       const { photoBase64, ...rest } = data;
       
-      let updateData = rest;
+      let updateData = normalizeEventDates(rest) as Record<string, unknown>;
       if (photoBase64) {
         try {
           const fileName = await processBase64Upload(
@@ -78,7 +95,7 @@ const eventResolvers = {
             ALLOWED_IMAGE_TYPES,
             'event'
           );
-          updateData.coverImage = `${STATIC_BASE_URL}/uploads/events/${fileName}`;
+          updateData = { ...updateData, coverImage: `${STATIC_BASE_URL}/uploads/events/${fileName}` };
         } catch (uploadError: any) {
           console.error('Photo upload error:', uploadError.message);
         }

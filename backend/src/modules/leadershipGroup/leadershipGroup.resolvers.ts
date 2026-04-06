@@ -1,17 +1,28 @@
 import LeadershipGroup from './leadershipGroup.model.js';
 import { requireAdminAuth, AuthContext } from '../../middleware/auth.js';
+import { findLeadershipGroupBySlugParam } from '../../utils/leadershipGroupSlug.js';
 
 export const seedLeadershipGroups = async (): Promise<void> => {
   const groups = [
-    { name: 'Board of Trustees', slug: 'bot', description: 'Board of Trustees of RENISA', order: 1 },
-    { name: 'National Executive Council', slug: 'nec', description: 'National Executive Council of RENISA', order: 2 },
-    { name: 'State Executives', slug: 'state-executives', description: 'State chapter executives', order: 3 },
-    { name: 'Directorate', slug: 'directorate', description: 'RENISA Directorate', order: 4 },
+    {
+      name: 'Board of Trustees',
+      slug: 'board-of-trustees',
+      legacySlugs: ['bot'],
+      description: 'Board of Trustees of RENISA',
+      order: 1,
+    },
+    { name: 'State Executives', slug: 'state-executives', description: 'State chapter executives', order: 2 },
+    { name: 'Directorate', slug: 'directorate', description: 'RENISA Directorate', order: 3 },
   ];
-  for (const group of groups) {
-    await LeadershipGroup.findOneAndUpdate({ slug: group.slug }, group, { upsert: true, new: true });
+  for (const g of groups) {
+    const legacy = (g as { legacySlugs?: string[] }).legacySlugs || [];
+    const { legacySlugs: _, ...doc } = g as { legacySlugs?: string[]; name: string; slug: string; description: string; order: number };
+    await LeadershipGroup.findOneAndUpdate(
+      { $or: [{ slug: doc.slug }, ...legacy.map((s) => ({ slug: s }))] },
+      { $set: { ...doc, isActive: true } },
+      { upsert: true, new: true }
+    );
   }
-  console.log('Leadership groups seeded');
 };
 
 const leadershipGroupResolvers = {
@@ -23,7 +34,7 @@ const leadershipGroupResolvers = {
       return await LeadershipGroup.findById(id);
     },
     getLeadershipGroupBySlug: async (_: any, { slug }: { slug: string }) => {
-      return await LeadershipGroup.findOne({ slug });
+      return await findLeadershipGroupBySlugParam(slug);
     },
   },
 

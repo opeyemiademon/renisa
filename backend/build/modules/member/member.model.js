@@ -38,6 +38,8 @@ const memberSchema = new Schema({
     role: { type: String, enum: ['member', 'executive', 'admin'], default: 'member' },
     isEmailVerified: { type: Boolean, default: false },
     lastLogin: { type: Date },
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
     createdBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
 }, { timestamps: true });
 const Member = mongoose.model('Member', memberSchema);

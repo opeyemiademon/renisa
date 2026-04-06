@@ -33,6 +33,8 @@ declare const Member: mongoose.Model<{
         website?: string | null | undefined;
     } | null | undefined;
     alumniYear?: number | null | undefined;
+    passwordResetTokenHash?: string | null | undefined;
+    passwordResetExpires?: NativeDate | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     email: string;
@@ -68,6 +70,8 @@ declare const Member: mongoose.Model<{
         website?: string | null | undefined;
     } | null | undefined;
     alumniYear?: number | null | undefined;
+    passwordResetTokenHash?: string | null | undefined;
+    passwordResetExpires?: NativeDate | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
@@ -105,6 +109,8 @@ declare const Member: mongoose.Model<{
         website?: string | null | undefined;
     } | null | undefined;
     alumniYear?: number | null | undefined;
+    passwordResetTokenHash?: string | null | undefined;
+    passwordResetExpires?: NativeDate | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
@@ -146,6 +152,8 @@ declare const Member: mongoose.Model<{
         website?: string | null | undefined;
     } | null | undefined;
     alumniYear?: number | null | undefined;
+    passwordResetTokenHash?: string | null | undefined;
+    passwordResetExpires?: NativeDate | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     email: string;
@@ -181,6 +189,8 @@ declare const Member: mongoose.Model<{
         website?: string | null | undefined;
     } | null | undefined;
     alumniYear?: number | null | undefined;
+    passwordResetTokenHash?: string | null | undefined;
+    passwordResetExpires?: NativeDate | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
@@ -218,6 +228,8 @@ declare const Member: mongoose.Model<{
         website?: string | null | undefined;
     } | null | undefined;
     alumniYear?: number | null | undefined;
+    passwordResetTokenHash?: string | null | undefined;
+    passwordResetExpires?: NativeDate | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;

@@ -50,6 +50,9 @@ const leadershipResolvers = {
         getLeadership: async (_, { id }) => {
             return populate(Leadership.findById(id));
         },
+        getLeadershipBySlug: async (_, { slug }) => {
+            return populate(Leadership.findOne({ slug }));
+        },
     },
     Mutation: {
         createLeadership: async (_, { data }, context) => {

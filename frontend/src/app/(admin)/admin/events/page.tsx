@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Edit, Trash2, Send, Calendar } from 'lucide-react'
+import { Plus, Edit, Trash2, Send, Calendar, Eye } from 'lucide-react'
 import Link from 'next/link'
 import { getAllEvents, publishEvent, deleteEvent } from '@/lib/api_services/eventApiServices'
 import { Badge } from '@/components/shared/Badge'
@@ -16,7 +16,6 @@ import toast from 'react-hot-toast'
 export default function EventsPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [visibleCount, setVisibleCount] = useState(20)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -53,12 +52,16 @@ export default function EventsPage() {
     let rows = allEvents
     if (search.trim()) {
       const q = search.toLowerCase()
-      rows = rows.filter((e: any) => e.title?.toLowerCase().includes(q) || e.location?.toLowerCase().includes(q))
+      rows = rows.filter(
+        (e: any) =>
+          e.title?.toLowerCase().includes(q) ||
+          e.venue?.toLowerCase().includes(q) ||
+          e.location?.toLowerCase().includes(q),
+      )
     }
-    if (typeFilter) rows = rows.filter((e: any) => e.type === typeFilter)
     if (statusFilter) rows = rows.filter((e: any) => e.status === statusFilter)
     return rows
-  }, [allEvents, search, typeFilter, statusFilter])
+  }, [allEvents, search, statusFilter])
 
   const visibleRows = filteredData.slice(0, visibleCount)
 
@@ -102,15 +105,16 @@ export default function EventsPage() {
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Event</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Views</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {isLoading ? (
-                <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-400">Loading...</td></tr>
               ) : visibleRows.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-12 text-center text-gray-400">No records found</td></tr>
+                <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-400">No records found</td></tr>
               ) : (
                 visibleRows.map((row: any) => (
                   <tr key={row.id} className="hover:bg-gray-50 transition-colors">
@@ -132,7 +136,12 @@ export default function EventsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{row.createdAt ? formatDate(row.createdAt) : '—'}</td>
-                   
+                    <td className="px-4 py-3 text-gray-600 text-xs">
+                      <span className="inline-flex items-center gap-1" title="Public detail views">
+                        <Eye className="w-3.5 h-3.5 text-gray-400" />
+                        {typeof row.views === 'number' ? row.views.toLocaleString() : '0'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3"><Badge variant={row.status}>{row.status}</Badge></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

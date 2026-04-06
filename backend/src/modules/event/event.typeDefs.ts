@@ -9,6 +9,9 @@ const eventTypeDefs = gql`
     excerpt: String
     coverImage: String
     images: [String]
+    eventType: String!
+    eventDate: String
+    venue: String
     status: String!
     isFeatured: Boolean!
     views: Int!
@@ -34,6 +37,9 @@ const eventTypeDefs = gql`
     images: [String]
     status: String
     isFeatured: Boolean
+    eventType: String
+    eventDate: String
+    venue: String
   }
 
   input UpdateEventInput {
@@ -46,13 +52,16 @@ const eventTypeDefs = gql`
     images: [String]
     status: String
     isFeatured: Boolean
+    eventType: String
+    eventDate: String
+    venue: String
   }
 
   extend type Query {
     getAllEvents: [Event!]!
     getEvent(id: ID!): Event
     getEventBySlug(slug: String!): Event
-    getFeaturedEvents(limit: Int): [Event!]!
+    getFeaturedEvents: [Event!]!
   }
 
   extend type Mutation {

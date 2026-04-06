@@ -7,6 +7,13 @@ const eventSchema = new Schema({
     excerpt: { type: String },
     coverImage: { type: String },
     images: [{ type: String }],
+    eventType: {
+        type: String,
+        enum: ['news', 'event', 'announcement'],
+        default: 'news',
+    },
+    eventDate: { type: Date },
+    venue: { type: String, trim: true },
     status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     isFeatured: { type: Boolean, default: false },
     views: { type: Number, default: 0 },

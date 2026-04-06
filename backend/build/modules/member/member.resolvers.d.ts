@@ -38,6 +38,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -75,6 +77,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -117,6 +121,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -154,6 +160,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -196,6 +204,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -233,6 +243,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -278,6 +290,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -315,6 +329,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -355,6 +371,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -392,12 +410,39 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
         } & {
             __v: number;
         })[]>;
+        getPublicSiteStats: () => Promise<{
+            activeMembers: number;
+            alumniMembers: number;
+            publishedEvents: number;
+            galleryPhotos: number;
+            awardedHonors: number;
+        }>;
+        getPublicMemberProfile: (_: any, { id }: {
+            id: string;
+        }) => Promise<{
+            id: any;
+            firstName: any;
+            lastName: any;
+            middleName: any;
+            memberNumber: any;
+            sport: any;
+            state: any;
+            stateOfOrigin: any;
+            city: any;
+            profilePicture: any;
+            isAlumni: boolean;
+            bio: any;
+            gender: any;
+            createdAt: string;
+        } | null>;
         me: (_: any, __: any, context: AuthContext) => Promise<(import("mongoose").Document<unknown, {}, {
             email: string;
             password: string;
@@ -432,6 +477,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps, {}, {
             timestamps: true;
@@ -469,6 +516,8 @@ declare const memberResolvers: {
                 website?: string | null | undefined;
             } | null | undefined;
             alumniYear?: number | null | undefined;
+            passwordResetTokenHash?: string | null | undefined;
+            passwordResetExpires?: NativeDate | null | undefined;
             createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         } & import("mongoose").DefaultTimestampProps & {
             _id: import("mongoose").Types.ObjectId;
@@ -515,6 +564,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -552,6 +603,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -597,6 +650,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -634,12 +689,29 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
             } & {
                 __v: number;
             };
+        }>;
+        requestMemberPasswordReset: (_: any, { email }: {
+            email: string;
+        }) => Promise<{
+            success: boolean;
+            message: string;
+        }>;
+        resetMemberPassword: (_: any, { data }: {
+            data: {
+                token: string;
+                newPassword: string;
+            };
+        }) => Promise<{
+            success: boolean;
+            message: string;
         }>;
         adminRegisterMember: (_: any, { data }: {
             data: any;
@@ -680,6 +752,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -717,6 +791,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -764,6 +840,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -801,6 +879,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -845,6 +925,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -882,6 +964,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -932,6 +1016,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -969,6 +1055,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
@@ -1020,6 +1108,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps, {}, {
                 timestamps: true;
@@ -1057,6 +1147,8 @@ declare const memberResolvers: {
                     website?: string | null | undefined;
                 } | null | undefined;
                 alumniYear?: number | null | undefined;
+                passwordResetTokenHash?: string | null | undefined;
+                passwordResetExpires?: NativeDate | null | undefined;
                 createdBy?: import("mongoose").Types.ObjectId | null | undefined;
             } & import("mongoose").DefaultTimestampProps & {
                 _id: import("mongoose").Types.ObjectId;
