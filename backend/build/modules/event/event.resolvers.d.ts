@@ -157,37 +157,6 @@ declare const eventResolvers: {
         } & {
             __v: number;
         })[]>;
-        getPublishedEvents: (_: any, { limit, skip, monthYear }: {
-            limit: number;
-            skip: number;
-            monthYear?: string | null;
-        }) => Promise<{
-            items: (import("mongoose").FlattenMaps<{
-                title: string;
-                images: string[];
-                eventType: "news" | "event" | "announcement";
-                status: "draft" | "published" | "archived";
-                isFeatured: boolean;
-                views: number;
-                createdBy?: import("mongoose").Types.ObjectId | null | undefined;
-                slug?: string | null | undefined;
-                content?: string | null | undefined;
-                excerpt?: string | null | undefined;
-                coverImage?: string | null | undefined;
-                eventDate?: NativeDate | null | undefined;
-                venue?: string | null | undefined;
-                publishedAt?: NativeDate | null | undefined;
-                createdAt: NativeDate;
-                updatedAt: NativeDate;
-            }> & {
-                _id: import("mongoose").Types.ObjectId;
-            } & {
-                __v: number;
-            })[];
-            total: number;
-            hasMore: boolean;
-        }>;
-        getNewsArchiveMonths: () => Promise<string[]>;
     };
     Mutation: {
         createEvent: (_: any, { data }: {

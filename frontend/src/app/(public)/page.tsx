@@ -11,7 +11,7 @@ import {
 import { getAllExecutives } from '@/lib/api_services/executiveApiServices'
 import { getFeaturedEvents } from '@/lib/api_services/eventApiServices'
 import { getGallery } from '@/lib/api_services/galleryApiServices'
-import { getAllAwards } from '@/lib/api_services/awardApiServices'
+import { getAwardWinnersReport } from '@/lib/api_services/awardApiServices'
 import { getHeroSlides } from '@/lib/api_services/heroSlideApiServices'
 import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
 import { formatDate, buildImageUrl } from '@/lib/utils'
@@ -44,8 +44,8 @@ export default function HomePage() {
   const { data: eventsData } = useQuery({ queryKey: ['featured-events'], queryFn: getFeaturedEvents })
   const { data: galleryData } = useQuery({ queryKey: ['gallery-preview'], queryFn: () => getGallery() })
   const { data: awardsData } = useQuery({
-    queryKey: ['awards-preview', 'home-3'],
-    queryFn: () => getAllAwards({ limit: 3 }),
+    queryKey: ['award-winners-home', new Date().getFullYear()],
+    queryFn: () => getAwardWinnersReport(new Date().getFullYear()),
   })
   const { data: siteStats } = useQuery({
     queryKey: ['public-site-stats'],
@@ -99,10 +99,22 @@ export default function HomePage() {
   const displayEvents = featuredEvents
   const displayGallery = galleryItems.map((g: any) => ({
     id: g.id,
-    url: g.imageUrl?.startsWith('http') ? g.imageUrl : buildImageUrl(g.imageUrl),
+    url: g.imageUrl?.startsWith('https') ? g.imageUrl : buildImageUrl(g.imageUrl),
     title: g.title,
   }))
-  const displayAwards = awardsData || []
+  const displayAwards = (awardsData || [])
+    .filter((cat: any) => cat?.nominees?.length > 0 && (cat.nominees[0]?.voteCount || 0) > 0)
+    .slice(0, 3)
+    .map((cat: any) => {
+      const winner = cat.nominees[0]
+      return {
+        id: `${cat.categoryId}-${winner.awardId}`,
+        categoryName: cat.categoryName,
+        recipientName: winner.recipientName,
+        recipientPhoto: winner.recipientPhoto,
+        voteCount: winner.voteCount,
+      }
+    })
 
   const presidentExec =
     displayExecutives.find((e) => /president/i.test(e.position) && !/vice/i.test(e.position)) ||
@@ -124,6 +136,7 @@ export default function HomePage() {
         { label: 'Honours recorded', value: '—', icon: <Star className="w-5 h-5" /> },
       ]
 
+
   return (
     <div className="bg-white">
 
@@ -143,7 +156,7 @@ export default function HomePage() {
             style={{ opacity: i === currentSlide ? 1 : 0, zIndex: i === currentSlide ? 1 : 0 }}
           >
             {s.imageUrl ? (
-              <img src={s.imageUrl.startsWith('http') ? s.imageUrl : buildImageUrl(s.imageUrl)} alt={s.title} className="w-full h-full object-cover" />
+              <img src={s.imageUrl.startsWith('https') ? s.imageUrl : buildImageUrl(s.imageUrl)} alt={s.title} className="w-full h-full object-cover" />
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-[#0d4a25] via-[#1a6b3a] to-[#0a3a1c]" />
             )}
@@ -275,7 +288,7 @@ export default function HomePage() {
           
             <div className="relative">
               <div className="rounded-2xl w-full h-96 bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] shadow-2xl flex items-center justify-center ">
-                <Image src="/stadium.jpg" alt="RENISA" width={200} height={200} className="opacity-90 w-full" />
+                <Image src="/logo.png" alt="RENISA" width={200} height={200} className="opacity-90 " />
               </div>
            
               
@@ -342,7 +355,7 @@ Nigeria’s rich sporting heritage.
                 <div className="w-72 h-80 rounded-2xl overflow-hidden shadow-2xl bg-[#1a6b3a] flex items-center justify-center">
                   {presidentExec?.photo ? (
                     <img
-                      src={presidentExec.photo.startsWith('http') ? presidentExec.photo : buildImageUrl(presidentExec.photo)}
+                      src={presidentExec.photo.startsWith('https') ? presidentExec.photo : buildImageUrl(presidentExec.photo)}
                       alt={presidentExec.name}
                       className="w-full h-full object-cover"
                     />
@@ -452,7 +465,7 @@ Nigeria’s rich sporting heritage.
                   {/* Photo */}
                   {exec.photo ? (
                     <img
-                      src={exec.photo.startsWith('http') ? exec.photo : buildImageUrl(exec.photo)}
+                      src={exec.photo.startsWith('https') ? exec.photo : buildImageUrl(exec.photo)}
                       alt={exec.name}
                       className="w-full h-full rounded-full object-cover p-2"
                     />
@@ -530,7 +543,7 @@ Nigeria’s rich sporting heritage.
                   <div className="relative overflow-hidden h-52">
                     {event.coverImage ? (
                       <img
-                        src={event.coverImage.startsWith('http') ? event.coverImage : buildImageUrl(event.coverImage)}
+                        src={event.coverImage.startsWith('https') ? event.coverImage : buildImageUrl(event.coverImage)}
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600"
                       />
@@ -650,7 +663,7 @@ Nigeria’s rich sporting heritage.
                 <div className="flex items-start gap-4 mb-5">
                   {award.recipientPhoto ? (
                     <img
-                      src={award.recipientPhoto.startsWith('http') ? award.recipientPhoto : buildImageUrl(award.recipientPhoto)}
+                      src={award.recipientPhoto.startsWith('https') ? award.recipientPhoto : buildImageUrl(award.recipientPhoto)}
                       alt={award.recipientName}
                       className="w-16 h-16 rounded-full object-cover border-2 border-[#EBD279] flex-shrink-0"
                     />
@@ -660,15 +673,15 @@ Nigeria’s rich sporting heritage.
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 group-hover:text-[#0d4a25] transition-colors leading-snug">{award.title}</h3>
+                    <h3 className="font-bold text-gray-900 group-hover:text-[#0d4a25] transition-colors leading-snug">{award.categoryName}</h3>
                     <p className="text-[#1a6b3a] text-sm font-semibold mt-1">{award.recipientName}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                   <span className="bg-[#EBD279]/20 text-[#8a6500] text-xs px-3 py-1 rounded-full font-semibold border border-[#EBD279]/40">
-                    {award.category?.name || 'General'}
+                    Winner
                   </span>
-                  <span className="text-gray-400 text-xs font-medium">{award.year}</span>
+                  <span className="text-gray-400 text-xs font-medium">{award.voteCount} votes</span>
                 </div>
               </div>
             ))}

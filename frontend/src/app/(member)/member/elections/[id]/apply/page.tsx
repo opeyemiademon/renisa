@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Camera, X, DollarSign, AlertCircle, CheckCircle, CreditCard, Landmark } from 'lucide-react'
-import { usePaystackPayment } from 'react-paystack'
 import Link from 'next/link'
 import { getElection } from '@/lib/api_services/electionApiServices'
 import {
@@ -22,6 +22,8 @@ import { useAppSelector } from '@/hooks/redux'
 import toast from 'react-hot-toast'
 
 const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''
+
+const PaystackPayButton = dynamic(() => import('@/components/member/PaystackPayButton'), { ssr: false })
 
 export default function ApplyForElectionPage() {
   const params = useParams()
@@ -53,15 +55,6 @@ export default function ApplyForElectionPage() {
 
   const selectedPos = election?.positions.find((p: any) => p.id === selectedPosition)
   const paymentFee = Number(selectedPos?.formFee ?? existingApplication?.paymentAmount ?? 0) || 0
-
-  const paystackConfig = {
-    reference: paystackReference,
-    email: member?.email || '',
-    amount: Math.round(paymentFee * 100),
-    publicKey: PAYSTACK_KEY,
-    currency: 'NGN' as const,
-  }
-  const initializePayment = usePaystackPayment(paystackConfig)
 
   useEffect(() => {
     if (existingApplication) {
@@ -160,15 +153,6 @@ export default function ApplyForElectionPage() {
       return
     }
     submitMutation.mutate()
-  }
-
-  const handlePaystack = () => {
-    initializePayment({
-      onSuccess: (ref: { reference?: string }) => {
-        paystackConfirmMutation.mutate(ref.reference || paystackReference)
-      },
-      onClose: () => toast('Payment cancelled'),
-    })
   }
 
   if (electionLoading) {
@@ -401,16 +385,17 @@ export default function ApplyForElectionPage() {
 
             {payMode === 'paystack' && (
               <div className="space-y-3">
-                <Button
-                  onClick={handlePaystack}
+                <PaystackPayButton
+                  email={member?.email || ''}
+                  reference={paystackReference}
+                  amountKobo={Math.round(paymentFee * 100)}
                   loading={paystackConfirmMutation.isPending}
                   disabled={!paystackReference || !PAYSTACK_KEY}
-                  iconLeft={<CreditCard className="w-4 h-4" />}
+                  onPaid={(ref) => paystackConfirmMutation.mutate(ref)}
                   className="w-full"
-                  size="lg"
                 >
                   Pay with Paystack
-                </Button>
+                </PaystackPayButton>
                 {!PAYSTACK_KEY && (
                   <p className="text-xs text-amber-700 text-center">Paystack is not configured on this environment.</p>
                 )}

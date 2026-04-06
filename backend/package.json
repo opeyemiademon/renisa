@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "deploy": "scp -r ./build/* root@31.97.213.139:/var/www/renisa/backend",
     "start": "node build/server.js",
     "dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts",
     "build": "tsc"
+
+    
   },
   "dependencies": {
     "@apollo/server": "^5.1.0",

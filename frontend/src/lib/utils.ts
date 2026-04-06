@@ -73,12 +73,12 @@ export function getInitials(name: string): string {
     .map((n) => n[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase()
+    .toUpperCase() 
 }
 
 export function buildImageUrl(path?: string): string {
   if (!path) return ''
-  if (path.startsWith('http')) return path
+  if (path.startsWith('https')) return path
   return `${process.env.NEXT_PUBLIC_API_URL}${path}`
 }
 

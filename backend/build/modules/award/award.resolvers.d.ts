@@ -9,7 +9,7 @@ declare const awardResolvers: {
         totalVotes: (parent: any) => Promise<number>;
     };
     Query: {
-        getAllAwards: (_: any, { year, status, categoryId, votingEnabled, memberName }: any) => Promise<any>;
+        getAllAwards: (_: any, { year, status, categoryId, votingEnabled, memberName, limit }: any) => Promise<any>;
         getAward: (_: any, { id }: {
             id: string;
         }) => Promise<any>;

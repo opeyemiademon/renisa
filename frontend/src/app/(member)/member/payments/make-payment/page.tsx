@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { CreditCard, Landmark, CheckCircle, ShieldCheck } from 'lucide-react'
-import { usePaystackPayment } from 'react-paystack'
 import { getPaymentTypes } from '@/lib/api_services/paymentTypeApiServices'
 import { getMemberPayments, recordPaystackPayment, submitManualPayment } from '@/lib/api_services/paymentApiServices'
 import { Button } from '@/components/shared/Button'
@@ -13,7 +13,7 @@ import { formatCurrency } from '@/lib/utils'
 import { useAppSelector } from '@/hooks/redux'
 import toast from 'react-hot-toast'
 
-const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''
+const PaystackPayButton = dynamic(() => import('@/components/member/PaystackPayButton'), { ssr: false })
 
 export default function MakePaymentPage() {
   const router = useRouter()
@@ -50,15 +50,6 @@ export default function MakePaymentPage() {
 
   const selectedType = paymentTypes?.find((t) => t.id === selectedTypeId)
 
-  const paystackConfig = {
-    reference: txRef.current,
-    email: member?.email || '',
-    amount: (selectedType?.amount || 0) * 100,
-    publicKey: PAYSTACK_KEY,
-    currency: 'NGN',
-  }
-  const initializePayment = usePaystackPayment(paystackConfig)
-
   const recordMutation = useMutation({
     mutationFn: (ref: string) =>
       recordPaystackPayment({
@@ -88,20 +79,6 @@ export default function MakePaymentPage() {
     },
     onError: (err: Error) => toast.error(err.message || 'Submission failed'),
   })
-
-  const handlePaystack = () => {
-    if (!selectedTypeId) return toast.error('Please select a payment type')
-    if (!selectedType) return
-
-    initializePayment({
-      onSuccess: (ref: any) => {
-        recordMutation.mutate(ref.reference || txRef.current)
-      },
-      onClose: () => {
-        toast('Payment cancelled')
-      },
-    })
-  }
 
   const handleManual = () => {
     if (!selectedTypeId) return toast.error('Please select a payment type')
@@ -247,15 +224,17 @@ export default function MakePaymentPage() {
 
             {payMode === 'paystack' && (
               <div className="space-y-3">
-                <Button
-                  onClick={handlePaystack}
+                <PaystackPayButton
+                  email={member?.email || ''}
+                  reference={txRef.current}
+                  amountKobo={(selectedType?.amount || 0) * 100}
                   loading={recordMutation.isPending}
-                  iconLeft={<CreditCard className="w-4 h-4" />}
+                  disabled={!selectedTypeId || !selectedType || paidTypeIds.has(selectedTypeId)}
+                  onPaid={(ref) => recordMutation.mutate(ref)}
                   className="w-full"
-                  size="lg"
                 >
                   Pay with Paystack
-                </Button>
+                </PaystackPayButton>
                 <p className="text-xs text-gray-400 text-center">
                   Secure payment via Paystack — card, bank transfer, or USSD
                 </p>

@@ -16,13 +16,6 @@ const generateUniqueSlug = async (title) => {
     }
     return counter === 0 ? slug : `${slug}-${counter}`;
 };
-const newsTypeFilter = () => ({
-    $or: [
-        { eventType: 'news' },
-        { eventType: { $exists: false } },
-        { eventType: null },
-    ],
-});
 const normalizeEventDates = (data) => {
     const out = { ...data };
     if (out.eventDate === '' || out.eventDate === undefined)
@@ -53,57 +46,6 @@ const eventResolvers = {
         },
         getFeaturedEvents: async (_) => {
             return await Event.find({ isFeatured: true, status: 'published' }).sort({ publishedAt: -1 });
-        },
-        getPublishedEvents: async (_, { limit, skip, monthYear }) => {
-            const safeLimit = Math.min(Math.max(limit || 9, 1), 50);
-            const safeSkip = Math.max(skip || 0, 0);
-            const filter = { status: 'published' };
-            if (monthYear && /^\d{4}-\d{2}$/.test(monthYear)) {
-                const [y, m] = monthYear.split('-').map(Number);
-                const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0, 0));
-                const end = new Date(Date.UTC(y, m, 1, 0, 0, 0, 0));
-                filter.$expr = {
-                    $and: [
-                        { $gte: [{ $ifNull: ['$publishedAt', '$createdAt'] }, start] },
-                        { $lt: [{ $ifNull: ['$publishedAt', '$createdAt'] }, end] },
-                    ],
-                };
-                Object.assign(filter, newsTypeFilter());
-            }
-            const [total, items] = await Promise.all([
-                Event.countDocuments(filter),
-                Event.find(filter)
-                    .sort({ publishedAt: -1, createdAt: -1 })
-                    .skip(safeSkip)
-                    .limit(safeLimit)
-                    .lean(),
-            ]);
-            return {
-                items,
-                total,
-                hasMore: safeSkip + items.length < total,
-            };
-        },
-        getNewsArchiveMonths: async () => {
-            const rows = await Event.aggregate([
-                { $match: { status: 'published', ...newsTypeFilter() } },
-                {
-                    $project: {
-                        ref: { $ifNull: ['$publishedAt', '$createdAt'] },
-                    },
-                },
-                {
-                    $project: {
-                        ym: {
-                            $dateToString: { format: '%Y-%m', date: '$ref', timezone: 'UTC' },
-                        },
-                    },
-                },
-                { $match: { ym: { $ne: null } } },
-                { $group: { _id: '$ym' } },
-                { $sort: { _id: -1 } },
-            ]);
-            return rows.map((r) => r._id).filter(Boolean);
         },
     },
     Mutation: {

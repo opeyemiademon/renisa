@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useRef, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { Monitor, Package, ArrowLeft, ArrowRight, Eye, CheckCircle, CreditCard, Landmark } from 'lucide-react'
-import { usePaystackPayment } from 'react-paystack'
 import {
   getIDCardSettings,
   requestIDCard,
@@ -24,7 +24,8 @@ import { buildMemberForIdCardPreview } from '@/lib/idCardMember'
 import toast from 'react-hot-toast'
 
 const STEPS = ['Choose Type', 'Upload Photo', 'Preview', 'Pay']
-const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''
+
+const PaystackPayButton = dynamic(() => import('@/components/member/PaystackPayButton'), { ssr: false })
 
 export default function IDCardRequestPage() {
   const { member } = useAppSelector((s) => s.auth)
@@ -48,15 +49,6 @@ export default function IDCardRequestPage() {
   })
 
   const fee = cardType === 'online' ? settings?.onlineFee ?? 0 : settings?.physicalFee ?? 0
-
-  const paystackConfig = {
-    reference: txRef.current,
-    email: member?.email || '',
-    amount: fee * 100, // kobo
-    publicKey: PAYSTACK_KEY,
-    currency: 'NGN',
-  }
-  const initializePayment = usePaystackPayment(paystackConfig)
 
   const confirmMutation = useMutation({
     mutationFn: (ref: string) =>
@@ -121,17 +113,6 @@ export default function IDCardRequestPage() {
     },
     onError: (err: Error) => toast.error(err.message || 'Failed to create request'),
   })
-
-  const handlePaystack = () => {
-    initializePayment({
-      onSuccess: (ref: any) => {
-        confirmMutation.mutate(ref.reference || txRef.current)
-      },
-      onClose: () => {
-        toast('Payment cancelled')
-      },
-    })
-  }
 
   const handlePhotoCapture = (file: File) => {
     const reader = new FileReader()
@@ -408,15 +389,16 @@ export default function IDCardRequestPage() {
 
               {payMode === 'paystack' && (
                 <div className="space-y-3">
-                  <Button
-                    onClick={handlePaystack}
+                  <PaystackPayButton
+                    email={member?.email || ''}
+                    reference={txRef.current}
+                    amountKobo={fee * 100}
                     loading={confirmMutation.isPending}
-                    iconLeft={<CreditCard className="w-4 h-4" />}
+                    onPaid={(ref) => confirmMutation.mutate(ref)}
                     className="w-full"
-                    size="lg"
                   >
                     Pay with Paystack
-                  </Button>
+                  </PaystackPayButton>
                   <p className="text-xs text-gray-400 text-center">Secure payment via Paystack</p>
                 </div>
               )}

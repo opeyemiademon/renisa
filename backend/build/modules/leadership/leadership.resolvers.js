@@ -1,6 +1,6 @@
 import Leadership from './leadership.model.js';
-import LeadershipGroup from '../leadershipGroup/leadershipGroup.model.js';
 import { requireAdminAuth } from '../../middleware/auth.js';
+import { findLeadershipGroupBySlugParam } from '../../utils/leadershipGroupSlug.js';
 const MEMBER_POPULATE = 'firstName lastName profilePicture memberNumber sport state';
 const populate = (q) => q
     .populate('groupId', 'name slug')
@@ -34,7 +34,7 @@ const leadershipResolvers = {
         getAllLeadership: async (_, { groupId, groupSlug, isCurrent, state }) => {
             const filter = {};
             if (groupSlug) {
-                const group = await LeadershipGroup.findOne({ slug: groupSlug });
+                const group = await findLeadershipGroupBySlugParam(groupSlug);
                 if (group)
                     filter.groupId = group._id;
             }

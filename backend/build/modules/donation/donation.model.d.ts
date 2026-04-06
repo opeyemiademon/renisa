@@ -22,6 +22,7 @@ declare const Donation: mongoose.Model<{
     estimatedValue?: number | null | undefined;
     preferredDropoffDate?: NativeDate | null | undefined;
     invoiceId?: mongoose.Types.ObjectId | null | undefined;
+    manualTransferReference?: string | null | undefined;
     adminNotes?: string | null | undefined;
     acknowledgedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -47,6 +48,7 @@ declare const Donation: mongoose.Model<{
     estimatedValue?: number | null | undefined;
     preferredDropoffDate?: NativeDate | null | undefined;
     invoiceId?: mongoose.Types.ObjectId | null | undefined;
+    manualTransferReference?: string | null | undefined;
     adminNotes?: string | null | undefined;
     acknowledgedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
@@ -74,6 +76,7 @@ declare const Donation: mongoose.Model<{
     estimatedValue?: number | null | undefined;
     preferredDropoffDate?: NativeDate | null | undefined;
     invoiceId?: mongoose.Types.ObjectId | null | undefined;
+    manualTransferReference?: string | null | undefined;
     adminNotes?: string | null | undefined;
     acknowledgedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps & {
@@ -105,6 +108,7 @@ declare const Donation: mongoose.Model<{
     estimatedValue?: number | null | undefined;
     preferredDropoffDate?: NativeDate | null | undefined;
     invoiceId?: mongoose.Types.ObjectId | null | undefined;
+    manualTransferReference?: string | null | undefined;
     adminNotes?: string | null | undefined;
     acknowledgedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -130,6 +134,7 @@ declare const Donation: mongoose.Model<{
     estimatedValue?: number | null | undefined;
     preferredDropoffDate?: NativeDate | null | undefined;
     invoiceId?: mongoose.Types.ObjectId | null | undefined;
+    manualTransferReference?: string | null | undefined;
     adminNotes?: string | null | undefined;
     acknowledgedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
@@ -157,6 +162,7 @@ declare const Donation: mongoose.Model<{
     estimatedValue?: number | null | undefined;
     preferredDropoffDate?: NativeDate | null | undefined;
     invoiceId?: mongoose.Types.ObjectId | null | undefined;
+    manualTransferReference?: string | null | undefined;
     adminNotes?: string | null | undefined;
     acknowledgedBy?: mongoose.Types.ObjectId | null | undefined;
 } & mongoose.DefaultTimestampProps> & {

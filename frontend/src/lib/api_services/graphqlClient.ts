@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getToken, clearAll } from '@/lib/storage'
 
-const GRAPHQL_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/graphql'
+const GRAPHQL_URL = (process.env.NEXT_PUBLIC_API_URL) + '/graphql'
 
 const graphqlClient = axios.create({
   baseURL: GRAPHQL_URL,

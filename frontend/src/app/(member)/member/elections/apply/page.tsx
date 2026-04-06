@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, CheckCircle, CreditCard, Landmark, FileText, Loader2, User } from 'lucide-react'
-import { usePaystackPayment } from 'react-paystack'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { getElection } from '@/lib/api_services/electionApiServices'
@@ -21,11 +21,12 @@ import { useAppSelector } from '@/hooks/redux'
 import { buildImageUrl, formatCurrency } from '@/lib/utils'
 
 const STEPS = ['Choose Position', 'Pay Form Fee', 'Submit Application']
-const PAYSTACK_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''
+
+const PaystackPayButton = dynamic(() => import('@/components/member/PaystackPayButton'), { ssr: false })
 
 type Step = 0 | 1 | 2
 
-export default function ElectionApplyPage() {
+function ElectionApplyPageContent() {
   const searchParams = useSearchParams()
   const redirectElectionId = searchParams.get('election')
   const electionId = redirectElectionId || ''
@@ -58,15 +59,6 @@ export default function ElectionApplyPage() {
   })
 
   const formFee = selectedPosition?.formFee ?? 0
-
-  const paystackConfig = {
-    reference: txRef.current,
-    email: member?.email || '',
-    amount: formFee * 100,
-    publicKey: PAYSTACK_KEY,
-    currency: 'NGN',
-  }
-  const initializePayment = usePaystackPayment(paystackConfig)
 
   const applyMutation = useMutation({
     mutationFn: () => applyForPosition(electionId, selectedPositionId),
@@ -129,13 +121,6 @@ export default function ElectionApplyPage() {
   const handlePositionSelect = (pos: any) => {
     setSelectedPositionId(pos.id)
     setSelectedPosition(pos)
-  }
-
-  const handlePaystack = () => {
-    initializePayment({
-      onSuccess: (ref: any) => confirmMutation.mutate(ref.reference || txRef.current),
-      onClose: () => toast('Payment cancelled'),
-    })
   }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -312,15 +297,15 @@ export default function ElectionApplyPage() {
             </div>
 
             {payMode === 'paystack' && (
-              <Button
-                onClick={handlePaystack}
+              <PaystackPayButton
+                email={member?.email || ''}
+                reference={txRef.current}
+                amountKobo={formFee * 100}
                 loading={confirmMutation.isPending}
-                iconLeft={<CreditCard className="w-4 h-4" />}
-                className="w-full"
-                size="lg"
+                onPaid={(ref) => confirmMutation.mutate(ref)}
               >
                 Pay {formatCurrency(formFee)} with Paystack
-              </Button>
+              </PaystackPayButton>
             )}
 
             {payMode === 'manual' && (
@@ -427,5 +412,20 @@ export default function ElectionApplyPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ElectionApplyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-24 text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+          <p className="text-sm">Loading…</p>
+        </div>
+      }
+    >
+      <ElectionApplyPageContent />
+    </Suspense>
   )
 }

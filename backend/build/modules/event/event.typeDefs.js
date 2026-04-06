@@ -20,12 +20,6 @@ const eventTypeDefs = gql `
     updatedAt: String!
   }
 
-  type PublishedEventsPage {
-    items: [Event!]!
-    total: Int!
-    hasMore: Boolean!
-  }
-
   type EventResponse {
     success: Boolean!
     message: String!
@@ -67,8 +61,6 @@ const eventTypeDefs = gql `
     getEvent(id: ID!): Event
     getEventBySlug(slug: String!): Event
     getFeaturedEvents: [Event!]!
-    getPublishedEvents(limit: Int!, skip: Int!, monthYear: String): PublishedEventsPage!
-    getNewsArchiveMonths: [String!]!
   }
 
   extend type Mutation {

@@ -44,7 +44,7 @@ const awardTypeDefs = gql `
   }
 
   extend type Query {
-    getAllAwards(year: Int, status: String, categoryId: ID, votingEnabled: Boolean, memberName: String): [Award!]!
+    getAllAwards(year: Int, status: String, categoryId: ID, votingEnabled: Boolean, memberName: String, limit: Int): [Award!]!
     getAward(id: ID!): Award
   }
 
