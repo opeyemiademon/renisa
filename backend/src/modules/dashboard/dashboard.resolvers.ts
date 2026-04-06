@@ -106,7 +106,7 @@ const dashboardResolvers = {
         Payment.find({})
           .sort({ createdAt: -1 })
           .limit(8)
-          .populate('memberId', 'firstName lastName memberNumber')
+          .populate('memberId', 'id firstName lastName memberNumber')
           .populate('paymentTypeId', 'name amount')
           .lean(),
       ]);

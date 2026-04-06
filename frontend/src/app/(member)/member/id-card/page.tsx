@@ -123,11 +123,11 @@ export default function IDCardPage() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">My ID Card</h2>
-        {!hasActiveRequest && settings?.isEnabled && (
+    
           <Link href="/member/id-card/request">
             <Button iconLeft={<Plus className="w-4 h-4" />}>Request ID Card</Button>
           </Link>
-        )}
+     
       </div>
 
       {settings && (

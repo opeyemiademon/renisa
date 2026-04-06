@@ -39,12 +39,13 @@ const awardResolvers = {
   },
 
   Query: {
-    getAllAwards: async (_: any, { year, status, categoryId, votingEnabled, memberName, limit }: any) => {
+    getAllAwards: async (_: any, { year, status, categoryId, votingEnabled, memberName, memberId, limit }: any) => {
       const filter: any = {};
       if (year) filter.year = year;
       if (status) filter.status = status;
       if (categoryId) filter.categoryId = categoryId;
       if (votingEnabled !== undefined) filter.votingEnabled = votingEnabled;
+      if (memberId) filter.memberId = memberId;
 
       // Filter by member name: find matching member IDs first
       if (memberName && memberName.trim()) {
@@ -56,7 +57,12 @@ const awardResolvers = {
             { lastName: nameRegex },
           ], 
         }).select('_id');
-        filter.memberId = { $in: members.map((m: any) => m._id) };
+        const matchedIds = members.map((m: any) => String(m._id));
+        if (memberId) {
+          filter.memberId = matchedIds.includes(String(memberId)) ? memberId : null;
+        } else {
+          filter.memberId = { $in: members.map((m: any) => m._id) };
+        }
       }
 
       let q = populate(Award.find(filter)).sort({ year: -1, createdAt: -1 });

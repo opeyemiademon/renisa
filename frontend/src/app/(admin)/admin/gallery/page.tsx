@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, Image as ImageIcon, X, Camera, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getGallery, addGalleryItem, deleteGalleryItem } from '@/lib/api_services/galleryApiServices'
+import { Plus, Trash2, Image as ImageIcon, X, Camera, ChevronLeft, ChevronRight, Pencil } from 'lucide-react'
+import { getGallery, addGalleryItem, updateGalleryItem, deleteGalleryItem } from '@/lib/api_services/galleryApiServices'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
@@ -128,6 +128,7 @@ export default function GalleryPage() {
   const [showUpload, setShowUpload] = useState(false)
   const [showPhotoModal, setShowPhotoModal] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [capturedImageFile, setCapturedImageFile] = useState<File | null>(null)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -176,6 +177,43 @@ export default function GalleryPage() {
     onError: (err: Error) => toast.error(err.message),
   })
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error('No gallery item selected for update')
+
+      let imageUrl = uploadForm.imageUrl
+      if (capturedImageFile) {
+        setUploading(true)
+        try {
+          const result = await uploadFile(capturedImageFile)
+          imageUrl = result.url
+          setCapturedImageFile(null)
+        } catch (error) {
+          console.error('Upload error:', error)
+          throw new Error('Failed to upload image')
+        } finally {
+          setUploading(false)
+        }
+      }
+
+      return updateGalleryItem(editingId, {
+        imageUrl,
+        caption: uploadForm.caption || undefined,
+        album: uploadForm.album || undefined,
+        year: parseInt(uploadForm.year),
+      })
+    },
+    onSuccess: () => {
+      toast.success('Photo updated')
+      queryClient.invalidateQueries({ queryKey: ['gallery-admin'] })
+      setShowUpload(false)
+      setEditingId(null)
+      setUploadForm({ imageUrl: '', caption: '', album: '', year: String(currentYear) })
+      setCapturedImageFile(null)
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteGalleryItem(id),
     onSuccess: () => {
@@ -214,6 +252,25 @@ export default function GalleryPage() {
     toast.success('Image ready for upload')
   }
 
+  const openCreateModal = () => {
+    setEditingId(null)
+    setUploadForm({ imageUrl: '', caption: '', album: '', year: String(currentYear) })
+    setCapturedImageFile(null)
+    setShowUpload(true)
+  }
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id)
+    setUploadForm({
+      imageUrl: item.imageUrl || '',
+      caption: item.caption || '',
+      album: item.album || item.albumName || '',
+      year: String(item.year || currentYear),
+    })
+    setCapturedImageFile(null)
+    setShowUpload(true)
+  }
+
   const albums = Array.from(new Set(allGallery.map((item: any) => item.album || item.albumName).filter(Boolean))) as string[]
   const albumOptions = [
     { value: '', label: 'All Albums' },
@@ -227,7 +284,7 @@ export default function GalleryPage() {
           <h2 className="text-xl font-semibold text-gray-900">Gallery</h2>
           <p className="text-gray-500 text-sm mt-0.5">{allGallery.length} photos</p>
         </div>
-        <Button iconLeft={<Plus className="w-4 h-4" />} onClick={() => setShowUpload(true)}>
+        <Button iconLeft={<Plus className="w-4 h-4" />} onClick={openCreateModal}>
           Upload Photo
         </Button>
       </div>
@@ -280,8 +337,15 @@ export default function GalleryPage() {
                       <p className="text-white text-xs line-clamp-2 flex-1">{item.caption}</p>
                     )}
                     <button
+                      onClick={(e) => { e.stopPropagation(); openEditModal(item) }}
+                      className="ml-auto mr-1 p-1.5 bg-white/90 text-gray-800 rounded-lg flex-shrink-0 hover:bg-white"
+                      title="Edit photo details"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
                       onClick={(e) => { e.stopPropagation(); setDeleteId(item.id) }}
-                      className="ml-auto p-1.5 bg-red-500 text-white rounded-lg flex-shrink-0"
+                      className="p-1.5 bg-red-500 text-white rounded-lg flex-shrink-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -309,7 +373,7 @@ export default function GalleryPage() {
       )}
 
       {/* Upload Modal */}
-      <Modal isOpen={showUpload} onClose={() => setShowUpload(false)} title="Upload Photo" size="sm">
+      <Modal isOpen={showUpload} onClose={() => setShowUpload(false)} title={editingId ? 'Edit Photo' : 'Upload Photo'} size="sm">
         <div className="space-y-4">
           <div>
             <span className="block text-sm font-medium text-gray-700 mb-1.5">Photo</span>
@@ -371,12 +435,15 @@ export default function GalleryPage() {
           <div className="flex gap-3 pt-2">
             <Button variant="outline" onClick={() => setShowUpload(false)} className="flex-1">Cancel</Button>
             <Button
-              onClick={() => addMutation.mutate()}
-              loading={addMutation.isPending}
+              onClick={() => {
+                if (editingId) updateMutation.mutate()
+                else addMutation.mutate()
+              }}
+              loading={addMutation.isPending || updateMutation.isPending}
               disabled={!uploadForm.imageUrl}
               className="flex-1"
             >
-              Upload
+              {editingId ? 'Update' : 'Upload'}
             </Button>
           </div>
         </div>

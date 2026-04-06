@@ -1,10 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { Save, Eye, EyeOff, Camera } from 'lucide-react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { Save, Eye, EyeOff, Camera, Crown, Medal } from 'lucide-react'
 import { updateMember } from '@/lib/api_services/memberApiServices'
 import { changePassword } from '@/lib/api_services/authApiServices'
+import { getAllExecutives } from '@/lib/api_services/executiveApiServices'
+import { getLeadershipMembers } from '@/lib/api_services/leadershipApiServices'
+import { getAllAwards } from '@/lib/api_services/awardApiServices'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
@@ -12,6 +15,7 @@ import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { useAppSelector, useAppDispatch } from '@/hooks/redux'
 import { updateMemberProfile } from '@/lib/store/authSlice'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { buildImageUrl, getInitials } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -69,10 +73,53 @@ export default function MemberProfilePage() {
     reader.readAsDataURL(file)
   }
 
+  const { data: executivesData } = useQuery({
+    queryKey: ['member-positions-executive', member?.id],
+    queryFn: getAllExecutives,
+    enabled: !!member?.id,
+  })
+
+  const { data: leadershipData } = useQuery({
+    queryKey: ['member-positions-leadership', member?.id],
+    queryFn: () => getLeadershipMembers(),
+    enabled: !!member?.id,
+  })
+
+  const { data: awardsData } = useQuery({
+    queryKey: ['member-awards', member?.id],
+    queryFn: () => getAllAwards({ memberId: member!.id, limit: 100 }),
+    enabled: !!member?.id,
+  })
+
   if (!member) return null
 
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
   const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const lgaOptions = getLgaOptionsForState(form.stateOfOrigin)
+  const memberPositions = [
+    ...((executivesData || []) as any[])
+      .filter((e: any) => e.memberId?.id === member.id || e.member?.id === member.id)
+      .map((e: any) => ({
+        id: `exec-${e.id}`,
+        roleType: 'Executive',
+        roleName: e.title || e.position || e.name,
+        groupName: 'Executive Council',
+        tenure: e.tenure || '',
+      })),
+    ...((leadershipData || []) as any[])
+      .filter((l: any) => l.memberId?.id === member.id)
+      .map((l: any) => ({
+        id: `lead-${l.id}`,
+        roleType: 'Leadership',
+        roleName: l.position || l.title || 'Leadership Member',
+        groupName: l.groupId?.name || 'Leadership',
+        tenure: l.tenure || '',
+      })),
+  ]
+
+  const memberAwards = ((awardsData || []) as any[]).filter(
+    (a: any) => a.memberId?.id === member.id || a.member?.id === member.id
+  )
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -106,9 +153,9 @@ export default function MemberProfilePage() {
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4">
-            <Input label="First Name" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} required />
-            <Input label="Middle Name" value={form.middleName} onChange={(e) => set('middleName', e.target.value)} />
-            <Input label="Last Name" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} required />
+            <Input label="First Name" disabled={true} value={form.firstName} onChange={(e) => set('firstName', e.target.value)} required />
+            <Input label="Middle Name" disabled={true} value={form.middleName} onChange={(e) => set('middleName', e.target.value)} />
+            <Input label="Last Name" disabled={true} value={form.lastName} onChange={(e) => set('lastName', e.target.value)} required />
           </div>
           <Input label="Phone Number" type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
           <Input label="Home Address" value={form.address} onChange={(e) => set('address', e.target.value)} />
@@ -117,10 +164,29 @@ export default function MemberProfilePage() {
             <Select label="State of Residence" value={form.state} onChange={(e) => set('state', e.target.value)} options={stateOptions} />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Select label="State of Origin" value={form.stateOfOrigin} onChange={(e) => set('stateOfOrigin', e.target.value)} options={stateOptions} />
-            <Input label="LGA" value={form.lga} onChange={(e) => set('lga', e.target.value)} />
+            <Select
+              label="State of Origin"
+              disabled={true}
+              value={form.stateOfOrigin}
+              onChange={(e) => {
+                const nextState = e.target.value
+                set('stateOfOrigin', nextState)
+                const valid = getLgaOptionsForState(nextState).some((o) => o.value === form.lga)
+                if (!valid) set('lga', '')
+              }}
+              options={stateOptions}
+            />
+            <Select
+              label="LGA"
+        
+              value={form.lga}
+              onChange={(e) => set('lga', e.target.value)}
+              options={lgaOptions}
+              placeholder={form.stateOfOrigin ? 'Select LGA' : 'Select state first'}
+              disabled={!form.stateOfOrigin}
+            />
           </div>
-          <Select label="Sport" value={form.sport} onChange={(e) => set('sport', e.target.value)} options={sportOptions} />
+          <Select label="Sport" disabled={true} value={form.sport} onChange={(e) => set('sport', e.target.value)} options={sportOptions} />
           <Button onClick={() => updateMutation.mutate()} loading={updateMutation.isPending} iconLeft={<Save className="w-4 h-4" />}>
             Save Changes
           </Button>
@@ -143,6 +209,56 @@ export default function MemberProfilePage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Crown className="w-5 h-5 text-[#1a6b3a]" />
+          Current Positions
+        </h2>
+        {memberPositions.length === 0 ? (
+          <p className="text-sm text-gray-500">No leadership or executive post assigned yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {memberPositions.map((pos) => (
+              <div key={pos.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs bg-[#1a6b3a]/10 text-[#1a6b3a] px-2 py-0.5 rounded-full font-medium">
+                    {pos.roleType}
+                  </span>
+                  <p className="text-sm font-semibold text-gray-900">{pos.roleName}</p>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{pos.groupName}</p>
+                {pos.tenure && <p className="text-xs text-gray-500 mt-0.5">Tenure: {pos.tenure}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Medal className="w-5 h-5 text-[#d4a017]" />
+          Awards Received
+        </h2>
+        {memberAwards.length === 0 ? (
+          <p className="text-sm text-gray-500">No awards recorded yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {memberAwards.map((award: any) => (
+              <div key={award.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <p className="text-sm font-semibold text-gray-900">
+                  {award.categoryId?.name || award.title || 'Award'}
+                </p>
+                <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+                  <span>Year: {award.year}</span>
+                  {award.status && <span>Status: {award.status}</span>}
+                  {typeof award.totalVotes === 'number' && <span>Votes: {award.totalVotes}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6">

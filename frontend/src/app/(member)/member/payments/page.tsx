@@ -167,7 +167,8 @@ export default function MemberPaymentsPage() {
         <DataTable
           loading={isLoading}
           columns={[
-            { key: 'date', header: 'Date', render: (row) => formatDate(row.createdAt) },
+            { key: 'date', header: 'REF & Date', render: (row) =><div> {
+              row.transactionRef} <br/> {formatDate(row.createdAt)}</div>  },
             { key: 'type', header: 'Payment Type', render: (row) => row.paymentType?.name || '—' },
             { key: 'amount', header: 'Amount', render: (row) => formatCurrency(row.amount) },
             { key: 'year', header: 'Year', render: (row) => String(row.year) },

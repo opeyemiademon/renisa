@@ -18,11 +18,12 @@ export const getAllAwards = async (params?: {
   votingEnabled?: boolean
   status?: string
   memberName?: string
+  memberId?: string
   limit?: number
 }): Promise<Award[]> => {
   const query = `
-    query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean, $status: String, $memberName: String, $limit: Int) {
-      getAllAwards(year: $year, status: $status,  categoryId: $categoryId, votingEnabled: $votingEnabled, memberName: $memberName, limit: $limit) {
+    query GetAllAwards($year: Int, $categoryId: ID, $votingEnabled: Boolean, $status: String, $memberName: String, $memberId: ID, $limit: Int) {
+      getAllAwards(year: $year, status: $status,  categoryId: $categoryId, votingEnabled: $votingEnabled, memberName: $memberName, memberId: $memberId, limit: $limit) {
         ${AWARD_FIELDS}
       }
     }

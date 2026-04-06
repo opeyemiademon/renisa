@@ -499,7 +499,7 @@ export default function AwardsPage() {
             PDF
           </Button>
           <Button size="sm" iconLeft={<Plus className="w-4 h-4" />} onClick={openCreate}>
-            Add Award
+            Add Award Title
           </Button>
         </div>
       </div>
@@ -612,7 +612,7 @@ export default function AwardsPage() {
       </div>
 
       {/* Create/Edit Modal */}
-      <Modal isOpen={showModal} onClose={closeModal} title={editId ? 'Edit Award' : 'Add Award'} size="md">
+      <Modal isOpen={showModal} onClose={closeModal} title={editId ? 'Edit Award Title' : 'Add Award Title'} size="md">
         <div className="space-y-4">
           {/* Member — required */}
           <div>

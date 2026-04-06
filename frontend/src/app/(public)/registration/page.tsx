@@ -11,6 +11,7 @@ import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { useAppDispatch } from '@/hooks/redux'
 import { setCredentials } from '@/lib/store/authSlice'
 import { fileToBase64 } from '@/lib/fileUpload'
@@ -124,6 +125,7 @@ export default function RegistrationPage() {
 
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
   const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const lgaOptions = getLgaOptionsForState(form.stateOfOrigin)
 
   const progressWidth = ((step - 1) / (STEPS.length - 1)) * 100
 
@@ -253,12 +255,25 @@ export default function RegistrationPage() {
                   <Select
                     label="State of Origin"
                     value={form.stateOfOrigin}
-                    onChange={(e) => set('stateOfOrigin', e.target.value)}
+                    onChange={(e) => {
+                      const nextState = e.target.value
+                      set('stateOfOrigin', nextState)
+                      const valid = getLgaOptionsForState(nextState).some((o) => o.value === form.lga)
+                      if (!valid) set('lga', '')
+                    }}
                     options={stateOptions}
                     placeholder="Select state"
                     required
                   />
-                  <Input label="LGA" value={form.lga} onChange={(e) => set('lga', e.target.value)} required />
+                  <Select
+                    label="LGA"
+                    value={form.lga}
+                    onChange={(e) => set('lga', e.target.value)}
+                    options={lgaOptions}
+                    placeholder={form.stateOfOrigin ? 'Select LGA' : 'Select state first'}
+                    disabled={!form.stateOfOrigin}
+                    required
+                  />
                 </div>
                 <Select
                   label="Sport"

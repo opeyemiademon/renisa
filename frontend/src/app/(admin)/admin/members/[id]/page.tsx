@@ -16,6 +16,7 @@ import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { PageLoader } from '@/components/shared/Spinner'
 import { buildImageUrl, formatDate, formatCurrency } from '@/lib/utils'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { fileToBase64 } from '@/lib/fileUpload'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -153,6 +154,7 @@ export default function MemberDetailPage() {
   const m = member as any
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
   const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const lgaOptions = getLgaOptionsForState(editForm.stateOfOrigin || '')
   const availablePlatforms = SOCIAL_PLATFORMS.filter(
     (p) => !socialLinks.some((l) => l.platform === p.value)
   )
@@ -262,8 +264,25 @@ export default function MemberDetailPage() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              <Select label="State of Origin" value={editForm.stateOfOrigin} onChange={(e) => setField('stateOfOrigin', e.target.value)} options={stateOptions} />
-              <Input label="LGA" value={editForm.lga} onChange={(e) => setField('lga', e.target.value)} />
+              <Select
+                label="State of Origin"
+                value={editForm.stateOfOrigin}
+                onChange={(e) => {
+                  const nextState = e.target.value
+                  setField('stateOfOrigin', nextState)
+                  const valid = getLgaOptionsForState(nextState).some((o) => o.value === editForm.lga)
+                  if (!valid) setField('lga', '')
+                }}
+                options={stateOptions}
+              />
+              <Select
+                label="LGA"
+                value={editForm.lga}
+                onChange={(e) => setField('lga', e.target.value)}
+                options={lgaOptions}
+                placeholder={editForm.stateOfOrigin ? 'Select LGA' : 'Select state first'}
+                disabled={!editForm.stateOfOrigin}
+              />
             </div>
 
             {/* Biography */}

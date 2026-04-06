@@ -65,8 +65,8 @@ export const addGalleryItem = async (data: {
 
 export const updateGalleryItem = async (id: string, data: object): Promise<GalleryItem> => {
   const mutation = `
-    mutation UpdateGalleryItem($id: ID!, $data: UpdateGalleryItemInput!) {
-      updateGalleryItem(id: $id, data: $data) { ${GALLERY_FIELDS} }
+    mutation UpdateGalleryItem($id: ID!, $data: UpdateGalleryInput!) {
+      updateGalleryItem(id: $id, data: $data) { success message }
     }
   `
   const response = await graphqlClient.post('', { query: mutation, variables: { id, data } })

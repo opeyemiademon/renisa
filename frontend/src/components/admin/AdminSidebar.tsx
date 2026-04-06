@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
       { label: 'All Members', href: '/admin/members', icon: Users, ignorePathPrefixes: ['/admin/members/add'] },
       { label: 'Add Member', href: '/admin/members/add', icon: UserPlus },
       { label: 'Member Codes', href: '/admin/member-codes', icon: Hash },
-      { label: 'Alumni', href: '/admin/alumni', icon: GraduationCap },
+      /*  { label: 'Alumni', href: '/admin/alumni', icon: GraduationCap }, */
     ],
   },
   {
@@ -161,7 +161,7 @@ export function AdminSidebar() {
 
   const handleLogout = () => {
     dispatch(logout())
-    router.push('/login')
+    router.push('/admin-login')
   }
 
   return (

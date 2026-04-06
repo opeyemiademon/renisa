@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!isAuthenticated || portal !== 'admin') {
-      //router.replace('/login')
+      router.replace('/admin-login')
     }
   }, [isAuthenticated, portal, router])
 

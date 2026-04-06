@@ -7,7 +7,7 @@ import { StatCard } from '@/components/shared/StatCard'
 import { DataTable } from '@/components/shared/DataTable'
 import { Badge } from '@/components/shared/Badge'
 import { PageLoader } from '@/components/shared/Spinner'
-import { formatCurrency, buildImageUrl } from '@/lib/utils'
+import { formatCurrency, buildImageUrl, formatDate } from '@/lib/utils'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -21,7 +21,6 @@ export default function AdminDashboardPage() {
     queryFn: getDashboardStats,
   })
 
-  
   if (isLoading) return <PageLoader />
 
   return (
@@ -95,8 +94,8 @@ export default function AdminDashboardPage() {
                 key: 'member',
                 header: 'Member',
                 render: (row) => (
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-[#1a6b3a] shrink-0 overflow-hidden">
+                  <a href={`/admin/members/${row?.id}`} className="flex items-center gap-2">
+                    <div   className="w-7 h-7 rounded-full bg-[#1a6b3a] shrink-0 overflow-hidden">
                       {row.profilePicture ? (
                         <img src={buildImageUrl(row.profilePicture)} alt={row.firstName} className="w-full h-full object-cover" />
                       ) : (
@@ -108,8 +107,9 @@ export default function AdminDashboardPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">{row.firstName} {row.lastName}</p>
                       <p className="text-xs text-gray-400">{row.sport}</p>
+                      <p className="text-xs text-gray-400">{formatDate(row.createdAt)}</p>
                     </div>
-                  </div>
+                  </a>
                 ),
               },
               { key: 'memberNumber', header: 'No.', render: (row) => <span className="text-xs">{row.memberNumber}</span> },
@@ -126,14 +126,15 @@ export default function AdminDashboardPage() {
           </div>
           <DataTable
             columns={[
-              {
+              { 
                 key: 'member',
                 header: 'Member',
-                render: (row) => <p className="text-sm">{row.member?.firstName} {row.member?.lastName}</p>,
+                render: (row) => <a href={`/admin/payments`} className="text-sm">{row.member?.firstName} {row.member?.lastName}</a>,
               },
               { key: 'type', header: 'Type', render: (row) => <span className="text-xs">{row.paymentType?.name}</span> },
               { key: 'amount', header: 'Amount', render: (row) => <span className="text-sm font-medium">{formatCurrency(row.amount)}</span> },
               { key: 'status', header: 'Status', render: (row) => <Badge variant={row.status}>{row.status}</Badge> },
+              { key: 'date', header: 'Date', render: (row) => <span className="text-xs">{formatDate(row.createdAt)}</span> },
             ]}
             data={(stats?.recentPayments ?? []) as any[]}
             keyExtractor={(row) => row.id}

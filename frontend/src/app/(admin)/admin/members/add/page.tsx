@@ -12,6 +12,7 @@ import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { fileToBase64 } from '@/lib/fileUpload'
 import toast from 'react-hot-toast'
 
@@ -28,6 +29,7 @@ export default function AdminAddMemberPage() {
   const set = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }))
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
   const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const lgaOptions = getLgaOptionsForState(form.stateOfOrigin)
 
   const handlePhotoCapture = async (file: File) => {
     try {
@@ -108,8 +110,28 @@ export default function AdminAddMemberPage() {
           <Select label="State of Residence" value={form.state} onChange={(e) => set('state', e.target.value)} options={stateOptions} placeholder="Select state" required />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
-          <Select label="State of Origin" value={form.stateOfOrigin} onChange={(e) => set('stateOfOrigin', e.target.value)} options={stateOptions} placeholder="Select state" required />
-          <Input label="LGA" value={form.lga} onChange={(e) => set('lga', e.target.value)} required />
+          <Select
+            label="State of Origin"
+            value={form.stateOfOrigin}
+            onChange={(e) => {
+              const nextState = e.target.value
+              set('stateOfOrigin', nextState)
+              const valid = getLgaOptionsForState(nextState).some((o) => o.value === form.lga)
+              if (!valid) set('lga', '')
+            }}
+            options={stateOptions}
+            placeholder="Select state"
+            required
+          />
+          <Select
+            label="LGA"
+            value={form.lga}
+            onChange={(e) => set('lga', e.target.value)}
+            options={lgaOptions}
+            placeholder={form.stateOfOrigin ? 'Select LGA' : 'Select state first'}
+            disabled={!form.stateOfOrigin}
+            required
+          />
         </div>
         <Select label="Sport" value={form.sport} onChange={(e) => set('sport', e.target.value)} options={sportOptions} placeholder="Select sport" required />
 
