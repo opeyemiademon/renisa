@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Mail, Phone, MapPin, Send, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { Input, Textarea } from '@/components/shared/Input'
 import { submitContactMessage } from '@/lib/api_services/contactMessageApiServices'
+import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
 import toast from 'react-hot-toast'
 
 const CAPTCHA_MIN = 1
@@ -22,6 +23,18 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [captcha, setCaptcha] = useState(randomPair)
   const [captchaAnswer, setCaptchaAnswer] = useState('')
+
+  const { data: contactContent } = useQuery({
+    queryKey: ['site-content', 'contact'],
+    queryFn: () => getSiteContent('contact'),
+    staleTime: 300_000,
+  })
+
+  const contactMeta = (contactContent as any)?.metadata || {}
+  const address = contactMeta.address || 'National Sports Commission Complex, Surulere, Lagos, Nigeria'
+  const phone = contactMeta.phone || '+234 800 000 0000'
+  const email = contactMeta.email || 'info@renisa.org.ng'
+  const mapEmbed = contactMeta.mapEmbed || ''
 
   const regenCaptcha = useCallback(() => {
     setCaptcha(randomPair())
@@ -162,21 +175,9 @@ export default function ContactPage() {
                 </h2>
                 <div className="space-y-5">
                   {[
-                    {
-                      icon: <MapPin className="w-5 h-5 text-[#d4a017]" />,
-                      label: 'Address',
-                      value: 'National Sports Commission Complex, Surulere, Lagos, Nigeria',
-                    },
-                    {
-                      icon: <Phone className="w-5 h-5 text-[#d4a017]" />,
-                      label: 'Phone',
-                      value: '+234 800 000 0000',
-                    },
-                    {
-                      icon: <Mail className="w-5 h-5 text-[#d4a017]" />,
-                      label: 'Email',
-                      value: 'info@renisa.org.ng',
-                    },
+                    { icon: <MapPin className="w-5 h-5 text-[#d4a017]" />, label: 'Address', value: address },
+                    { icon: <Phone className="w-5 h-5 text-[#d4a017]" />, label: 'Phone', value: phone },
+                    { icon: <Mail className="w-5 h-5 text-[#d4a017]" />, label: 'Email', value: email },
                   ].map((item) => (
                     <div key={item.label} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
                       <div className="p-2 bg-[#1a6b3a]/10 rounded-lg flex-shrink-0">{item.icon}</div>
@@ -209,12 +210,27 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-200 rounded-xl h-56 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <MapPin className="w-10 h-10 mx-auto mb-2" />
-                  <p className="text-sm">Map placeholder</p>
+              {mapEmbed ? (
+                <div className="rounded-xl overflow-hidden h-56">
+                  <iframe
+                    src={mapEmbed}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Office location"
+                  />
                 </div>
-              </div>
+              ) : (
+                <div className="bg-gray-200 rounded-xl h-56 flex items-center justify-center">
+                  <div className="text-center text-gray-400">
+                    <MapPin className="w-10 h-10 mx-auto mb-2" />
+                    <p className="text-sm">Map placeholder</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

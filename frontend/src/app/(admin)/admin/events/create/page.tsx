@@ -53,6 +53,7 @@ function CreateEventForm() {
     queryKey: ['event', editId],
     queryFn: () => getEvent(editId!),
     enabled: !!editId,
+    staleTime: 0,
   })
 
   useEffect(() => {
@@ -90,6 +91,9 @@ function CreateEventForm() {
     onSuccess: () => {
       toast.success(editId ? 'Event updated' : 'Event created')
       queryClient.invalidateQueries({ queryKey: ['events-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['featured-events'] })
+      queryClient.invalidateQueries({ queryKey: ['public-events'] })
+      if (editId) queryClient.invalidateQueries({ queryKey: ['event', editId] })
       router.push('/admin/events')
     },
     onError: (err: Error) => toast.error(err.message),

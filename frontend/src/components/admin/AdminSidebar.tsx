@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { logout } from '@/lib/store/authSlice'
+import { setSidebarOpen } from '@/lib/store/appSlice'
 import { getInitials } from '@/lib/utils'
 
 interface NavItem {
@@ -91,10 +92,17 @@ const navItems: NavItem[] = [
 
 function NavItemComponent({ item, depth = 0, siblingPrefixes = [] }: { item: NavItem; depth?: number; siblingPrefixes?: string[] }) {
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
   const [open, setOpen] = useState(() => {
     if (!item.children) return false
     return item.children.some((c) => c.href && pathname.startsWith(c.href))
   })
+
+  const handleNavClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      dispatch(setSidebarOpen(false))
+    }
+  }
 
   // A leaf item is active if the path matches exactly or starts with href+'/'.
   // Exclude if any sibling's href prefix matches (prevents parent bleeding into sibling sub-routes)
@@ -117,7 +125,7 @@ function NavItemComponent({ item, depth = 0, siblingPrefixes = [] }: { item: Nav
             hasActiveChild ? 'text-white bg-white/10' : 'text-white/70 hover:text-white hover:bg-white/10'
           )}
         >
-          <item.icon className="w-4 h-4 flex-shrink-0" />
+          <item.icon className="w-4 h-4 shrink-0" />
           <span className="flex-1 text-left">{item.label}</span>
           <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', open && 'rotate-180')} />
         </button>
@@ -138,7 +146,7 @@ function NavItemComponent({ item, depth = 0, siblingPrefixes = [] }: { item: Nav
   }
 
   return (
-    <Link href={item.href!}>
+    <Link href={item.href!} onClick={handleNavClick}>
       <div
         className={cn(
           'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all',
@@ -147,7 +155,7 @@ function NavItemComponent({ item, depth = 0, siblingPrefixes = [] }: { item: Nav
             : 'text-white/70 hover:text-white hover:bg-white/10'
         )}
       >
-        <item.icon className="w-4 h-4 flex-shrink-0" />
+        <item.icon className="w-4 h-4 shrink-0" />
         {item.label}
       </div>
     </Link>
@@ -189,7 +197,7 @@ export function AdminSidebar() {
       {/* Admin user */}
       <div className="px-3 py-3 border-t border-white/10">
         <div className="flex items-center gap-3 px-3 py-2 mb-1.5">
-          <div className="w-8 h-8 rounded-full bg-[#d4a017] flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#d4a017] flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold">
               {adminUser ? getInitials(adminUser.username) : 'A'}
             </span>

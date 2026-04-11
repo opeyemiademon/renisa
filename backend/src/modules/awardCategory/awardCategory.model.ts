@@ -7,6 +7,7 @@ const awardCategorySchema = new Schema({
   icon: { type: String },
   isActive: { type: Boolean, default: true },
   pollActive: { type: Boolean, default: false },
+  isPubliclyVisible: { type: Boolean, default: false },
   votingStartDate: { type: Date },
   votingEndDate: { type: Date },
   createdBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },

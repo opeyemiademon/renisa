@@ -3,6 +3,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Trophy, Target, Eye, History, Users, Star, Calendar, Medal, HeartHandshake, BookOpen, ShieldCheck, Lightbulb } from 'lucide-react'
 import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
+import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
+import { buildImageUrl } from '@/lib/utils'
 
 export default function AboutPage() {
   const { data: siteStats } = useQuery({
@@ -11,42 +13,79 @@ export default function AboutPage() {
     staleTime: 60_000,
   })
 
+  const { data: aboutContent } = useQuery({
+    queryKey: ['site-content', 'about'],
+    queryFn: () => getSiteContent('about'),
+    staleTime: 300_000,
+  })
+
+  const { data: missionContent } = useQuery({
+    queryKey: ['site-content', 'mission'],
+    queryFn: () => getSiteContent('mission'),
+    staleTime: 300_000,
+  })
+
+  const { data: historyContent } = useQuery({
+    queryKey: ['site-content', 'history'],
+    queryFn: () => getSiteContent('history'),
+    staleTime: 300_000,
+  })
+
+  const aboutMeta = (aboutContent as any)?.metadata || {}
+  const missionMeta = (missionContent as any)?.metadata || {}
+  const historyMeta = (historyContent as any)?.metadata || {}
+
   const statsRow = siteStats
     ? [
         { icon: <Users className="w-6 h-6" />, value: String(siteStats.activeMembers), label: 'Active members' },
-        { icon: <Calendar className="w-6 h-6" />, value: String(siteStats.publishedEvents), label: 'Published stories' },
-        { icon: <Trophy className="w-6 h-6" />, value: String(siteStats.galleryPhotos), label: 'Gallery photos' },
         { icon: <Star className="w-6 h-6" />, value: String(siteStats.awardedHonors), label: 'Honours recorded' },
       ]
     : [
         { icon: <Users className="w-6 h-6" />, value: '—', label: 'Active members' },
-        { icon: <Calendar className="w-6 h-6" />, value: '—', label: 'Published stories' },
-        { icon: <Trophy className="w-6 h-6" />, value: '—', label: 'Gallery photos' },
         { icon: <Star className="w-6 h-6" />, value: '—', label: 'Honours recorded' },
       ]
 
   return (
     <div className="bg-white">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Hero — background image with dark green overlay */}
+      <section className="relative py-28 overflow-hidden">
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80&auto=format&fit=crop"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Dark green overlay — two layers for depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0d4a25]/95 via-[#1a6b3a]/85 to-[#0d4a25]/90" />
+        {/* Subtle gold accent bar at top */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EBD279] via-[#d4a017] to-[#EBD279]" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#d4a017] font-medium text-sm uppercase tracking-widest mb-3">
             Who We Are
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-white font-serif mb-5">
-            About RENISA
+            {aboutMeta.title || 'About RENISA'}
           </h1>
-          <p className="text-white/80 max-w-2xl mx-auto text-lg leading-relaxed">
-            The Association of Retired Nigerian Sports Men &amp; Women — celebrating excellence,
-            preserving legacy, and supporting our sports heroes.
-          </p>
+          {aboutMeta.content ? (
+            <div
+              className="text-white/85 max-w-2xl mx-auto text-lg leading-relaxed prose prose-invert"
+              dangerouslySetInnerHTML={{ __html: aboutMeta.content }}
+            />
+          ) : (
+            <p className="text-white/85 max-w-2xl mx-auto text-lg leading-relaxed">
+              The Association of Retired Nigerian Sports Men &amp; Women — celebrating excellence,
+              preserving legacy, and supporting our sports heroes.
+            </p>
+          )}
         </div>
       </section>
 
       {/* Stats */}
       <section className="py-14 bg-[#1a6b3a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-8">
             {statsRow.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-[#d4a017] flex justify-center mb-2">{stat.icon}</div>
@@ -69,11 +108,18 @@ export default function AboutPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 font-serif">Our Mission</h2>
               </div>
-              <p className="text-gray-600 leading-relaxed">
-                To recognize, celebrate, and support retired Nigerian sports men and women by
-                providing a unified platform that honors their contributions to Nigerian sports,
-                facilitates networking, and advocates for their welfare and rights.
-              </p>
+              {missionMeta.mission ? (
+                <div
+                  className="text-gray-600 leading-relaxed prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: missionMeta.mission }}
+                />
+              ) : (
+                <p className="text-gray-600 leading-relaxed">
+                  To recognize, celebrate, and support retired Nigerian sports men and women by
+                  providing a unified platform that honors their contributions to Nigerian sports,
+                  facilitates networking, and advocates for their welfare and rights.
+                </p>
+              )}
             </div>
             <div className="bg-[#d4a017]/5 border border-[#d4a017]/20 rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-5">
@@ -82,11 +128,18 @@ export default function AboutPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 font-serif">Our Vision</h2>
               </div>
-              <p className="text-gray-600 leading-relaxed">
-                To be the foremost association championing the legacy of Nigerian sports excellence,
-                ensuring that every retired athlete is celebrated, supported, and remembered for
-                their invaluable contributions to the nation.
-              </p>
+              {missionMeta.vision ? (
+                <div
+                  className="text-gray-600 leading-relaxed prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: missionMeta.vision }}
+                />
+              ) : (
+                <p className="text-gray-600 leading-relaxed">
+                  To be the foremost association championing the legacy of Nigerian sports excellence,
+                  ensuring that every retired athlete is celebrated, supported, and remembered for
+                  their invaluable contributions to the nation.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -94,33 +147,68 @@ export default function AboutPage() {
 
       {/* History */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-[#1a6b3a] rounded-xl">
-              <History className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+
+            {/* Left — image */}
+            <div className="relative">
+              <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
+                <img
+                  src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80&auto=format&fit=crop"
+                  alt="Nigerian sports heritage"
+                  className="w-full h-full object-cover"
+                />
+                {/* Subtle green tint overlay */}
+                <div className="absolute inset-0 bg-[#0d4a25]/20" />
+              </div>
+              {/* Decorative gold badge */}
+              <div className="absolute -bottom-5 -right-5 w-28 h-28 rounded-2xl bg-[#0d4a25] shadow-xl flex flex-col items-center justify-center">
+                <span className="text-[#d4a017] text-3xl font-extrabold font-serif leading-none">20+</span>
+                <span className="text-white/80 text-xs mt-1 text-center leading-tight px-2">Years of Legacy</span>
+              </div>
+              {/* Gold corner accents */}
+              <div className="absolute -top-3 -left-3 w-12 h-12 rounded-tl-2xl border-t-2 border-l-2 border-[#d4a017]" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 font-serif">Our History</h2>
-          </div>
-          <div className="prose prose-lg max-w-none text-gray-600">
-            <p className="leading-relaxed mb-4">
-              RENISA was founded over two decades ago by a group of pioneering retired athletes
-              who recognized the need for an organized body to cater to the welfare and interests
-              of Nigeria&apos;s sporting legends. What started as informal gatherings among former
-              Olympians and national champions has grown into a formidable association with
-              hundreds of members spanning every sport discipline.
-            </p>
-            <p className="leading-relaxed mb-4">
-              Over the years, RENISA has successfully advocated for better pension schemes for
-              retired athletes, organized annual awards ceremonies, facilitated reunions, and
-              provided welfare support to members in need. Our annual awards gala has become one
-              of Nigeria&apos;s most prestigious events in the sports calendar.
-            </p>
-            <p className="leading-relaxed">
-              Today, RENISA stands as a testament to the enduring spirit of Nigerian sports, with
-              members representing legends from football, athletics, boxing, swimming, gymnastics,
-              and many other disciplines who have brought honor to the green and white flag on
-              the world stage.
-            </p>
+
+            {/* Right — content */}
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-[#1a6b3a] rounded-xl">
+                  <History className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 font-serif">Our History</h2>
+              </div>
+
+              {historyMeta.content ? (
+                <div
+                  className="prose prose-lg max-w-none text-gray-600"
+                  dangerouslySetInnerHTML={{ __html: historyMeta.content }}
+                />
+              ) : (
+                <div className="prose prose-lg max-w-none text-gray-600">
+                  <p className="leading-relaxed mb-4">
+                    RENISA was founded over two decades ago by a group of pioneering retired athletes
+                    who recognized the need for an organized body to cater to the welfare and interests
+                    of Nigeria&apos;s sporting legends. What started as informal gatherings among former
+                    Olympians and national champions has grown into a formidable association with
+                    hundreds of members spanning every sport discipline.
+                  </p>
+                  <p className="leading-relaxed mb-4">
+                    Over the years, RENISA has successfully advocated for better pension schemes for
+                    retired athletes, organized annual awards ceremonies, facilitated reunions, and
+                    provided welfare support to members in need. Our annual awards gala has become one
+                    of Nigeria&apos;s most prestigious events in the sports calendar.
+                  </p>
+                  <p className="leading-relaxed">
+                    Today, RENISA stands as a testament to the enduring spirit of Nigerian sports, with
+                    members representing legends from football, athletics, boxing, swimming, gymnastics,
+                    and many other disciplines who have brought honor to the green and white flag on
+                    the world stage.
+                  </p>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </section>

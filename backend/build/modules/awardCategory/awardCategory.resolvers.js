@@ -48,6 +48,15 @@ const awardCategoryResolvers = {
                 throw new Error('Award category not found');
             return { success: true, message: 'Poll ended for category', data: category };
         },
+        toggleCategoryPublicVisibility: async (_, { id }, context) => {
+            requireAdminAuth(context);
+            const existing = await AwardCategory.findById(id);
+            if (!existing)
+                throw new Error('Award category not found');
+            const category = await AwardCategory.findByIdAndUpdate(id, { isPubliclyVisible: !existing.isPubliclyVisible }, { new: true });
+            const action = category.isPubliclyVisible ? 'visible to public' : 'hidden from public';
+            return { success: true, message: `Category ${action}`, data: category };
+        },
     },
 };
 export default awardCategoryResolvers;

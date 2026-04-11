@@ -1,10 +1,39 @@
 'use client'
 
 import Link from 'next/link'
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react'
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
 
 export function Footer() {
   const year = new Date().getFullYear()
+
+  const { data: contactContent } = useQuery({
+    queryKey: ['site-content', 'contact'],
+    queryFn: () => getSiteContent('contact'),
+    staleTime: 300_000,
+  })
+
+  const { data: socialContent } = useQuery({
+    queryKey: ['site-content', 'social'],
+    queryFn: () => getSiteContent('social'),
+    staleTime: 300_000,
+  })
+
+  const contactMeta = (contactContent as any)?.metadata || {}
+  const socialMeta = (socialContent as any)?.metadata || {}
+
+  const address = contactMeta.address || 'National Sports Commission Complex, Surulere, Lagos, Nigeria'
+  const phone = contactMeta.phone || '+234 800 000 0000'
+  const email = contactMeta.email || 'info@renisa.org.ng'
+
+  const socialLinks = [
+    { Icon: Facebook, href: socialMeta.facebook, label: 'Facebook' },
+    { Icon: Twitter, href: socialMeta.twitter, label: 'Twitter/X' },
+    { Icon: Instagram, href: socialMeta.instagram, label: 'Instagram' },
+    { Icon: Youtube, href: socialMeta.youtube, label: 'YouTube' },
+    { Icon: Linkedin, href: socialMeta.linkedin, label: 'LinkedIn' },
+  ].filter((s) => s.href)
 
   return (
     <footer className="bg-[#0d4a25] text-white">
@@ -31,22 +60,33 @@ export function Footer() {
               celebrating the legacy of Nigerian sports excellence and supporting our retired
               athletes.
             </p>
-            <div className="flex gap-3">
-              {[
-                { Icon: Facebook, href: '#' },
-                { Icon: Twitter, href: '#' },
-                { Icon: Instagram, href: '#' },
-                { Icon: Youtube, href: '#' },
-              ].map(({ Icon, href }, i) => (
-                <a
-                  key={i}
-                  href={href}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors"
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
+            {socialLinks.length > 0 ? (
+              <div className="flex gap-3 flex-wrap">
+                {socialLinks.map(({ Icon, href, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#d4a017] flex items-center justify-center transition-colors"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                {[Facebook, Twitter, Instagram, Youtube].map((Icon, i) => (
+                  <span
+                    key={i}
+                    className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center opacity-40"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -84,16 +124,16 @@ export function Footer() {
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm text-white/70">
-                <MapPin className="w-4 h-4 text-[#d4a017] mt-0.5 flex-shrink-0" />
-                <span>National Sports Commission Complex, Surulere, Lagos, Nigeria</span>
+                <MapPin className="w-4 h-4 text-[#d4a017] mt-0.5 shrink-0" />
+                <span>{address}</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-white/70">
-                <Phone className="w-4 h-4 text-[#d4a017] flex-shrink-0" />
-                <span>+234 800 000 0000</span>
+                <Phone className="w-4 h-4 text-[#d4a017] shrink-0" />
+                <span>{phone}</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-white/70">
-                <Mail className="w-4 h-4 text-[#d4a017] flex-shrink-0" />
-                <span>info@renisa.org.ng</span>
+                <Mail className="w-4 h-4 text-[#d4a017] shrink-0" />
+                <span>{email}</span>
               </li>
             </ul>
             <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">

@@ -39,7 +39,7 @@ const awardResolvers = {
         },
     },
     Query: {
-        getAllAwards: async (_, { year, status, categoryId, votingEnabled, memberName, limit }) => {
+        getAllAwards: async (_, { year, status, categoryId, votingEnabled, memberName, memberId, limit }) => {
             const filter = {};
             if (year)
                 filter.year = year;
@@ -49,6 +49,8 @@ const awardResolvers = {
                 filter.categoryId = categoryId;
             if (votingEnabled !== undefined)
                 filter.votingEnabled = votingEnabled;
+            if (memberId)
+                filter.memberId = memberId;
             // Filter by member name: find matching member IDs first
             if (memberName && memberName.trim()) {
                 const Member = mongoose.model('Member');
@@ -59,7 +61,13 @@ const awardResolvers = {
                         { lastName: nameRegex },
                     ],
                 }).select('_id');
-                filter.memberId = { $in: members.map((m) => m._id) };
+                const matchedIds = members.map((m) => String(m._id));
+                if (memberId) {
+                    filter.memberId = matchedIds.includes(String(memberId)) ? memberId : null;
+                }
+                else {
+                    filter.memberId = { $in: members.map((m) => m._id) };
+                }
             }
             let q = populate(Award.find(filter)).sort({ year: -1, createdAt: -1 });
             if (typeof limit === 'number' && limit > 0) {

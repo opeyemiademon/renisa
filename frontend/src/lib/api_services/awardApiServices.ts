@@ -9,7 +9,7 @@ const AWARD_FIELDS = `
 `
 
 const CATEGORY_FIELDS = `
-  id name description icon isActive pollActive votingStartDate votingEndDate createdAt
+  id name description icon isActive pollActive isPubliclyVisible votingStartDate votingEndDate createdAt
 `
 
 export const getAllAwards = async (params?: {
@@ -179,6 +179,17 @@ export const endCategoryPoll = async (id: string): Promise<MutationResponse> => 
   return response.data.data.endCategoryPoll
 }
 
+export const toggleCategoryPublicVisibility = async (id: string): Promise<MutationResponse> => {
+  const mutation = `
+    mutation ToggleCategoryPublicVisibility($id: ID!) {
+      toggleCategoryPublicVisibility(id: $id) { success message data { ${CATEGORY_FIELDS} } }
+    }
+  `
+  const response = await graphqlClient.post('', { query: mutation, variables: { id } })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.toggleCategoryPublicVisibility
+}
+
 // ── Winners Report ────────────────────────────────────────────────────────────
 
 export const getAwardWinnersReport = async (year?: number): Promise<CategoryWinner[]> => {
@@ -188,6 +199,7 @@ export const getAwardWinnersReport = async (year?: number): Promise<CategoryWinn
         categoryId
         categoryName
         pollActive
+        isPubliclyVisible
         votingStartDate
         votingEndDate
         winner {

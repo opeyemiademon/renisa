@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronDown, Menu, X } from 'lucide-react'
@@ -12,7 +12,7 @@ const leadershipLinks = [
   { label: 'State Executives', href: '/leadership/state-executives' },
   { label: 'Directorate', href: '/leadership/directorate' },
 ]
- 
+
 const mediaLinks = [
   { label: 'Gallery', href: '/gallery' },
   { label: 'Event', href: '/events' },
@@ -23,17 +23,19 @@ const mediaLinks = [
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
-  { label: 'Media', href: '/gallery', children: mediaLinks},
+  { label: 'Media', href: '/gallery', children: mediaLinks },
   { label: 'Leadership', href: '/leadership', children: leadershipLinks },
-
   { label: 'Donation', href: '/donation' },
 ]
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileOpenSection, setMobileOpenSection] = useState<string | null>(null)
+  // desktop open dropdown (click-based so touch works)
+  const [desktopOpen, setDesktopOpen] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
+  const navRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -41,8 +43,30 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Close desktop dropdown on outside click/touch
+  useEffect(() => {
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setDesktopOpen(null)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    document.addEventListener('touchstart', handler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('touchstart', handler)
+    }
+  }, [])
+
+  // Close dropdown on route change
+  useEffect(() => {
+    setDesktopOpen(null)
+    setMobileOpen(false)
+    setMobileOpenSection(null)
+  }, [pathname])
+
   return (
-    <nav className="sticky top-0 z-50">
+    <nav className="sticky top-0 z-50" ref={navRef}>
       {/* Gold top accent line */}
       <div className="h-1 bg-gradient-to-r from-[#EBD279] via-[#d4a017] to-[#EBD279]" />
 
@@ -62,7 +86,7 @@ export function Navbar() {
                 <img
                   src="/logo.png"
                   alt="RENISA Logo"
-                  className=" object-contain w-14 h-14 rounded-full"
+                  className="object-contain w-14 h-14 rounded-full"
                 />
               </div>
               <div className="leading-none">
@@ -71,7 +95,7 @@ export function Navbar() {
                   RENISA
                 </span>
                 <span className="text-[#EBD279]/70 text-[9px] uppercase tracking-[0.2em] font-medium">
-                 Retired Nigerian Women & Men Sports Association
+                  Retired Nigerian Women &amp; Men Sports Association
                 </span>
               </div>
             </Link>
@@ -80,47 +104,48 @@ export function Navbar() {
             <div className="hidden lg:flex items-center gap-0.5">
               {navLinks.map((link) =>
                 link.children ? (
-                  <div key={link.label} className="relative group">
+                  <div key={link.label} className="relative">
                     <button
                       type="button"
+                      onClick={() => setDesktopOpen(desktopOpen === link.label ? null : link.label)}
                       className={cn(
-                        'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/8 transition-colors',
-                        pathname.startsWith(link.href) && 'bg-white/12 text-white'
+                        'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors',
+                        pathname.startsWith(link.href) && 'bg-white/10 text-white'
                       )}
                     >
                       {link.label}
-                      <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180 duration-200" />
+                      <ChevronDown className={cn('w-3.5 h-3.5 transition-transform duration-200', desktopOpen === link.label && 'rotate-180')} />
                     </button>
-                    {/* pt-2 = hover bridge (no gap); avoids menu closing before pointer reaches links */}
-                    <div className="absolute top-full left-0 z-50 w-52 pt-2 opacity-0 pointer-events-none translate-y-0 transition-all duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
-                      <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
-                        <div className="h-0.5 bg-gradient-to-r from-[#EBD279] to-[#d4a017]" />
-                        {link.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className={cn(
-                              'block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#0d4a25]/5 hover:text-[#0d4a25] transition-colors',
-                              pathname === child.href && 'bg-[#0d4a25]/5 text-[#0d4a25] font-semibold'
-                            )}
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
+                    {desktopOpen === link.label && (
+                      <div className="absolute top-full left-0 z-50 w-52 pt-2">
+                        <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
+                          <div className="h-0.5 bg-gradient-to-r from-[#EBD279] to-[#d4a017]" />
+                          {link.children.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className={cn(
+                                'block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#0d4a25]/5 hover:text-[#0d4a25] transition-colors',
+                                pathname === child.href && 'bg-[#0d4a25]/5 text-[#0d4a25] font-semibold'
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ) : (
                   <Link
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      'px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/8 transition-colors relative group',
+                      'px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors relative',
                       pathname === link.href && 'text-white'
                     )}
                   >
                     {link.label}
-                    {/* Active underline */}
                     {pathname === link.href && (
                       <span className="absolute bottom-0.5 left-3 right-3 h-0.5 bg-[#EBD279] rounded-full" />
                     )}
@@ -169,7 +194,7 @@ export function Navbar() {
                     onClick={() =>
                       setMobileOpenSection((prev) => (prev === link.label ? null : link.label))
                     }
-                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/8 transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
                   >
                     {link.label}
                     <ChevronDown
@@ -203,7 +228,7 @@ export function Navbar() {
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    'block px-3 py-2.5 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/8 transition-colors',
+                    'block px-3 py-2.5 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors',
                     pathname === link.href && 'text-[#EBD279] bg-white/5'
                   )}
                 >

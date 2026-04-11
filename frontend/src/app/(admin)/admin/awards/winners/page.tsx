@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Trophy, Medal, FileDown, Users } from 'lucide-react'
-import { getAwardWinnersReport } from '@/lib/api_services/awardApiServices'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Trophy, Medal, FileDown, Users, Eye, EyeOff } from 'lucide-react'
+import { getAwardWinnersReport, toggleCategoryPublicVisibility } from '@/lib/api_services/awardApiServices'
 import { Button } from '@/components/shared/Button'
 import { Select } from '@/components/shared/Select'
 import { buildImageUrl } from '@/lib/utils'
+import toast from 'react-hot-toast'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
@@ -39,10 +40,21 @@ const fmtDT = (d?: string | null) =>
 export default function AwardWinnersPage() {
   const currentYear = new Date().getFullYear()
   const [selectedYear, setSelectedYear] = useState(String(currentYear))
+  const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['award-winners-report', selectedYear],
     queryFn: () => getAwardWinnersReport(selectedYear ? parseInt(selectedYear) : undefined),
+  })
+
+  const toggleVisibility = useMutation({
+    mutationFn: (id: string) => toggleCategoryPublicVisibility(id),
+    onSuccess: (result) => {
+      toast.success(result.message)
+      queryClient.invalidateQueries({ queryKey: ['award-winners-report'] })
+      queryClient.invalidateQueries({ queryKey: ['public-award-winners'] })
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update visibility'),
   })
 
   const yearOptions = [
@@ -168,8 +180,8 @@ export default function AwardWinnersPage() {
           {categories.map((cat: any) => (
             <div key={cat.categoryId} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               {/* Category Header */}
-              <div className="bg-primary px-5 py-3 flex items-center justify-between">
-                <div>
+              <div className="bg-primary px-5 py-3 flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
                   <h3 className="text-white font-semibold">{cat.categoryName}</h3>
                   <p className="text-white/70 text-xs mt-0.5">
                     {cat.pollActive ? (
@@ -181,12 +193,31 @@ export default function AwardWinnersPage() {
                     )}
                   </p>
                 </div>
-                {cat.winner && (
-                  <div className="text-right">
-                    <p className="text-amber-300 text-xs font-medium uppercase tracking-wide">Winner</p>
-                    <p className="text-white font-semibold text-sm">{cat.winner.recipientName}</p>
-                  </div>
-                )}
+                <div className="flex items-center gap-3 shrink-0">
+                  {cat.winner && (
+                    <div className="text-right">
+                      <p className="text-amber-300 text-xs font-medium uppercase tracking-wide">Winner</p>
+                      <p className="text-white font-semibold text-sm">{cat.winner.recipientName}</p>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => toggleVisibility.mutate(cat.categoryId)}
+                    disabled={toggleVisibility.isPending}
+                    title={cat.isPubliclyVisible ? 'Hide from public site' : 'Make visible on public site'}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                      cat.isPubliclyVisible
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-white/15 hover:bg-white/25 text-white/80'
+                    }`}
+                  >
+                    {cat.isPubliclyVisible ? (
+                      <><Eye className="w-3.5 h-3.5" /> Visible</>
+                    ) : (
+                      <><EyeOff className="w-3.5 h-3.5" /> Hidden</>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Nominees */}
@@ -205,7 +236,7 @@ export default function AwardWinnersPage() {
                         className={`flex items-center gap-4 px-5 py-3 ${isWinner ? 'bg-amber-50' : ''}`}
                       >
                         {/* Rank */}
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                           isWinner
                             ? 'bg-amber-500 text-white'
                             : 'bg-gray-100 text-gray-500'
@@ -214,7 +245,7 @@ export default function AwardWinnersPage() {
                         </div>
 
                         {/* Photo */}
-                        <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 shrink-0">
                           {nominee.recipientPhoto ? (
                             <img
                               src={buildImageUrl(nominee.recipientPhoto)}
@@ -244,7 +275,7 @@ export default function AwardWinnersPage() {
                         </div>
 
                         {/* Votes */}
-                        <div className="text-right flex-shrink-0">
+                        <div className="text-right shrink-0">
                           <p className={`text-lg font-bold ${isWinner ? 'text-amber-600' : 'text-gray-700'}`}>
                             {nominee.voteCount}
                           </p>

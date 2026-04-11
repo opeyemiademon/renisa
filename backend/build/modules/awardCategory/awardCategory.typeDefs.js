@@ -7,6 +7,7 @@ const awardCategoryTypeDefs = gql `
     icon: String
     isActive: Boolean!
     pollActive: Boolean!
+    isPubliclyVisible: Boolean!
     votingStartDate: String
     votingEndDate: String
     createdBy: AdminUser
@@ -45,6 +46,7 @@ const awardCategoryTypeDefs = gql `
     deleteAwardCategory(id: ID!): AwardCategoryResponse!
     startCategoryPoll(id: ID!, votingStartDate: String, votingEndDate: String): AwardCategoryResponse!
     endCategoryPoll(id: ID!): AwardCategoryResponse!
+    toggleCategoryPublicVisibility(id: ID!): AwardCategoryResponse!
   }
 `;
 export default awardCategoryTypeDefs;

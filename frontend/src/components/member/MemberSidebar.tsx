@@ -6,6 +6,7 @@ import { LayoutDashboard, User, CreditCard, Vote, IdCard, Award, LogOut, Bell, L
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { logout } from '@/lib/store/authSlice'
+import { setSidebarOpen } from '@/lib/store/appSlice'
 import { buildImageUrl, getInitials } from '@/lib/utils'
 
 const navItems = [
@@ -30,6 +31,12 @@ export function MemberSidebar() {
     router.push('/login')
   }
 
+  const handleNavClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      dispatch(setSidebarOpen(false))
+    }
+  }
+
   return (
     <aside className="w-64 h-screen bg-[#1a6b3a] flex flex-col sticky top-0 shadow-xl">
       {/* Logo */}
@@ -49,7 +56,7 @@ export function MemberSidebar() {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} onClick={handleNavClick}>
               <div
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150',

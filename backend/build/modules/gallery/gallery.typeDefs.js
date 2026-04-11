@@ -44,9 +44,11 @@ const galleryTypeDefs = gql `
   input UpdateGalleryInput {
     title: String
     description: String
+    caption: String
     imageUrl: String
     thumbnailUrl: String
     albumName: String
+    album: String
     eventDate: String
     year: Int
     isFeatured: Boolean

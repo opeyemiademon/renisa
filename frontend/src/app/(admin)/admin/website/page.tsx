@@ -13,16 +13,7 @@ import { buildImageUrl } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 const CMS_SECTIONS = [
-  {
-    key: 'hero',
-    label: 'Homepage Hero',
-    fields: [
-      { key: 'title', label: 'Headline', type: 'text' },
-      { key: 'subtitle', label: 'Subheadline', type: 'text' },
-      { key: 'ctaText', label: 'CTA Button Text', type: 'text' },
-      { key: 'backgroundImage', label: 'Background Image', type: 'image' },
-    ],
-  },
+ 
   {
     key: 'about',
     label: 'About Section',

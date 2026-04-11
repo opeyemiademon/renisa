@@ -268,6 +268,7 @@ export interface AwardCategory {
   icon?: string
   isActive?: boolean
   pollActive?: boolean
+  isPubliclyVisible?: boolean
   votingStartDate?: string
   votingEndDate?: string
   createdAt: string
@@ -313,6 +314,7 @@ export interface CategoryWinner {
   winner: AwardWinnerInfo | null
   nominees: AwardWinnerInfo[]
   pollActive: boolean
+  isPubliclyVisible: boolean
   votingStartDate?: string | null
   votingEndDate?: string | null
 }

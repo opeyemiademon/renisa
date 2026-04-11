@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { Users, CreditCard, Heart } from 'lucide-react'
 import { getDashboardStats } from '@/lib/api_services/dashboardApiServices'
@@ -94,7 +95,7 @@ export default function AdminDashboardPage() {
                 key: 'member',
                 header: 'Member',
                 render: (row) => (
-                  <a href={`/admin/members/${row?.id}`} className="flex items-center gap-2">
+                  <Link href={`/admin/members/${row?.id}`} className="flex items-center gap-2">
                     <div   className="w-7 h-7 rounded-full bg-[#1a6b3a] shrink-0 overflow-hidden">
                       {row.profilePicture ? (
                         <img src={buildImageUrl(row.profilePicture)} alt={row.firstName} className="w-full h-full object-cover" />
@@ -109,7 +110,7 @@ export default function AdminDashboardPage() {
                       <p className="text-xs text-gray-400">{row.sport}</p>
                       <p className="text-xs text-gray-400">{formatDate(row.createdAt)}</p>
                     </div>
-                  </a>
+                  </Link>
                 ),
               },
               { key: 'memberNumber', header: 'No.', render: (row) => <span className="text-xs">{row.memberNumber}</span> },
@@ -129,7 +130,7 @@ export default function AdminDashboardPage() {
               { 
                 key: 'member',
                 header: 'Member',
-                render: (row) => <a href={`/admin/payments`} className="text-sm">{row.member?.firstName} {row.member?.lastName}</a>,
+                render: (row) => <Link href="/admin/payments" className="text-sm">{row.member?.firstName} {row.member?.lastName}</Link>,
               },
               { key: 'type', header: 'Type', render: (row) => <span className="text-xs">{row.paymentType?.name}</span> },
               { key: 'amount', header: 'Amount', render: (row) => <span className="text-sm font-medium">{formatCurrency(row.amount)}</span> },

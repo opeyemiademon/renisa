@@ -22,6 +22,7 @@ const awardVoteTypeDefs = gql`
     winner: AwardWinnerInfo
     nominees: [AwardWinnerInfo!]!
     pollActive: Boolean!
+    isPubliclyVisible: Boolean!
     votingStartDate: String
     votingEndDate: String
   }

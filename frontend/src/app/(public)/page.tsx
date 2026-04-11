@@ -14,9 +14,10 @@ import { getGallery } from '@/lib/api_services/galleryApiServices'
 import { getAwardWinnersReport } from '@/lib/api_services/awardApiServices'
 import { getHeroSlides } from '@/lib/api_services/heroSlideApiServices'
 import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
+import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
 import { formatDate, buildImageUrl } from '@/lib/utils'
 
-/** Shown only when no hero slides exist in the CMS (no external stock photos). */
+/** Shown only when no hero slides exist and no CMS hero is configured. */
 const PLACEHOLDER_HERO_SLIDE = {
   id: 'placeholder',
   imageUrl: '',
@@ -52,9 +53,35 @@ export default function HomePage() {
     queryFn: getPublicSiteStats,
     staleTime: 60_000,
   })
+  const { data: heroContent } = useQuery({
+    queryKey: ['site-content', 'hero'],
+    queryFn: () => getSiteContent('hero'),
+    staleTime: 300_000,
+  })
+  const { data: aboutContent } = useQuery({
+    queryKey: ['site-content', 'about'],
+    queryFn: () => getSiteContent('about'),
+    staleTime: 300_000,
+  })
 
   // ── Derived values from queries ──
-  const heroSlides = slidesData && slidesData.length > 0 ? slidesData : [PLACEHOLDER_HERO_SLIDE]
+  const heroMeta = (heroContent as any)?.metadata || {}
+  const aboutMeta = (aboutContent as any)?.metadata || {}
+  const cmsHeroSlide = heroMeta.title ? {
+    id: 'cms-hero',
+    imageUrl: heroMeta.backgroundImage || '',
+    tag: 'RENISA',
+    title: heroMeta.title,
+    subtitle: heroMeta.subtitle || '',
+    caption: 'Association of Retired Nigerian Sports Men & Women',
+    ctaText: heroMeta.ctaText || 'Become a Member',
+    ctaLink: '/registration',
+  } : null
+  const heroSlides = slidesData && slidesData.length > 0
+    ? slidesData
+    : cmsHeroSlide
+      ? [cmsHeroSlide]
+      : [PLACEHOLDER_HERO_SLIDE]
   const slideCount = heroSlides.length
 
   // ── Slide navigation (useCallback after derived values is valid) ──
@@ -125,13 +152,11 @@ export default function HomePage() {
   const statBarItems = siteStats
     ? [
         { label: 'Active members', value: String(siteStats.activeMembers), icon: <Users className="w-5 h-5" /> },
-        { label: 'Alumni', value: String(siteStats.alumniMembers), icon: <Calendar className="w-5 h-5" /> },
         { label: 'Gallery photos', value: String(siteStats.galleryPhotos), icon: <Trophy className="w-5 h-5" /> },
         { label: 'Honours recorded', value: String(siteStats.awardedHonors), icon: <Star className="w-5 h-5" /> },
       ]
     : [
         { label: 'Active members', value: '—', icon: <Users className="w-5 h-5" /> },
-        { label: 'Alumni', value: '—', icon: <Calendar className="w-5 h-5" /> },
         { label: 'Gallery photos', value: '—', icon: <Trophy className="w-5 h-5" /> },
         { label: 'Honours recorded', value: '—', icon: <Star className="w-5 h-5" /> },
       ]
@@ -222,17 +247,17 @@ export default function HomePage() {
           <Image src="/logo.png" alt="" width={280} height={280} />
         </div>
 
-        {/* Prev / Next arrows */}
+        {/* Prev / Next arrows — pushed above dot nav on mobile to avoid overlap */}
         <button
           onClick={prevSlide}
-          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-[4] w-11 h-11 rounded-full bg-white/10 hover:bg-[#EBD279]/30 border border-white/30 hover:border-[#EBD279] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-200"
+          className="absolute left-4 sm:left-6 bottom-20 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 z-[4] w-11 h-11 rounded-full bg-white/10 hover:bg-[#EBD279]/30 border border-white/30 hover:border-[#EBD279] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-200"
           aria-label="Previous slide"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           onClick={nextSlide}
-          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-[4] w-11 h-11 rounded-full bg-white/10 hover:bg-[#EBD279]/30 border border-white/30 hover:border-[#EBD279] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-200"
+          className="absolute right-4 sm:right-6 bottom-20 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 z-[4] w-11 h-11 rounded-full bg-white/10 hover:bg-[#EBD279]/30 border border-white/30 hover:border-[#EBD279] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-200"
           aria-label="Next slide"
         >
           <ChevronRight className="w-5 h-5" />
@@ -254,8 +279,8 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Slide counter */}
-        <div className="absolute bottom-7 right-6 z-[4] text-white/40 text-xs font-mono tracking-widest">
+        {/* Slide counter — hidden on mobile to avoid crowding */}
+        <div className="absolute bottom-7 right-6 z-[4] text-white/40 text-xs font-mono tracking-widest hidden sm:block">
           {String(currentSlide + 1).padStart(2, '0')} &nbsp;/&nbsp; {String(slideCount).padStart(2, '0')}
         </div>
       </section>
@@ -265,7 +290,7 @@ export default function HomePage() {
       ═══════════════════════════════════════════════════════ */}
       <section className="bg-[#0d4a25] border-b-4 border-[#EBD279]/60 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 divide-x divide-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 divide-x divide-white/10">
             {statBarItems.map((stat) => (
               <div key={stat.label} className="text-center px-4">
                 <div className="flex justify-center mb-2 text-[#EBD279]">{stat.icon}</div>
@@ -288,13 +313,26 @@ export default function HomePage() {
           
             <div className="relative">
               <div className="rounded-2xl w-full h-96 bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] shadow-2xl flex items-center justify-center ">
+
+<Image src="/logo.png" alt="RENISA" width={200} height={200} className="opacity-90 " />
+
+                {/*  {aboutMeta.image ? (
+                  <Image
+                    src={buildImageUrl(aboutMeta.image)}
+                    width={200} height={200} 
+                    alt="About RENISA"
+                  className="opacity-90 "
+                  />
+              ):
+
                 <Image src="/logo.png" alt="RENISA" width={200} height={200} className="opacity-90 " />
+            } */}
               </div>
            
               
               {/* Est. pill */}
               <div className="absolute top-5 right-5 bg-[#EBD279] text-[#0d4a25] px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                Est. 2003
+                Est. 2020
               </div>
             </div>
 
@@ -302,26 +340,39 @@ export default function HomePage() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-10 bg-[#EBD279]" />
-                <p className="text-[#d4a017] font-semibold text-sm uppercase tracking-widest">About RENISA</p>
+                <p className="text-[#d4a017] font-semibold text-sm uppercase tracking-widest">
+                  {aboutMeta.title || "About RENISA"}
+                </p>
               </div>
+
+              {aboutMeta.content ? (
+                <div
+                  className="prose prose-gray max-w-none mb-7 text-base"
+                  dangerouslySetInnerHTML={{ __html: aboutMeta.content }}
+                />
+              ) : (
+                <>
+                  <p className="text-gray-600 leading-relaxed mb-4 text-base">
+                    RENISA is a national body established to promote the welfare, unity,
+                    physical well-being, and continued engagement of retired Nigerian athletes
+                    who have served the nation with distinction at national and international levels.
+                  </p>
+                  <p className="text-gray-600 leading-relaxed mb-7 text-base">
+                    A major focus of the Association is the use of sports as a tool for
+                    healthy living, social inclusion, mentorship, and the preservation of
+                    Nigeria&apos;s rich sporting heritage.
+                  </p>
+                </>
+              )}
+
              
-              <p className="text-gray-600 leading-relaxed mb-4 text-base">
-                RENISA is a national body established to promote the welfare, unity,
-physical well-being, and continued engagement of retired Nigerian athletes
-who have served the nation with distinction at national and international
-levels. 
-              </p>
-              <p className="text-gray-600 leading-relaxed mb-7 text-base">
-                A major focus of the Association is the use of sports as a tool for
- healthy living, social inclusion, mentorship, and the preservation of
-Nigeria’s rich sporting heritage.
-              </p>
-              <ul className="space-y-3 mb-8">
+
+           {/*    <ul className="space-y-3 mb-8">
                 {[
-                  'Recognize and celebrate retired Nigerian sports heroes',
-                  'Provide welfare support to veteran athletes in need',
-                  'Connect generations of sports excellence',
-                  'Advocate for the rights of retired sports persons',
+                  "Recognize and celebrate retired Nigerian sports heroes",
+                  "Provide welfare support to veteran athletes in need",
+                  "Connect generations of sports excellence",
+                  "Advocate for the rights of retired sports persons",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
                     <div className="w-5 h-5 rounded-full bg-[#0d4a25] flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -330,7 +381,7 @@ Nigeria’s rich sporting heritage.
                     {item}
                   </li>
                 ))}
-              </ul>
+              </ul> */}
               <Link href="/about">
                 <button className="bg-[#0d4a25] hover:bg-[#1a6b3a] text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center gap-2 shadow-md">
                   Learn More About RENISA <ChevronRight className="w-4 h-4" />
@@ -603,22 +654,23 @@ Nigeria’s rich sporting heritage.
             </Link>
           </div>
 
-          {/* Masonry-style grid */}
+          {/* Uniform grid — equal height, caption always visible */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {displayGallery.length === 0 && (
               <p className="col-span-full text-center text-gray-400 py-8">Gallery photos will appear here when added.</p>
             )}
-            {displayGallery.map((item:any, i:number) => (
+            {displayGallery.map((item: any) => (
               <Link key={item.id} href="/gallery">
-                <div className={`rounded-xl overflow-hidden bg-gray-100 cursor-pointer group ${i === 0 ? 'md:row-span-2' : ''}`}>
-                  <div className="relative overflow-hidden">
+                <div className="rounded-xl overflow-hidden bg-gray-100 cursor-pointer group">
+                  <div className="relative h-44 sm:h-52">
                     <img
                       src={item.url}
                       alt={item.title}
-                      className={`w-full object-cover group-hover:scale-105 transition-transform duration-500 ${i === 0 ? 'h-56 md:h-full md:min-h-[22rem]' : 'h-44 sm:h-52'}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                      <span className="text-white text-xs font-semibold">{item.title}</span>
+                    {/* Always-visible gradient + caption */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
+                      <span className="text-white text-xs font-semibold line-clamp-2">{item.title}</span>
                     </div>
                     {/* Gold corner accent on hover */}
                     <div className="absolute top-0 left-0 w-8 h-0.5 bg-[#EBD279] opacity-0 group-hover:opacity-100 transition-opacity" />

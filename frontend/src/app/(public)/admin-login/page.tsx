@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@renisa.org"
+              placeholder="you@example.com"
               required
             />
 

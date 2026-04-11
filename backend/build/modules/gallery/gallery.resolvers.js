@@ -62,7 +62,22 @@ const galleryResolvers = {
         },
         updateGalleryItem: async (_, { id, data }, context) => {
             requireAdminAuth(context);
-            const item = await Gallery.findByIdAndUpdate(id, data, { new: true });
+            const update = { ...data };
+            // Accept frontend-friendly fields while storing canonical model fields.
+            if (data.caption !== undefined)
+                update.description = data.caption;
+            if (data.album !== undefined)
+                update.albumName = data.album;
+            // Remove non-model aliases to avoid strict schema rejection.
+            delete update.caption;
+            delete update.album;
+            if (update.description && !update.title) {
+                update.title = update.description;
+            }
+            else if (update.albumName && !update.title) {
+                update.title = update.albumName;
+            }
+            const item = await Gallery.findByIdAndUpdate(id, update, { new: true });
             if (!item)
                 throw new Error('Gallery item not found');
             return { success: true, message: 'Gallery item updated', data: item };

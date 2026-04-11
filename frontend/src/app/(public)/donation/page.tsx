@@ -43,8 +43,6 @@ export default function DonationPage() {
   const impactStats = siteStats
     ? [
         { value: String(siteStats.activeMembers), label: 'Active members' },
-        { value: String(siteStats.alumniMembers), label: 'Alumni' },
-        { value: String(siteStats.publishedEvents), label: 'Published stories' },
         { value: String(siteStats.awardedHonors), label: 'Honours recorded' },
       ]
     : []
@@ -78,7 +76,7 @@ export default function DonationPage() {
       {impactStats.length > 0 && (
         <section className="bg-[#0d4a25] py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-6 text-center">
               {impactStats.map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl md:text-3xl font-bold text-[#EBD279]">{stat.value}</p>
@@ -286,7 +284,8 @@ function DonationModal({
           required={!isPhysical}
         />
         <Input
-          label="Phone (optional)"
+          label="Phone"
+          required
           type="tel"
           value={form.donorPhone}
           onChange={(e) => setForm({ ...form, donorPhone: e.target.value })}

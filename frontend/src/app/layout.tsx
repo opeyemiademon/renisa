@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   title: 'RENISA - Association of Retired Nigerian Sports Men & Women',
   description:
     'Official platform of the Association of Retired Nigerian Sports Men & Women (RENISA)',
+
 }
 
 export default function RootLayout({
@@ -30,6 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+        <link rel="icon" href="/logo.png" />
       <body>
         <AppProviders>{children}</AppProviders>
       </body>

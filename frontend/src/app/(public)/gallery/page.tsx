@@ -156,19 +156,25 @@ export default function GalleryPage() {
                         <div
                           key={item.id}
                           onClick={() => setLightboxIndex(globalIdx)}
-                          className="relative group cursor-pointer rounded-xl overflow-hidden bg-gray-100 aspect-square"
+                          className="group cursor-pointer rounded-xl overflow-hidden bg-gray-100 flex flex-col"
                         >
-                          <img
-                            src={imgSrc(item.imageUrl)}
-                            alt={item.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                            <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                          {/* Image */}
+                          <div className="relative aspect-square overflow-hidden">
+                            <img
+                              src={imgSrc(item.imageUrl)}
+                              alt={item.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                              <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                           </div>
-                          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p className="text-white text-xs font-medium truncate">{item.title}</p>
-                            <p className="text-white/70 text-xs">{item.albumName}</p>
+                          {/* Always-visible title caption */}
+                          <div className="px-2.5 py-2 bg-white border-t border-gray-100">
+                            <p className="text-gray-900 text-xs font-semibold truncate">{item.title}</p>
+                            {item.albumName && (
+                              <p className="text-gray-400 text-xs truncate mt-0.5">{item.albumName}</p>
+                            )}
                           </div>
                         </div>
                       )

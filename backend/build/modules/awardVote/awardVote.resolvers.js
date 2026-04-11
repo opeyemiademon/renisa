@@ -80,7 +80,7 @@ const awardVoteResolvers = {
             if (year)
                 awardsFilter.year = year;
             const allAwards = await Award.find(awardsFilter)
-                .populate('categoryId', 'name pollActive votingStartDate votingEndDate')
+                .populate('categoryId', 'name pollActive isPubliclyVisible votingStartDate votingEndDate')
                 .populate('memberId', 'firstName lastName profilePicture memberNumber');
             // Build a map: categoryId -> { category info, nominees: [{ awardId, member, voteCount }] }
             const categoryMap = new Map();
@@ -94,6 +94,7 @@ const awardVoteResolvers = {
                         categoryId: catId,
                         categoryName: cat.name,
                         pollActive: cat.pollActive || false,
+                        isPubliclyVisible: cat.isPubliclyVisible || false,
                         votingStartDate: cat.votingStartDate ? cat.votingStartDate.toISOString() : null,
                         votingEndDate: cat.votingEndDate ? cat.votingEndDate.toISOString() : null,
                         nominees: [],

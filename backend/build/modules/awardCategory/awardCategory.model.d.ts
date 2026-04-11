@@ -3,6 +3,7 @@ declare const AwardCategory: mongoose.Model<{
     name: string;
     isActive: boolean;
     pollActive: boolean;
+    isPubliclyVisible: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
@@ -12,6 +13,7 @@ declare const AwardCategory: mongoose.Model<{
     name: string;
     isActive: boolean;
     pollActive: boolean;
+    isPubliclyVisible: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
@@ -23,6 +25,7 @@ declare const AwardCategory: mongoose.Model<{
     name: string;
     isActive: boolean;
     pollActive: boolean;
+    isPubliclyVisible: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
@@ -38,6 +41,7 @@ declare const AwardCategory: mongoose.Model<{
     name: string;
     isActive: boolean;
     pollActive: boolean;
+    isPubliclyVisible: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
@@ -47,6 +51,7 @@ declare const AwardCategory: mongoose.Model<{
     name: string;
     isActive: boolean;
     pollActive: boolean;
+    isPubliclyVisible: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     votingStartDate?: NativeDate | null | undefined;
@@ -58,6 +63,7 @@ declare const AwardCategory: mongoose.Model<{
     name: string;
     isActive: boolean;
     pollActive: boolean;
+    isPubliclyVisible: boolean;
     description?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     votingStartDate?: NativeDate | null | undefined;

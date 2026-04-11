@@ -1,11 +1,10 @@
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import { ReactNode } from 'react'
 import { Provider } from 'react-redux'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { store } from '@/lib/store'
-import { initAuth } from '@/lib/store/authSlice'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,19 +16,11 @@ const queryClient = new QueryClient({
   },
 })
 
-function AuthInitializer({ children }: { children: ReactNode }) {
-  useEffect(() => {
-    store.dispatch(initAuth())
-  }, [])
-  return <>{children}</>
-}
-
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <AuthInitializer>
-          {children}
+        <>{children}
           <Toaster
             position="top-right"
             toastOptions={{
@@ -58,7 +49,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
               },
             }}
           />
-        </AuthInitializer>
+        </>
       </QueryClientProvider>
     </Provider>
   )
