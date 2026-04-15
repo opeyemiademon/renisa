@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+       "deploy": "scp -r ./src/* root@31.97.213.139:/var/www/renisa/frontend/src",
+   
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start",

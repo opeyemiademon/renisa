@@ -38,7 +38,7 @@ export function formatDate(
   }
 
  const { year = 'numeric', month = 'short', day = 'numeric' } = options;
-  return parsedDate.toLocaleDateString(locale, { year, month, day });
+  return parsedDate.toLocaleDateString(locale, { year, month, day, ...options });
 }
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-NG', {

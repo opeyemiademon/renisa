@@ -69,7 +69,7 @@ export const welcomeTemplate = (name: string, memberNumber: string): string => `
   <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden;">
     <div style="background:#1a6b3a; padding:30px; text-align:center;">
       <h1 style="color:#d4a017; margin:0;">RENISA</h1>
-      <p style="color:#fff; margin:5px 0 0;">Retired Nigerian Women & Men Sports Association</p>
+      <p style="color:#fff; margin:5px 0 0;">Retired Nigerian  Men & Women Sports Association</p>
     </div>
     <div style="padding:30px;">
       <h2 style="color:#1a6b3a;">Welcome, ${name}!</h2>

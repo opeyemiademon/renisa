@@ -101,7 +101,6 @@ export function Footer() {
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Our Executives', href: '/executives' },
                 { label: 'Leadership', href: '/leadership' },
-                { label: 'Alumni', href: '/alumni' },
                 { label: 'Awardees', href: '/awardees' },
                 { label: 'Donate', href: '/donation' }
               ].map((link) => (
