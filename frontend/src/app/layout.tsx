@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { AppProviders } from '@/providers/app'
 
@@ -31,7 +32,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <head>
         <link rel="icon" href="/logo.png" />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-FYWSGNK6J9"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-FYWSGNK6J9');
+          `}
+        </Script>
+      </head>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>
