@@ -78,7 +78,7 @@ export default function RegistrationPage() {
         toast.error(result.message || 'Invalid member code')
       }
     } catch (e: unknown) {
-      toast.error('Failed to verify code')
+      toast.error(e instanceof Error ? e.message : 'Failed to verify code')
     } finally {
       setCheckingCode(false)
     }

@@ -46,14 +46,23 @@ graphqlClient.interceptors.response.use(
     if (error.response?.status === 401) {
       handleAuthExpiry()
     }
-    if (error.response) {
-      console.error('API Error:', error.response.data)
-    } else if (error.request) {
-      console.error('Network Error:', error.request)
+
+    const graphqlMsg = error.response?.data?.errors?.[0]?.message
+    const serverMsg = error.response?.data?.message
+    const isNetworkError = !error.response
+
+    let message: string
+    if (graphqlMsg) {
+      message = graphqlMsg
+    } else if (serverMsg) {
+      message = serverMsg
+    } else if (isNetworkError) {
+      message = 'Unable to connect to the server. Please check your internet connection.'
     } else {
-      console.error('Error:', error.message)
+      message = error.message || 'An unexpected error occurred. Please try again.'
     }
-    return Promise.reject(error)
+
+    return Promise.reject(new Error(message))
   }
 )
 

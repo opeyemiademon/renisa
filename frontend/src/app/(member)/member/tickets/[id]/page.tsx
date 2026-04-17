@@ -68,8 +68,8 @@ const params = useParams()
         const result = await uploadFile(file, undefined, 'tickets')
         setAttachments((prev) => [...prev, result.url])
       }
-    } catch {
-      toast.error('Upload failed')
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
