@@ -2,12 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { CreditCard, Vote, IdCard, CheckCircle, AlertCircle } from 'lucide-react'
-import { useAppSelector, useAppDispatch } from '@/hooks/redux'
-import { logout } from '@/lib/store/authSlice'
-import { getMember } from '@/lib/api_services/memberApiServices'
+import { useAppSelector } from '@/hooks/redux'
 import { getMemberPayments } from '@/lib/api_services/paymentApiServices'
 import { getAllElections } from '@/lib/api_services/electionApiServices'
 import { getMyIDCardRequests } from '@/lib/api_services/idCardApiServices'
@@ -19,29 +15,13 @@ import { PageLoader } from '@/components/shared/Spinner'
 import { buildImageUrl, formatCurrency, formatDate, getInitials } from '@/lib/utils'
 
 export default function MemberDashboardPage() {
-  const dispatch = useAppDispatch()
-  const router = useRouter()
-  const { member: storedMember } = useAppSelector((s) => s.auth)
-
-  const { data: member, isLoading: memberLoading, isError: memberError } = useQuery({
-    queryKey: ['current-member', storedMember?.id],
-    queryFn: () => getMember(storedMember!.id),
-    enabled: !!storedMember?.id,
-    retry: false,
-    staleTime: 0,
-  })
-
-  useEffect(() => {
-    if (!storedMember?.id || memberError || (!memberLoading && !member)) {
-      dispatch(logout())
-      router.replace('/login')
-    }
-  }, [member, memberLoading, memberError, storedMember?.id, dispatch, router])
+  const { member } = useAppSelector((s) => s.auth)
 
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['my-payments', member?.id],
     queryFn: () => getMemberPayments(member!.id),
     enabled: !!member?.id,
+    staleTime: 0,
   })
 
   const { data: elections } = useQuery({
@@ -55,7 +35,7 @@ export default function MemberDashboardPage() {
     enabled: !!member,
   })
 
-  if (memberLoading || !member) return <PageLoader />
+  if (!member) return <PageLoader />
 
   const recentPayments = (payments || []).slice(0, 5)
   const activeElections = (elections || []).filter((e: any) => e.status === 'active')
