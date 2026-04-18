@@ -95,8 +95,8 @@ export function Navbar() {
                   RENISA
                 </span>
                 <span className="text-[#EBD279]/70 text-[9px] uppercase tracking-[0.2em] font-medium">
-                  Retired Nigerian Women &amp; Men Sports Association
-                </span>
+                  Association of Retired Nigerian Sports Men & Women
+                </span> 
               </div>
             </Link>
 

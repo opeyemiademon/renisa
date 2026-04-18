@@ -22,7 +22,7 @@ const PLACEHOLDER_HERO_SLIDE = {
   id: 'placeholder',
   imageUrl: '',
   tag: 'RENISA',
-  title: "Retired Nigerian Women & Men Sports Association (RENISA)",
+  title: "Association of Retired Nigerian Sports Men & Women (RENISA)",
   subtitle: 'Honouring excellence, preserving legacy, and supporting our sports heroes.',
   caption: 'Association of Retired Nigerian Sports Men & Women',
   ctaText: 'Become a Member',
