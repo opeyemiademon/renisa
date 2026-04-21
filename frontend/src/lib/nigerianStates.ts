@@ -8,7 +8,14 @@ export const NIGERIAN_STATES = [
 
 
 export const SPORTS = [
-  'Football', 'Basketball', 'Volleyball', 'Table Tennis', 'Athletics',
-  'Tennis', 'Badminton', 'Swimming', 'Boxing', 'Wrestling',
-  'Judo', 'Karate', 'Taekwondo', 'Chess', 'Esports', 'Other'
-]
+
+  'Athletics', 'Badminton', 'Baseball/Softball', 'Basketball', 'Boxing', 'Chess', 'Cricket', 'Cycling', 'Football', 'Gymnastics', 'Golf', 'Handball', 'Hockey', 'Judo', 'Karate', 'Shooting', 'Squash Racket', 'Table Tennis', 'Taekwondo', 'Tennis', 'Volleyball (Includes Beach Volleyball)', 'Weightlifting', 'Wrestling', 'Scrabble',
+'Powerlifting',  'Swimming', 'Deaf Athletics', 'Para-Soccer',
+  'Abula', 'Ayo', 'Danbe', 'Kokowa', 'Langa',
+  'Darts', 'Fives', 'Rugby (15s, 10s, & 7s)', 'Rowing/Yachting', 'Kung Fu', 'Kickboxing',
+] 
+
+
+
+
+

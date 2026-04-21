@@ -39,6 +39,31 @@ const CMS_SECTIONS = [
     ],
   },
   {
+    key: 'welcome_address',
+    label: "President's Welcome Address",
+    fields: [
+      { key: 'content', label: 'Welcome Address (Full Text)', type: 'richtext' },
+    ],
+  },
+  {
+    key: 'core_values',
+    label: 'Core Values',
+    fields: [
+      { key: 'value1_title', label: 'Value 1 — Title', type: 'text' },
+      { key: 'value1_description', label: 'Value 1 — Description', type: 'text' },
+      { key: 'value2_title', label: 'Value 2 — Title', type: 'text' },
+      { key: 'value2_description', label: 'Value 2 — Description', type: 'text' },
+      { key: 'value3_title', label: 'Value 3 — Title', type: 'text' },
+      { key: 'value3_description', label: 'Value 3 — Description', type: 'text' },
+      { key: 'value4_title', label: 'Value 4 — Title', type: 'text' },
+      { key: 'value4_description', label: 'Value 4 — Description', type: 'text' },
+      { key: 'value5_title', label: 'Value 5 — Title', type: 'text' },
+      { key: 'value5_description', label: 'Value 5 — Description', type: 'text' },
+      { key: 'value6_title', label: 'Value 6 — Title', type: 'text' },
+      { key: 'value6_description', label: 'Value 6 — Description', type: 'text' },
+    ],
+  },
+  {
     key: 'contact',
     label: 'Contact Information',
     fields: [

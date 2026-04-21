@@ -24,9 +24,15 @@ const memberCodeTypeDefs = gql `
     message: String!
   }
 
+  type CheckMemberCodeResponse {
+    valid: Boolean!
+    message: String!
+  }
+
   extend type Query {
     getAllMemberCodes: [MemberCode!]!
     getMemberCode(id: ID!): MemberCode
+    checkMemberCode(code: String!): CheckMemberCodeResponse!
   }
 
   extend type Mutation {

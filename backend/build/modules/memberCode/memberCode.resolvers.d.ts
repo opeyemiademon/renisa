@@ -49,6 +49,12 @@ declare const memberCodeResolvers: {
         } & {
             __v: number;
         }) | null>;
+        checkMemberCode: (_: any, { code }: {
+            code: string;
+        }) => Promise<{
+            valid: boolean;
+            message: string;
+        }>;
     };
     Mutation: {
         generateMemberCodes: (_: any, { count, batchName, expiresAt }: any, context: AuthContext) => Promise<{

@@ -200,6 +200,17 @@ export const getAlumni = async () => {
   return response.data.data.getAlumni
 }
 
+export const getPublicMembers = async (): Promise<Member[]> => {
+  const query = `
+    query GetPublicMembers {
+      getPublicMembers { ${MEMBER_FIELDS} }
+    }
+  `
+  const response = await graphqlClient.post('', { query })
+  if (response.data.errors) throw new Error(response.data.errors[0].message)
+  return response.data.data.getPublicMembers
+}
+
 export const getNewMembers = async (limit = 10): Promise<Member[]> => {
   const query = `
     query GetNewMembers($limit: Int) {

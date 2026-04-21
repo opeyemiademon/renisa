@@ -31,9 +31,16 @@ export default function AboutPage() {
     staleTime: 300_000,
   })
 
+  const { data: coreValuesContent } = useQuery({
+    queryKey: ['site-content', 'core_values'],
+    queryFn: () => getSiteContent('core_values'),
+    staleTime: 300_000,
+  })
+
   const aboutMeta = (aboutContent as any)?.metadata || {}
   const missionMeta = (missionContent as any)?.metadata || {}
   const historyMeta = (historyContent as any)?.metadata || {}
+  const coreValuesMeta = (coreValuesContent as any)?.metadata || {}
 
   const statsRow = siteStats
     ? [
@@ -225,38 +232,38 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                title: 'Excellence',
-                description: 'We celebrate the pursuit of excellence that defines every great athlete and carry that standard into everything we do.',
+                title: coreValuesMeta.value1_title || 'Excellence',
+                description: coreValuesMeta.value1_description || 'We celebrate the pursuit of excellence that defines every great athlete and carry that standard into everything we do.',
                 color: 'bg-[#1a6b3a]',
                 icon: <Medal className="w-5 h-5 text-white" />,
               },
               {
-                title: 'Unity',
-                description: 'Bringing together retired athletes from diverse sports and backgrounds, fostering brotherhood and sisterhood.',
+                title: coreValuesMeta.value2_title || 'Unity',
+                description: coreValuesMeta.value2_description || 'Bringing together retired athletes from diverse sports and backgrounds, fostering brotherhood and sisterhood.',
                 color: 'bg-[#d4a017]',
                 icon: <Users className="w-5 h-5 text-white" />,
               },
               {
-                title: 'Legacy',
-                description: 'Preserving the stories, achievements, and contributions of Nigerian sports legends for future generations.',
+                title: coreValuesMeta.value3_title || 'Legacy',
+                description: coreValuesMeta.value3_description || 'Preserving the stories, achievements, and contributions of Nigerian sports legends for future generations.',
                 color: 'bg-[#0d4a25]',
                 icon: <BookOpen className="w-5 h-5 text-white" />,
               },
               {
-                title: 'Welfare',
-                description: 'Ensuring the physical, financial, and emotional wellbeing of our members through advocacy and support.',
+                title: coreValuesMeta.value4_title || 'Welfare',
+                description: coreValuesMeta.value4_description || 'Ensuring the physical, financial, and emotional wellbeing of our members through advocacy and support.',
                 color: 'bg-[#2d9a57]',
                 icon: <HeartHandshake className="w-5 h-5 text-white" />,
               },
               {
-                title: 'Integrity',
-                description: 'Upholding the highest standards of honesty, transparency, and accountability in all our operations.',
+                title: coreValuesMeta.value5_title || 'Integrity',
+                description: coreValuesMeta.value5_description || 'Upholding the highest standards of honesty, transparency, and accountability in all our operations.',
                 color: 'bg-[#1a6b3a]',
                 icon: <ShieldCheck className="w-5 h-5 text-white" />,
               },
               {
-                title: 'Inspiration',
-                description: 'Using the stories of our members to inspire the next generation of Nigerian sports champions.',
+                title: coreValuesMeta.value6_title || 'Inspiration',
+                description: coreValuesMeta.value6_description || 'Using the stories of our members to inspire the next generation of Nigerian sports champions.',
                 color: 'bg-[#d4a017]',
                 icon: <Lightbulb className="w-5 h-5 text-white" />,
               },

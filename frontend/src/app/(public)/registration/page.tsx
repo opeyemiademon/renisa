@@ -120,7 +120,20 @@ export default function RegistrationPage() {
       toast.success('Registration successful! Welcome to RENISA.')
       router.push('/member/dashboard')
     },
-    onError: (err: Error) => toast.error(err.message || 'Registration failed'),
+    onError: (err: Error) => {
+      const raw = err.message || ''
+      let message = 'Registration failed. Please check your details and try again.'
+      if (raw.toLowerCase().includes('email') && raw.toLowerCase().includes('exist')) {
+        message = 'An account with this email address already exists. Please use a different email or log in.'
+      } else if (raw.toLowerCase().includes('phone') && raw.toLowerCase().includes('exist')) {
+        message = 'An account with this phone number already exists. Please use a different phone number.'
+      } else if (raw.toLowerCase().includes('member code')) {
+        message = 'Your member code is invalid or has already been used. Please contact the RENISA secretariat.'
+      } else if (raw) {
+        message = raw
+      }
+      toast.error(message)
+    },
   })
 
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))

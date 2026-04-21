@@ -182,6 +182,7 @@ const memberTypeDefs = gql`
     checkMemberCode(code: String!): CheckMemberCodeResponse
     getAlumni: [Member!]!
     getNewMembers(limit: Int): [Member!]!
+    getPublicMembers: [Member!]!
     getPublicSiteStats: PublicSiteStats!
     getPublicMemberProfile(id: ID!): PublicMemberProfile
     me: Member

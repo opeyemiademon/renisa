@@ -23,6 +23,7 @@ const mediaLinks = [
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
+  { label: 'Members', href: '/members' },
   { label: 'Media', href: '/gallery', children: mediaLinks },
   { label: 'Leadership', href: '/leadership', children: leadershipLinks },
   { label: 'Donation', href: '/donation' },

@@ -3,14 +3,14 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { getAlumni, getNewMembers } from '@/lib/api_services/memberApiServices'
+import { getPublicMembers, getNewMembers } from '@/lib/api_services/memberApiServices'
 import type { Member } from '@/types'
 import { buildImageUrl } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
 import { SearchBar } from '@/components/shared/SearchBar'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
 
-export default function AlumniPage() {
+export default function MembersPage() {
   const [search, setSearch] = useState('')
   const [selectedSport, setSelectedSport] = useState('')
   const [selectedState, setSelectedState] = useState('')
@@ -20,13 +20,15 @@ export default function AlumniPage() {
     queryFn: () => getNewMembers(90),
   })
 
-  const { data: alumniList = [], isLoading: alumniLoading } = useQuery({
-    queryKey: ['alumni'],
-    queryFn: getAlumni,
+  const { data: memberList = [], isLoading: membersLoading  } = useQuery<Member[]>({
+    queryKey: ['public-members'],
+    queryFn: getPublicMembers,
   })
 
-  const filteredAlumni = useMemo(() => {
-    return alumniList.filter((m: Member) => {
+  console.log(memberList)
+  const filteredMembers = useMemo(() => {
+    
+    return memberList.filter((m: Member) => {
       if (selectedSport && m.sport !== selectedSport) return false
       if (selectedState && m.state !== selectedState) return false
       if (search.trim()) {
@@ -37,14 +39,14 @@ export default function AlumniPage() {
       }
       return true
     })
-  }, [alumniList, search, selectedSport, selectedState])
+  }, [memberList, search, selectedSport, selectedState])
 
   return (
     <div className="bg-white min-h-screen">
       <section className="bg-gradient-to-br from-[#0d4a25] to-[#1a6b3a] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#d4a017] font-medium text-sm uppercase tracking-widest mb-3">Community</p>
-          <h1 className="text-4xl font-bold text-white font-serif">Our Community</h1>
+          <h1 className="text-4xl font-bold text-white font-serif">Our Members</h1>
           <p className="text-white/80 mt-3">New members and alumni of RENISA</p>
         </div>
       </section>
@@ -63,7 +65,7 @@ export default function AlumniPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {newMembers.map((member) => (
-                <Link key={member.id} href={`/alumni/${member.id}`}>
+                <Link key={member.id} href={`/members/${member.id}`}>
                   <div className="text-center bg-white rounded-xl p-4 border border-gray-200 hover:border-[#d4a017]/50 hover:shadow-md transition-all cursor-pointer group">
                     <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-[#1a6b3a] mb-3 border-2 border-[#d4a017]/30 group-hover:border-[#d4a017] transition-colors">
                       {member.profilePicture ? (
@@ -95,14 +97,14 @@ export default function AlumniPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-1 h-8 bg-[#1a6b3a] rounded-full" />
-            <h2 className="text-2xl font-bold text-gray-900 font-serif">Alumni</h2>
+            <h2 className="text-2xl font-bold text-gray-900 font-serif">All Members</h2>
           </div>
 
           <div className="flex flex-wrap gap-3 mb-8">
             <SearchBar
               value={search}
               onChange={setSearch}
-              placeholder="Search alumni..."
+              placeholder="Search members..."
               className="flex-1 min-w-48"
             />
             <select
@@ -131,14 +133,14 @@ export default function AlumniPage() {
             </select>
           </div>
 
-          {alumniLoading ? (
+          {membersLoading ? (
             <PageLoader />
-          ) : filteredAlumni.length === 0 ? (
-            <p className="text-center text-gray-400 py-16">No alumni match your filters.</p>
+          ) : filteredMembers.length === 0 ? (
+            <p className="text-center text-gray-400 py-16">No members match your filters.</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {filteredAlumni.map((member: Member) => (
-                <Link key={member.id} href={`/alumni/${member.id}`}>
+              {filteredMembers.map((member: Member) => (
+                <Link key={member.id} href={`/members/${member.id}`}>
                   <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:border-[#d4a017]/50 hover:shadow-lg transition-all cursor-pointer group">
                     <div className="w-20 h-20 mx-auto rounded-full overflow-hidden bg-[#1a6b3a] mb-3 border-2 border-[#d4a017]/30 group-hover:border-[#d4a017] transition-colors">
                       {member.profilePicture ? (

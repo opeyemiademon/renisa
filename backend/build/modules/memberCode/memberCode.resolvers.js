@@ -16,6 +16,19 @@ const memberCodeResolvers = {
                 .populate('usedBy', 'firstName lastName memberNumber')
                 .populate('generatedBy', 'name email');
         },
+        checkMemberCode: async (_, { code }) => {
+            const memberCode = await MemberCode.findOne({ code: code.trim().toUpperCase() });
+            if (!memberCode) {
+                return { valid: false, message: 'This member code does not exist. Please check the code and try again, or contact the RENISA secretariat.' };
+            }
+            if (memberCode.isUsed) {
+                return { valid: false, message: 'This member code has already been used. Each code can only be used once. Please contact the RENISA secretariat for a new code.' };
+            }
+            if (memberCode.expiresAt && new Date() > memberCode.expiresAt) {
+                return { valid: false, message: 'This member code has expired. Please contact the RENISA secretariat to obtain a new code.' };
+            }
+            return { valid: true, message: 'Code verified successfully.' };
+        },
     },
     Mutation: {
         generateMemberCodes: async (_, { count, batchName, expiresAt }, context) => {

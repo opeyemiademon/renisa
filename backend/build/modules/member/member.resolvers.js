@@ -100,6 +100,11 @@ const memberResolvers = {
         getNewMembers: async (_, { limit = 10 }) => {
             return await Member.find().sort({ createdAt: -1 }).limit(limit).select('-password');
         },
+        getPublicMembers: async (_, __) => {
+            return await Member.find({ membershipStatus: { $ne: 'inactive' } })
+                .sort({ createdAt: -1 })
+                .select('-password');
+        },
         getPublicSiteStats: async () => {
             const [activeMembers, alumniMembers, publishedEvents, galleryPhotos, awardedHonors] = await Promise.all([
                 Member.countDocuments({ membershipStatus: 'active' }),

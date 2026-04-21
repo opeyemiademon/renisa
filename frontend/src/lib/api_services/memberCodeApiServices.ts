@@ -48,7 +48,7 @@ export const deleteMemberCode = async (id: string): Promise<MutationResponse> =>
 export const checkMemberCode = async (code: string): Promise<{ valid: boolean; message: string }> => {
   const query = `
     query CheckMemberCode($code: String!) {
-      checkMemberCode(code: $code) { valid}
+      checkMemberCode(code: $code) { valid message }
     }
   `
   const response = await graphqlClient.post('', { query, variables: { code } })
