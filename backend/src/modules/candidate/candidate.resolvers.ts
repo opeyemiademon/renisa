@@ -54,12 +54,12 @@ const candidateResolvers = {
 
   Mutation: {
     // Member initiates application — creates record, returns candidateId + formFee
-    // Frontend handles Paystack inline popup
+    
     applyForPosition: async (_: any, { electionId, positionId }: any, context: AuthContext) => {
       requireMemberAuth(context);
 
       const election = await Election.findById(electionId);
-      if (!election || election.status !== 'active') throw new Error('Nominations are not open for this election');
+      if (!election || election.status !== 'active') throw new Error('Nominations are not open for this elections');
 
       const position = await ElectoralPosition.findById(positionId);
       if (!position) throw new Error('Position not found');

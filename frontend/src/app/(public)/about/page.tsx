@@ -233,7 +233,7 @@ export default function AboutPage() {
             {[
               {
                 title: coreValuesMeta.value1_title || 'Excellence',
-                description: coreValuesMeta.value1_description || 'We celebrate the pursuit of excellence that defines every great athlete and carry that standard into everything we do.',
+                description: coreValuesMeta.value1_description || 'We celebrate the pursuit of excellence that defines every great athletes and carry that standard into everything we do.',
                 color: 'bg-[#1a6b3a]',
                 icon: <Medal className="w-5 h-5 text-white" />,
               },
