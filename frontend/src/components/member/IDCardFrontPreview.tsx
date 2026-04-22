@@ -286,7 +286,7 @@ export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewP
               color: '#fff',
             }}
           >
-            J o i n e d :&nbsp;&nbsp;{member.createdAt ? formatDateOnly(member.createdAt) : '-'}
+            Joined :&nbsp;&nbsp;{member.createdAt ? formatDateOnly(member.createdAt) : '-'}
           </span>
         </div>
       </div>

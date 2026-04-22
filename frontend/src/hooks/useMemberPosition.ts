@@ -31,7 +31,7 @@ export function useMemberPosition(memberId: string | undefined): string {
       const id = typeof mid === 'object' && mid !== null ? mid.id : mid
       return id === memberId
     })
-    if (exec?.position || exec?.title) return exec.position || exec.title
+    if (exec?.position) return exec.position
   }
 
   if (leadership) {
@@ -40,7 +40,7 @@ export function useMemberPosition(memberId: string | undefined): string {
       const id = typeof mid === 'object' && mid !== null ? mid.id : mid
       return id === memberId
     })
-    if (entry?.position || entry?.title) return entry.position || entry.title
+    if (entry?.position) return entry.position
   }
 
   return ''
