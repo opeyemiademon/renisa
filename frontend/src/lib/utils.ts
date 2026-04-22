@@ -40,6 +40,40 @@ export function formatDate(
  const { year = 'numeric', month = 'short', day = 'numeric' } = options;
   return parsedDate.toLocaleDateString(locale, { year, month, day, ...options });
 }
+
+
+export function formatDateOnly(
+  dateInput: string | number | Date,
+  locale = 'en-US',
+  options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }
+): string {
+  let parsedDate: Date;
+
+  if (dateInput instanceof Date) {
+    parsedDate = dateInput;
+  } else if (typeof dateInput === 'number') {
+    parsedDate = new Date(dateInput);
+  } else {
+    const trimmed = dateInput.trim();
+    parsedDate = /^\d+$/.test(trimmed)
+      ? new Date(Number(trimmed))
+      : new Date(trimmed);
+  }
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Invalid date';
+  }
+
+ const { year = 'numeric', month = 'short', day = 'numeric' } = options;
+  return parsedDate.toLocaleDateString(locale, { year, month, day });
+}
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',

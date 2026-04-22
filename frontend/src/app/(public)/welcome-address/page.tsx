@@ -32,10 +32,10 @@ export default function WelcomeAddressPage() {
   const rawPresPhoto = president?.photo || president?.profilePicture
   const photo = rawPresPhoto ? (rawPresPhoto.startsWith('http') ? rawPresPhoto : buildImageUrl(rawPresPhoto)) : null
 
-  const bodyHtml = siteContent?.content?.trim() || ''
-  const metaPara = siteContent?.metadata as unknown as { paragraphs?: string[] } | undefined
-  const paragraphs =
-    !bodyHtml && metaPara && Array.isArray(metaPara.paragraphs) ? metaPara.paragraphs : null
+  const meta = siteContent?.metadata as unknown as { quote?: string; preview?: string; content?: string; paragraphs?: string[] } | undefined
+  const pullQuote = meta?.quote || 'Retirement from active competition does not mean retirement from impact.'
+  const bodyHtml = (siteContent?.content?.trim() || meta?.content?.trim() || '').trim()
+  const paragraphs = !bodyHtml && meta && Array.isArray(meta.paragraphs) ? meta.paragraphs : null
 
   if (execLoading || contentLoading) return <PageLoader />
 
@@ -94,7 +94,7 @@ export default function WelcomeAddressPage() {
           <div className="relative bg-gradient-to-br from-[#0d4a25]/5 to-[#EBD279]/10 rounded-2xl border border-[#EBD279]/30 p-8 mb-12">
             <Quote className="absolute top-5 left-5 w-8 h-8 text-[#EBD279] opacity-40" />
             <p className="text-[#0d4a25] text-xl md:text-2xl font-serif leading-relaxed font-medium pl-6 italic">
-              &ldquo;Retirement from active competition does not mean retirement from impact.&rdquo;
+              &ldquo;{pullQuote}&rdquo;
             </p>
             <div className="flex items-center gap-3 mt-5 pl-6">
               <div className="w-8 h-0.5 bg-[#d4a017] rounded-full" />

@@ -20,6 +20,7 @@ import { downloadMemberIdCardPdf } from '@/lib/idCardPdf'
 import { resolveIdCardPhotoForExport } from '@/lib/idCardPhoto'
 import { buildMemberForIdCardPreview } from '@/lib/idCardMember'
 import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
+import { useMemberPosition } from '@/hooks/useMemberPosition'
 import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
 import type { Member } from '@/types'
 import { Badge } from '@/components/shared/Badge'
@@ -155,6 +156,7 @@ export default function IDCardRequestsPage() {
   const backCardRef = useRef<HTMLDivElement>(null)
   const [pdfExport, setPdfExport] = useState<{ member: Member; photoUrl: string } | null>(null)
   const [pdfWorking, setPdfWorking] = useState(false)
+  const exportPosition = useMemberPosition(pdfExport?.member.id)
 
   const setField = (f: keyof FilterState, v: string) => setFilter((p) => ({ ...p, [f]: v }))
   const hasActiveFilters = Object.values(appliedFilter).some(Boolean)
@@ -325,6 +327,7 @@ export default function IDCardRequestsPage() {
             member={pdfExport.member}
             photoUrl={pdfExport.photoUrl || undefined}
             settings={previewSettings}
+            position={exportPosition || undefined}
           />
           <IDCardBackPreview ref={backCardRef} member={pdfExport.member} settings={previewSettings} />
         </div>

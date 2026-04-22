@@ -42,7 +42,9 @@ const CMS_SECTIONS = [
     key: 'welcome_address',
     label: "President's Welcome Address",
     fields: [
-      { key: 'content', label: 'Welcome Address (Full Text)', type: 'richtext' },
+      { key: 'quote', label: 'Pull Quote (shown on homepage & address page)', type: 'text' },
+      { key: 'preview', label: 'Homepage Preview Text', type: 'richtext' },
+      { key: 'content', label: 'Full Welcome Address', type: 'richtext' },
     ],
   },
   {

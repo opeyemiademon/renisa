@@ -1,15 +1,13 @@
 'use client'
 
-import { forwardRef, useEffect, useState } from 'react'
-import type { CSSProperties } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { Member } from '@/types'
-import { buildImageUrl, formatDate } from '@/lib/utils'
+import { buildImageUrl, formatDate, formatDateOnly } from '@/lib/utils'
 import QRCode from 'qrcode'
 
-/** CR80-style palette — matches official RENISA ID artwork (hex only; avoids Tailwind oklab in html2canvas) */
-export const GOLD = '#d4af37'
-export const GREEN_DEEP = '#0d4a25'
-export const GREEN_MID = '#14532d'
+export const GOLD = '#f5c518'
+export const GREEN_DEEP = '#1b5c08'
+export const GREEN_MID = '#1a4a08'
 
 export type IDCardPreviewSettings = {
   headerText?: string | null
@@ -22,52 +20,55 @@ interface IDCardFrontPreviewProps {
   photoUrl?: string
   validYear?: number
   settings?: IDCardPreviewSettings | null
+  position?: string
 }
 
-const cardShell: CSSProperties = {
-  width: 336,
-  height: 212,
-  display: 'flex',
-  flexDirection: 'column',
-  userSelect: 'none',
-  overflow: 'hidden',
-  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-  fontFamily: 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '42px 10px 1fr', alignItems: 'center' }}>
+      <span style={{ color: GREEN_MID, fontWeight: 600, fontSize: 8 }}>{label}</span>
+      <span style={{ color: GREEN_MID, fontWeight: 600, fontSize: 8 }}>:</span>
+      <span style={{ color: '#111', fontWeight: 600, fontSize: 8 }}>{value || '—'}</span>
+    </div>
+  )
 }
 
 export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewProps>(
-  function IDCardFrontPreview({ member, photoUrl, validYear, settings }, ref) {
+  function IDCardFrontPreview({ member, photoUrl, validYear, settings, position }, ref) {
     const currentYear = new Date().getFullYear()
     const years = settings?.validityYears ?? 1
-    const validUntil = validYear ?? currentYear + years
+    const validUntilYear = validYear ?? currentYear + years
+    const validDateStr = `31/12/${validUntilYear}`
+
     const [qrSrc, setQrSrc] = useState<string | null>(null)
     const [qrSettled, setQrSettled] = useState(false)
     const [photoLoaded, setPhotoLoaded] = useState(!photoUrl)
+    const [imgError, setImgError] = useState(false)
 
+    // Track the previous photoUrl in a ref so the effect only resets loading
+    // state when the URL genuinely changes — not on the initial mount.
+    // Without this, the effect fires after the first render and overwrites
+    // photoLoaded=true (set by onLoad) back to false, permanently blocking capture.
+    const prevPhotoUrl = useRef(photoUrl)
     useEffect(() => {
+      if (prevPhotoUrl.current === photoUrl) return
+      prevPhotoUrl.current = photoUrl
       setPhotoLoaded(!photoUrl)
+      setImgError(false)
     }, [photoUrl])
 
     useEffect(() => {
       let cancelled = false
       setQrSettled(false)
       QRCode.toDataURL(member.memberNumber || 'RENISA', {
-        width: 112,
+        width: 42,
         margin: 1,
-        color: { dark: '#1a1a1a', light: '#ffffff' },
+        color: { dark: '#000000', light: '#f5c518' },
       })
-        .then((url) => {
-          if (!cancelled) setQrSrc(url)
-        })
-        .catch(() => {
-          if (!cancelled) setQrSrc(null)
-        })
-        .finally(() => {
-          if (!cancelled) setQrSettled(true)
-        })
-      return () => {
-        cancelled = true
-      }
+        .then((url) => { if (!cancelled) setQrSrc(url) })
+        .catch(() => { if (!cancelled) setQrSrc(null) })
+        .finally(() => { if (!cancelled) setQrSettled(true) })
+      return () => { cancelled = true }
     }, [member.memberNumber])
 
     const captureReady = qrSettled && photoLoaded
@@ -81,265 +82,212 @@ export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewP
 
     const imgCrossOrigin = resolvedPhotoSrc.startsWith('data:') ? undefined : 'anonymous'
 
-    const headerSubline = settings?.headerText?.trim() || 'Header Message Here'
-
     return (
       <div
         ref={ref}
         id="id-card-front"
         data-id-card-front="true"
         data-capture-ready={captureReady ? 'true' : 'false'}
-        style={cardShell}
+        style={{
+          width: 336,
+          height: 212,
+          borderRadius: 7,
+          overflow: 'hidden',
+          position: 'relative',
+          background: '#d6f0b2',
+          boxShadow: '0 24px 70px rgba(0,0,0,0.55)',
+          fontFamily: "'Montserrat', 'Segoe UI', sans-serif",
+          userSelect: 'none',
+        }}
       >
+        {/* ── WATERMARK ── */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: 8,
-            paddingLeft: 14,
-            paddingRight: 14,
-            paddingTop: 10,
-            paddingBottom: 8,
-            backgroundColor: GOLD,
+            position: 'absolute',
+            top: '50%',
+            left: '55%',
+            transform: 'translate(-50%, -50%)',
+            width: 206,
+            pointerEvents: 'none',
+            zIndex: 1,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, flex: 1, minWidth: 0 }}>
-          
-              <img src="/logo.png" alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
-           
-            <div style={{ minWidth: 0, paddingTop: 2 }}>
-              <p
-                style={{
-                  color: '#ffffff',
-                  fontSize: 22,
-                  fontWeight: 700,
-                  lineHeight: 1,
-                  letterSpacing: '-0.02em',
-                  margin: 0,
-                }}
-              >
-                RENISA
-              </p>
-             
-            </div>
-          </div>
-          <p
-            style={{
-              flexShrink: 0,
-              paddingTop: 4,
-              textAlign: 'right',
-              fontSize: 9,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: '#ffffff',
-              margin: 0,
-            }}
-          >
-            MEMBER ID CARD
-          </p>
+          <img src="/logo.png" alt="" style={{ width: '100%', opacity: 0.07, filter: 'grayscale(100%)' }} />
         </div>
 
+        {/* ── HEADER ── */}
         <div
           style={{
-            flex: 1,
-            minHeight: 0,
-            minWidth: 0,
+            position: 'relative',
+            zIndex: 2,
+            height: 49,
+            background: GREEN_DEEP,
+            overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column',
-            background: `linear-gradient(155deg, ${GREEN_DEEP} 0%, ${GREEN_MID} 42%, #166534 100%)`,
+            alignItems: 'center',
           }}
         >
+          {/* Yellow trapezoid */}
           <div
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: 163,
+              background: GOLD,
+              clipPath: 'polygon(0 0, 82% 0, 100% 100%, 0 100%)',
               display: 'flex',
-              flex: 1,
-              minHeight: 0,
-              gap: 12,
-              paddingLeft: 14,
-              paddingRight: 14,
-              paddingTop: 10,
-              paddingBottom: 10,
+              alignItems: 'center',
+              paddingLeft: 7,
+              gap: 5,
+              zIndex: 3,
             }}
           >
-            <div style={{ flexShrink: 0 }}>
-              <div
-                style={{
-                  width: 70,
-                  height: 92,
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                  backgroundColor: 'rgba(0,0,0,0.2)',
-                  border: `2px solid ${GOLD}`,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                }}
-              >
-                {photoUrl ? (
-                  <img
-                    src={resolvedPhotoSrc}
-                    alt="Member"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    crossOrigin={imgCrossOrigin}
-                    onLoad={() => setPhotoLoaded(true)}
-                    onError={() => setPhotoLoaded(true)}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                    }}
-                  >
-                    <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 24, fontWeight: 700 }}>
-                      {member.firstName?.[0]}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                minWidth: 0,
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                gap: 4,
-              }}
-            >
-              <div>
-                <p
-                  style={{
-                    margin: 0,
-                    color: '#ffffff',
-                    fontSize: 15,
-                    fontWeight: 700,
-                    lineHeight: 1.2,
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {member.firstName} {member.lastName}
-                </p>
-                {member.middleName ? (
-                  <p style={{ margin: '2px 0 0', color: 'rgba(255,255,255,0.9)', fontSize: 11, fontWeight: 500 }}>
-                    {member.middleName}
-                  </p>
-                ) : null}
-              </div>
-              <div style={{ marginTop: 4 }}>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 8,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: GOLD,
-                  }}
-                >
-                  Member No.
-                </p>
-                <p style={{ margin: '2px 0 0', color: '#ffffff', fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>
-                  {member.memberNumber}
-                </p>
-              </div>
-              <div
-                style={{
-                  marginTop: 4,
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '4px 12px',
-                }}
-              >
-                <div>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 8,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: GOLD,
-                    }}
-                  >
-                    Sport
-                  </p>
-                  <p style={{ margin: '2px 0 0', color: '#ffffff', fontSize: 10, fontWeight: 600 }}>
-                    {member.sport || '—'}
-                  </p>
-                </div>
-                <div>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 8,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      color: GOLD,
-                    }}
-                  >
-                    State
-                  </p>
-                  <p style={{ margin: '2px 0 0', color: '#ffffff', fontSize: 10, fontWeight: 600}}>
-                    {member.state || '—'}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <img src="/logo.png" alt="RENISA" style={{ width: 34, height: 34, objectFit: 'contain', flexShrink: 0 }} />
+            <span style={{ fontSize: 22, fontWeight: 800, color: GREEN_DEEP, letterSpacing: 0.5, lineHeight: 1 }}>
+              RENISA
+            </span>
           </div>
 
-          <div
+          {/* Member ID Card label */}
+          <span
             style={{
-              flexShrink: 0,
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr 1fr',
-              alignItems: 'center',
-              gap: 4,
-              paddingLeft: 14,
-              paddingRight: 14,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: 'rgba(0,0,0,0.22)',
-              borderTop: '1px solid rgba(255,255,255,0.08)',
+              position: 'absolute',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#fff',
+              fontSize: 7,
+              fontWeight: 700,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              zIndex: 2,
             }}
           >
-            <p style={{ margin: 0, fontSize: 8, fontWeight: 500, color: 'rgba(255,255,255,0.75)' }}>
-              Joined: {member.createdAt ? formatDate(member.createdAt) : '—'}
-            </p>
-            <p style={{ margin: 0, textAlign: 'center', fontSize: 8, fontWeight: 600, color: GOLD }}>
-              Valid Until: {validUntil}
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            Member ID Card
+          </span>
+        </div>
+
+        {/* ── BODY ── */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            display: 'flex',
+            padding: '8px 8px 0 8px',
+            gap: 10,
+            height: 'calc(212px - 49px - 20px)',
+          }}
+        >
+          {/* Left: photo + member ID */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, flexShrink: 0, width: 79 }}>
+            <div style={{ width: 79, height: 97, borderRadius: 5, overflow: 'hidden', background: '#555' }}>
+              {resolvedPhotoSrc && !imgError ? (
+                <img
+                  src={resolvedPhotoSrc}
+                  alt="Member Photo"
+                  crossOrigin={imgCrossOrigin}
+                  onLoad={() => setPhotoLoaded(true)}
+                  onError={() => { setImgError(true); setPhotoLoaded(true) }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', background: '#888', color: '#fff', fontSize: 18, fontWeight: 700,
+                  }}
+                >
+                  {member.firstName?.[0] || '?'}
+                </div>
+              )}
+            </div>
+
+            {/* Member ID */}
+            <span
+              style={{
+                fontFamily: "'Courier Prime', monospace",
+                fontSize: 5,
+                fontWeight: 700,
+                letterSpacing: '1px',
+                color: GREEN_MID,
+                width: 79,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'clip',
+              }}
+            >
+              {member.memberNumber}
+            </span>
+          </div>
+
+          {/* Right: details + valid date + QR */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: 6, minWidth: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
+              <DetailRow label="Name" value={`${member.firstName} ${member.lastName}`} />
+              <DetailRow label="Sport" value={member.sport || '—'} />
+              <DetailRow label="Position" value={position || '—'} />
+              <DetailRow label="State" value={member.state || '—'} />
+            </div>
+
+            {/* Bottom row: valid date + QR */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 4 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingBottom: 2 }}>
+                <span style={{ fontSize: 7, fontWeight: 600, color: GREEN_MID }}>Valid Date</span>
+                <span style={{ fontSize: 7.5, fontWeight: 700, color: '#111' }}>{validDateStr}</span>
+              </div>
+
+              {/* QR box — yellow, top-rounded, flush with footer */}
               <div
                 style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  backgroundColor: '#ffffff',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  width: 48,
+                  height: 48,
+                  background: GOLD,
+                  borderRadius: '5px 5px 0 0',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  overflow: 'hidden',
-                  padding: 1,
+                  padding: 3,
+                  alignSelf: 'flex-end',
                 }}
               >
                 {qrSrc ? (
-                  <img src={qrSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  <img src={qrSrc} alt="QR Code" style={{ width: 42, height: 42, display: 'block', borderRadius: 2 }} />
                 ) : (
-                  <span style={{ fontSize: 6, color: '#a3a3a3' }}>QR</span>
+                  <span style={{ fontSize: 5, color: GREEN_DEEP }}>QR</span>
                 )}
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── FOOTER ── */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 2,
+            background: GREEN_DEEP,
+            height: 20,
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 10px',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Courier Prime', monospace",
+              fontSize: 7,
+              fontWeight: 700,
+              letterSpacing: '2px',
+              color: '#fff',
+            }}
+          >
+            J o i n e d :&nbsp;&nbsp;{member.createdAt ? formatDateOnly(member.createdAt) : '-'}
+          </span>
         </div>
       </div>
     )

@@ -63,10 +63,16 @@ export default function HomePage() {
     queryFn: () => getSiteContent('about'),
     staleTime: 300_000,
   })
+  const { data: welcomeContent } = useQuery({
+    queryKey: ['site-content', 'welcome_address'],
+    queryFn: () => getSiteContent('welcome_address'),
+    staleTime: 300_000,
+  })
 
   // ── Derived values from queries ──
   const heroMeta = (heroContent as any)?.metadata || {}
   const aboutMeta = (aboutContent as any)?.metadata || {}
+  const welcomeMeta = (welcomeContent as any)?.metadata || {}
   const cmsHeroSlide = heroMeta.title ? {
     id: 'cms-hero',
     imageUrl: heroMeta.backgroundImage || '',
@@ -441,20 +447,29 @@ export default function HomePage() {
               <div className="relative pl-5 border-l-4 border-[#EBD279] mb-6">
                 <Quote className="absolute -top-1 -left-1 w-4 h-4 text-[#d4a017]" />
                 <p className="text-gray-500 italic text-lg leading-relaxed">
-                  "Retirement from active competition does not mean retirement from impact."
+                  &ldquo;{welcomeMeta.quote || 'Retirement from active competition does not mean retirement from impact.'}&rdquo;
                 </p>
               </div>
 
-              <p className="text-gray-600 leading-relaxed mb-3">
-                On behalf of the Board of Trustees, the National Executive Council, and the entire membership
-                of RENISA, I am delighted to extend a warm welcome to you athletes, supporters, partners,
-                and friends who share in our collective passion for Nigerian sports excellence.
-              </p>
-              <p className="text-gray-600 leading-relaxed mb-8">
-                RENISA was founded on the belief that those who gave their youth, health, and talent to
-                represent Nigeria on the world stage deserve to be celebrated and remembered long after their
-                active careers have ended…
-              </p>
+              {welcomeMeta.preview ? (
+                <div
+                  className="text-gray-600 leading-relaxed mb-8 prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: welcomeMeta.preview }}
+                />
+              ) : (
+                <>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    On behalf of the Board of Trustees, the National Executive Council, and the entire membership
+                    of RENISA, I am delighted to extend a warm welcome to you athletes, supporters, partners,
+                    and friends who share in our collective passion for Nigerian sports excellence.
+                  </p>
+                  <p className="text-gray-600 leading-relaxed mb-8">
+                    RENISA was founded on the belief that those who gave their youth, health, and talent to
+                    represent Nigeria on the world stage deserve to be celebrated and remembered long after their
+                    active careers have ended…
+                  </p>
+                </>
+              )}
 
               <Link href="/welcome-address">
                 <button className="bg-[#0d4a25] hover:bg-[#1a6b3a] text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center gap-2 shadow-md">

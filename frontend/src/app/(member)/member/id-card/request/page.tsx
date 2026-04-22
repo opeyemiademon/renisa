@@ -17,6 +17,7 @@ import { Input } from '@/components/shared/Input'
 import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
 import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
 import { useAppSelector } from '@/hooks/redux'
+import { useMemberPosition } from '@/hooks/useMemberPosition'
 import { formatCurrency, buildImageUrl } from '@/lib/utils'
 import { captureIdCardToPngDataUrl } from '@/lib/idCardCapture'
 import { fetchImageAsDataUrl } from '@/lib/idCardPhoto'
@@ -78,6 +79,7 @@ export default function IDCardRequestPage() {
     : null
 
   const cardMember = useMemo(() => (member ? buildMemberForIdCardPreview(member) : null), [member])
+  const memberPosition = useMemberPosition(member?.id)
 
   const requestMutation = useMutation({
     mutationFn: async () => {
@@ -303,6 +305,7 @@ export default function IDCardRequestPage() {
                       member={cardMember}
                       photoUrl={photoBase64 || photo}
                       settings={previewSettings}
+                      position={memberPosition || undefined}
                     />
                   </div>
                   <div>

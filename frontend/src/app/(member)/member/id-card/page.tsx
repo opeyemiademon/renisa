@@ -17,6 +17,7 @@ import { downloadMemberIdCardPdf } from '@/lib/idCardPdf'
 import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
 import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
 import { useAppSelector } from '@/hooks/redux'
+import { useMemberPosition } from '@/hooks/useMemberPosition'
 import type { IDCardRequest } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -53,6 +54,8 @@ export default function IDCardPage() {
     () => (authMember ? buildMemberForIdCardPreview(authMember) : null),
     [authMember]
   )
+
+  const memberPosition = useMemberPosition(authMember?.id)
 
   const handleDownloadPdf = async (_row: IDCardRequest) => {
     if (!authMember) {
@@ -116,6 +119,7 @@ export default function IDCardPage() {
             member={cardMember}
             photoUrl={hiddenExport.photoUrl || undefined}
             settings={previewSettings}
+            position={memberPosition || undefined}
           />
           <IDCardBackPreview ref={backCardRef} member={cardMember} settings={previewSettings} />
         </div>
