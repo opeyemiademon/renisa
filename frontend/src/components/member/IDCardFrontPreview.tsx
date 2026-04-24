@@ -211,15 +211,16 @@ export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewP
             {/* Member ID */}
             <span
               style={{
-                fontFamily: "'Courier Prime', monospace",
-                fontSize: 5,
+                fontFamily: "'Courier New', 'Courier', monospace",
+                fontSize: 6.5,
                 fontWeight: 700,
-                letterSpacing: '1px',
+                letterSpacing: '0.3px',
                 color: GREEN_MID,
                 width: 79,
+                display: 'block',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                textOverflow: 'clip',
+                textOverflow: 'ellipsis',
               }}
             >
               {member.memberNumber}
@@ -283,10 +284,10 @@ export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewP
         >
           <span
             style={{
-              fontFamily: "'Courier Prime', monospace",
+              fontFamily: "'Courier New', 'Courier', monospace",
               fontSize: 7,
               fontWeight: 700,
-              letterSpacing: '2px',
+              letterSpacing: '1.5px',
               color: '#fff',
             }}
           >

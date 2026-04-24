@@ -1,21 +1,72 @@
 'use client'
 
+import { useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { CreditCard, Vote, IdCard, CheckCircle, AlertCircle } from 'lucide-react'
+import { CreditCard, Vote, IdCard, CheckCircle, AlertCircle, Download } from 'lucide-react'
 import { useAppSelector } from '@/hooks/redux'
 import { getMemberPayments } from '@/lib/api_services/paymentApiServices'
 import { getAllElections } from '@/lib/api_services/electionApiServices'
-import { getMyIDCardRequests } from '@/lib/api_services/idCardApiServices'
+import { getMyIDCardRequests, getIDCardSettings } from '@/lib/api_services/idCardApiServices'
 import { StatCard } from '@/components/shared/StatCard'
 import { DataTable } from '@/components/shared/DataTable'
 import { Badge } from '@/components/shared/Badge'
 import { Button } from '@/components/shared/Button'
 import { PageLoader } from '@/components/shared/Spinner'
+import { IDCardFrontPreview } from '@/components/member/IDCardFrontPreview'
+import { IDCardBackPreview } from '@/components/member/IDCardBackPreview'
+import { buildMemberForIdCardPreview } from '@/lib/idCardMember'
+import { resolveIdCardPhotoForExport } from '@/lib/idCardPhoto'
+import { downloadMemberIdCardPdf } from '@/lib/idCardPdf'
+import { useMemberPosition } from '@/hooks/useMemberPosition'
 import { buildImageUrl, formatCurrency, formatDate, getInitials } from '@/lib/utils'
+import type { IDCardRequest } from '@/types'
+import toast from 'react-hot-toast'
 
 export default function MemberDashboardPage() {
   const { member } = useAppSelector((s) => s.auth)
+  const frontCardRef = useRef<HTMLDivElement>(null)
+  const backCardRef = useRef<HTMLDivElement>(null)
+  const [hiddenExport, setHiddenExport] = useState<{ photoUrl: string } | null>(null)
+  const [pdfWorking, setPdfWorking] = useState(false)
+
+  const cardMember = useMemo(
+    () => (member ? buildMemberForIdCardPreview(member) : null),
+    [member]
+  )
+  const memberPosition = useMemberPosition(member?.id)
+
+  const { data: idCardSettings } = useQuery({
+    queryKey: ['id-card-settings'],
+    queryFn: getIDCardSettings,
+    enabled: !!member,
+  })
+  const previewSettings = idCardSettings
+    ? { headerText: idCardSettings.headerText, footerText: idCardSettings.footerText, validityYears: idCardSettings.validityYears }
+    : null
+
+  const handleDownloadPdf = async (row: IDCardRequest) => {
+    if (!member) return toast.error('Sign in again to download your card.')
+    const tid = toast.loading('Preparing your ID card PDF…')
+    setPdfWorking(true)
+    try {
+      const photoSrc = await resolveIdCardPhotoForExport(row.photo, member.profilePicture)
+      flushSync(() => setHiddenExport({ photoUrl: photoSrc }))
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())))
+      const front = frontCardRef.current
+      const back = backCardRef.current
+      if (!front || !back) throw new Error('Card preview not ready. Please try again.')
+      await downloadMemberIdCardPdf(front, back, `RENISA-ID-${member.memberNumber}`)
+      toast.success('ID card PDF downloaded')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not create PDF')
+    } finally {
+      toast.dismiss(tid)
+      flushSync(() => setHiddenExport(null))
+      setPdfWorking(false)
+    }
+  }
 
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['my-payments', member?.id],
@@ -52,6 +103,33 @@ export default function MemberDashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Hidden ID card render target for PDF export */}
+      {hiddenExport && cardMember && (
+        <div
+          aria-hidden
+          style={{
+            position: 'fixed',
+            left: -12000,
+            top: 0,
+            width: 336,
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+            backgroundColor: '#ffffff',
+          }}
+        >
+          <IDCardFrontPreview
+            ref={frontCardRef}
+            member={cardMember}
+            photoUrl={hiddenExport.photoUrl || undefined}
+            settings={previewSettings}
+            position={memberPosition || undefined}
+          />
+          <IDCardBackPreview ref={backCardRef} member={cardMember} settings={previewSettings} />
+        </div>
+      )}
+
       {/* Profile Card */}
       <div className="bg-gradient-to-br from-[#1a6b3a] to-[#2d9a57] rounded-2xl p-6 text-white">
         <div className="flex items-center gap-5">
@@ -129,10 +207,17 @@ export default function MemberDashboardPage() {
               <p className="text-sm text-gray-600 flex items-center gap-2">Payment: <Badge variant={latestIDCard.paymentStatus}>{latestIDCard.paymentStatus}</Badge></p>
               <p className="text-sm text-gray-600 flex items-center gap-2">Status: <Badge variant={latestIDCard.adminStatus}>{latestIDCard.adminStatus}</Badge></p>
             </div>
-            {latestIDCard.adminStatus === 'approved' && latestIDCard.requestType === 'online' && latestIDCard.cardUrl && (
-              <a href={buildImageUrl(latestIDCard.cardUrl)} download>
-                <Button size="sm" variant="secondary">Download Card</Button>
-              </a>
+            {latestIDCard.adminStatus === 'approved' && latestIDCard.requestType === 'online' && (
+              <Button
+                size="sm"
+                variant="secondary"
+                iconLeft={<Download className="w-4 h-4" />}
+                loading={pdfWorking}
+                disabled={pdfWorking}
+                onClick={() => handleDownloadPdf(latestIDCard)}
+              >
+                Download PDF
+              </Button>
             )}
           </div>
         ) : (

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
 
-const MODULES = {
+const DEFAULT_MODULES = {
   toolbar: [
     ['bold', 'italic', 'underline'],
     [{ list: 'ordered' }, { list: 'bullet' }],
@@ -17,7 +17,24 @@ const MODULES = {
   ],
 }
 
-const FORMATS = ['bold', 'italic', 'underline', 'list', 'align', 'link']
+const DEFAULT_FORMATS = ['bold', 'italic', 'underline', 'list', 'align', 'link']
+
+export const EMAIL_MODULES = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ align: [] }],
+    ['link'],
+    ['clean'],
+  ],
+}
+
+export const EMAIL_FORMATS = [
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'color', 'background', 'list', 'align', 'link',
+]
 
 interface RichTextEditorProps {
   value: string
@@ -27,6 +44,8 @@ interface RichTextEditorProps {
   placeholder?: string
   className?: string
   height?: number
+  modules?: Record<string, unknown>
+  formats?: string[]
 }
 
 export function RichTextEditor({
@@ -37,6 +56,8 @@ export function RichTextEditor({
   placeholder,
   className,
   height = 300,
+  modules,
+  formats,
 }: RichTextEditorProps) {
   return (
     <div className={cn('flex flex-col gap-1', className)}>
@@ -46,8 +67,8 @@ export function RichTextEditor({
           theme="snow"
           value={value}
           onChange={onChange}
-          modules={MODULES}
-          formats={FORMATS}
+          modules={modules ?? DEFAULT_MODULES}
+          formats={formats ?? DEFAULT_FORMATS}
           placeholder={placeholder}
           style={{ height }}
         />

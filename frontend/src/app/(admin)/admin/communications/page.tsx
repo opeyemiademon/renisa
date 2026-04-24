@@ -10,11 +10,9 @@ import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Badge } from '@/components/shared/Badge'
 import { formatDate } from '@/lib/utils'
-import dynamic from 'next/dynamic'
+import { RichTextEditor, EMAIL_MODULES, EMAIL_FORMATS } from '@/components/shared/RichTextEditor'
 import toast from 'react-hot-toast'
 import { NIGERIAN_STATES } from '@/lib/nigerianStates'
-
-const Editor = dynamic(() => import('@tinymce/tinymce-react').then((m) => m.Editor), { ssr: false })
 
 type Tab = 'send' | 'history'
 type RecipientType = 'all' | 'active' | 'state' | 'specific'
@@ -200,28 +198,15 @@ export default function CommunicationsPage() {
             onChange={(e) => setSubject(e.target.value)}
           />
 
-          <div>
-            <span className="block text-sm font-medium text-gray-700 mb-1.5">Message Body</span>
-            <Editor
-              apiKey={process.env.NEXT_PUBLIC_TYINYMCE_KEY}
-              value={message}
-              onEditorChange={setMessage}
-              init={{
-                height: 400,
-                menubar: false,
-                plugins: [
-                  'advlist', 'autolink', 'lists', 'link', 'charmap',
-                  'searchreplace', 'visualblocks', 'code', 'table', 'wordcount',
-                ],
-                toolbar:
-                  'undo redo | blocks | bold italic forecolor | ' +
-                  'alignleft aligncenter alignright | bullist numlist | ' +
-                  'link table | removeformat | code',
-                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
-                branding: false,
-              }}
-            />
-          </div>
+          <RichTextEditor
+            label="Message Body"
+            value={message}
+            onChange={setMessage}
+            placeholder="Write your email message here…"
+            height={380}
+            modules={EMAIL_MODULES}
+            formats={EMAIL_FORMATS}
+          />
 
           <div className="flex items-center justify-between pt-2 border-t border-gray-100">
             <p className="text-sm text-gray-400">

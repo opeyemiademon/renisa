@@ -31,6 +31,13 @@ import { Input } from '@/components/shared/Input'
 import { buildImageUrl, formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
+/** Safely resolve a photo src that may be a base64 dataURL, a full URL, or a relative path. */
+function resolvePhotoSrc(photo?: string | null): string {
+  if (!photo) return ''
+  if (photo.startsWith('data:') || photo.startsWith('http')) return photo
+  return buildImageUrl(photo)
+}
+
 interface FilterState {
   adminStatus: string
   paymentStatus: string
@@ -58,6 +65,12 @@ function RowMenu({ row, onAction }: { row: any; onAction: (action: string, row: 
   }, [open])
 
   const items = [
+    {
+      key: 'preview_card',
+      label: 'Preview Card',
+      icon: Eye,
+      className: 'text-gray-700 hover:bg-gray-50',
+    },
     row.paymentStatus !== 'paid' && {
       key: 'approve_payment',
       label: 'Approve Payment',
@@ -145,6 +158,7 @@ export default function IDCardRequestsPage() {
   const [visibleCount, setVisibleCount] = useState(20)
 
   // modals
+  const [previewModal, setPreviewModal] = useState<any | null>(null)
   const [photoModal, setPhotoModal] = useState<string | null>(null)
   const [rejectModal, setRejectModal] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
@@ -216,6 +230,7 @@ export default function IDCardRequestsPage() {
 
   const handleAction = (action: string, row: any) => {
     switch (action) {
+      case 'preview_card': setPreviewModal(row); break
       case 'approve_payment': approvePaymentMutation.mutate(row.id); break
       case 'approve_card': approveMutation.mutate(row.id); break
       case 'reject_card': setRejectModal(row.id); setRejectReason(''); break
@@ -500,7 +515,7 @@ export default function IDCardRequestsPage() {
                       {row.photo ? (
                         <button onClick={() => setPhotoModal(row.photo)} className="hover:opacity-80">
                           <img
-                            src={buildImageUrl(row.photo)}
+                            src={resolvePhotoSrc(row.photo)}
                             alt="ID photo"
                             className="w-10 h-10 rounded-lg object-cover border border-gray-200"
                           />
@@ -537,10 +552,75 @@ export default function IDCardRequestsPage() {
         )}
       </div>
 
+      {/* Card Preview Modal */}
+      <Modal isOpen={!!previewModal} onClose={() => setPreviewModal(null)} title="ID Card Preview" size="lg">
+        {previewModal && (() => {
+          const hasFront = !!previewModal.generatedCardFront
+          const hasBack = !!previewModal.generatedCardBack
+          if (hasFront || hasBack) {
+            return (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500">
+                  Showing the card exactly as submitted by the member.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-5 items-center justify-center py-2 overflow-x-auto">
+                  {hasFront && (
+                    <div className="shrink-0">
+                      <p className="text-xs text-gray-400 text-center mb-2">Front</p>
+                      <img
+                        src={buildImageUrl(previewModal.generatedCardFront)}
+                        alt="ID Card Front"
+                        style={{ width: 336, height: 212, borderRadius: 7, boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}
+                      />
+                    </div>
+                  )}
+                  {hasBack && (
+                    <div className="shrink-0">
+                      <p className="text-xs text-gray-400 text-center mb-2">Back</p>
+                      <img
+                        src={buildImageUrl(previewModal.generatedCardBack)}
+                        alt="ID Card Back"
+                        style={{ width: 336, height: 212, borderRadius: 7, boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          }
+          // Fallback: live render using the preview components
+          const m = previewModal.memberId
+          if (!m) return <p className="text-sm text-gray-500 text-center py-6">No preview available for this request.</p>
+          const liveCardMember = buildMemberForIdCardPreview(m)
+          const livePhotoUrl = resolvePhotoSrc(previewModal.photo)
+          return (
+            <div className="space-y-3">
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Stored card images not found — showing live render from current settings.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-5 items-center justify-center py-2 overflow-x-auto">
+                <div className="shrink-0">
+                  <p className="text-xs text-gray-400 text-center mb-2">Front</p>
+                  <IDCardFrontPreview
+                    member={liveCardMember}
+                    photoUrl={livePhotoUrl || undefined}
+                    settings={previewSettings}
+                  />
+                </div>
+                <div className="shrink-0">
+                  <p className="text-xs text-gray-400 text-center mb-2">Back</p>
+                  <IDCardBackPreview member={liveCardMember} settings={previewSettings} />
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+      </Modal>
+
       {/* Photo Modal */}
       <Modal isOpen={!!photoModal} onClose={() => setPhotoModal(null)} title="ID Card Photo" size="sm">
         {photoModal && (
-          <img src={buildImageUrl(photoModal)} alt="ID photo" className="w-full rounded-lg object-contain max-h-80" />
+          <img src={resolvePhotoSrc(photoModal)} alt="ID photo" className="w-full rounded-lg object-contain max-h-80" />
         )}
       </Modal>
 
