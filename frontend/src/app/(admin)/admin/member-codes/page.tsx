@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Hash, Plus, Download, Trash2, RefreshCw } from 'lucide-react'
+import { Hash, Plus, Download, Trash2, RefreshCw, Copy, Check } from 'lucide-react'
 import { getAllMemberCodes, generateMemberCodes, deleteMemberCode } from '@/lib/api_services/memberCodeApiServices'
 import { Badge } from '@/components/shared/Badge'
 import { Button } from '@/components/shared/Button'
@@ -14,6 +14,9 @@ import toast from 'react-hot-toast'
 export default function MemberCodesPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
+  const [filterBatch, setFilterBatch] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(20)
   const [showGenerate, setShowGenerate] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -51,15 +54,37 @@ export default function MemberCodesPage() {
 
   const allCodes = data || []
 
+  const batchNames = useMemo(() => {
+    const names = allCodes.map((c: any) => c.batchName).filter(Boolean)
+    return Array.from(new Set(names)) as string[]
+  }, [allCodes])
+
   const filteredData = useMemo(() => {
-    if (!search.trim()) return allCodes
-    const q = search.toLowerCase()
-    return allCodes.filter((c: any) =>
-      c.code?.toLowerCase().includes(q) ||
-      c.batchName?.toLowerCase().includes(q) ||
-      (c.usedByMember && `${c.usedByMember.firstName} ${c.usedByMember.lastName}`.toLowerCase().includes(q))
-    )
-  }, [allCodes, search])
+    let result = allCodes
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter((c: any) =>
+        c.code?.toLowerCase().includes(q) ||
+        c.batchName?.toLowerCase().includes(q) ||
+        (c.usedByMember && `${c.usedByMember.firstName} ${c.usedByMember.lastName}`.toLowerCase().includes(q))
+      )
+    }
+    if (filterBatch) {
+      result = result.filter((c: any) => c.batchName === filterBatch)
+    }
+    if (filterStatus === 'used') {
+      result = result.filter((c: any) => c.isUsed)
+    } else if (filterStatus === 'unused') {
+      result = result.filter((c: any) => !c.isUsed)
+    }
+    return result
+  }, [allCodes, search, filterBatch, filterStatus])
+
+  const handleCopy = (id: string, code: string) => {
+    navigator.clipboard.writeText(code)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const visibleRows = filteredData.slice(0, visibleCount)
 
@@ -137,13 +162,34 @@ export default function MemberCodesPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <Input
-          placeholder="Search by code, batch, or member name..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setVisibleCount(20) }}
-        />
+      {/* Search & Filters */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <Input
+            placeholder="Search by code, batch, or member name..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setVisibleCount(20) }}
+          />
+        </div>
+        <select
+          value={filterBatch}
+          onChange={(e) => { setFilterBatch(e.target.value); setVisibleCount(20) }}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+        >
+          <option value="">All Batches</option>
+          {batchNames.map((b) => (
+            <option key={b} value={b}>{b}</option>
+          ))}
+        </select>
+        <select
+          value={filterStatus}
+          onChange={(e) => { setFilterStatus(e.target.value); setVisibleCount(20) }}
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+        >
+          <option value="">All Statuses</option>
+          <option value="unused">Unused</option>
+          <option value="used">Used</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -174,7 +220,16 @@ export default function MemberCodesPage() {
                    <td className="px-4 py-3">{index+1}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-mono text-sm font-semibold text-[#1a6b3a] tracking-wider">{row.code}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-semibold text-primary tracking-wider">{row.code}</span>
+                        <button
+                          onClick={() => handleCopy(row.id, row.code)}
+                          className="p-1 text-gray-400 hover:text-primary hover:bg-green-50 rounded transition-colors"
+                          title="Copy code"
+                        >
+                          {copiedId === row.id ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3">{row.batchName || <span className="text-gray-400">—</span>}</td>
                     <td className="px-4 py-3">
@@ -217,7 +272,7 @@ export default function MemberCodesPage() {
           <div className="px-4 py-4 border-t border-gray-100 text-center">
             <button
               onClick={() => setVisibleCount((v) => v + 20)}
-              className="text-sm text-[#1a6b3a] hover:underline font-medium"
+              className="text-sm text-primary hover:underline font-medium"
             >
               Load More ({filteredData.length - visibleCount} remaining)
             </button>

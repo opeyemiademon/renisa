@@ -4,7 +4,7 @@ import { Executive, MutationResponse } from '@/types'
 const EXEC_FIELDS = `
   id name position title profilePicture photo order displayOrder tenure bio isActive createdAt updatedAt
   memberId { id firstName lastName profilePicture memberNumber sport }
-  member { id firstName lastName profilePicture memberNumber sport }
+  member { id firstName lastName profilePicture memberNumber sport bio }
 `
 
 export const getAllExecutives = async (): Promise<Executive[]> => {

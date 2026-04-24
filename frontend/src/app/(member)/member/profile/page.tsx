@@ -12,6 +12,7 @@ import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
+import { RichTextEditor } from '@/components/shared/RichTextEditor'
 import { useAppSelector, useAppDispatch } from '@/hooks/redux'
 import { updateMemberProfile } from '@/lib/store/authSlice'
 import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
@@ -34,6 +35,7 @@ export default function MemberProfilePage() {
     stateOfOrigin: member?.stateOfOrigin || '',
     lga: member?.lga || '',
     sport: member?.sport || '',
+    bio: member?.bio || '',
     photoBase64: '' as string,
     photoPreview: member?.profilePicture ? buildImageUrl(member.profilePicture) : '',
   })
@@ -187,6 +189,13 @@ export default function MemberProfilePage() {
             />
           </div>
           <Select label="Sport" disabled={true} value={form.sport} onChange={(e) => set('sport', e.target.value)} options={sportOptions} />
+          <RichTextEditor
+            label="Bio"
+            value={form.bio}
+            onChange={(val) => set('bio', val)}
+            placeholder="Tell us about yourself — career highlights, achievements, interests…"
+            height={200}
+          />
           <Button onClick={() => updateMutation.mutate()} loading={updateMutation.isPending} iconLeft={<Save className="w-4 h-4" />}>
             Save Changes
           </Button>

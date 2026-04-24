@@ -25,7 +25,7 @@ export default function MembersPage() {
     queryFn: getPublicMembers,
   })
 
-  console.log(memberList)
+ 
   const filteredMembers = useMemo(() => {
     
     return memberList.filter((m: Member) => {
@@ -84,7 +84,7 @@ export default function MembersPage() {
                       {member.firstName} {member.lastName}
                     </p>
                     <p className="text-[#1a6b3a] text-xs">{member.sport}</p>
-                    <p className="text-gray-400 text-xs">{member.state}</p>
+                    <p className="text-gray-400 text-xs">{member.stateOfOrigin}</p>
                   </div>
                 </Link>
               ))}
@@ -159,8 +159,7 @@ export default function MembersPage() {
                       {member.firstName} {member.lastName}
                     </p>
                     <p className="text-[#1a6b3a] text-sm mt-0.5">{member.sport}</p>
-                    <p className="text-gray-400 text-xs mt-0.5">{member.state}</p>
-                    <p className="text-gray-300 text-xs mt-0.5">{member.memberNumber}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{member.stateOfOrigin}</p>
                     <p className="text-[#1a6b3a] text-xs font-medium mt-2 opacity-0 group-hover:opacity-100 transition-opacity">View Profile →</p>
                   </div>
                 </Link>

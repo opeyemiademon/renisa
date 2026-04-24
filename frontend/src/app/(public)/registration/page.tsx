@@ -85,6 +85,10 @@ export default function RegistrationPage() {
   }
 
   const handlePhotoCapture = async (file: File) => {
+    if (file.size > 500 * 1024) {
+      toast.error(`Image is too large (${(file.size / 1024).toFixed(0)} KB). Maximum allowed size is 500 KB.`)
+      return
+    }
     try {
       const base64 = await fileToBase64(file)
       setForm((prev) => ({ ...prev, photoBase64: base64, profilePicture: URL.createObjectURL(file) }))

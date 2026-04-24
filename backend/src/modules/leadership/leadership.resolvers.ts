@@ -3,7 +3,7 @@ import LeadershipGroup from '../leadershipGroup/leadershipGroup.model.js';
 import { requireAdminAuth, AuthContext } from '../../middleware/auth.js';
 import { findLeadershipGroupBySlugParam } from '../../utils/leadershipGroupSlug.js';
 
-const MEMBER_POPULATE = 'firstName lastName profilePicture memberNumber sport state';
+const MEMBER_POPULATE = 'firstName lastName profilePicture memberNumber sport state bio';
 
 const populate = (q: any) =>
   q

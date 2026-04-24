@@ -1,9 +1,23 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+// @ts-ignore
+import 'react-quill-new/dist/quill.snow.css'
 import { cn } from '@/lib/utils'
 
-const Editor = dynamic(() => import('@tinymce/tinymce-react').then((m) => m.Editor), { ssr: false })
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
+
+const MODULES = {
+  toolbar: [
+    ['bold', 'italic', 'underline'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ align: [] }],
+    ['link'],
+    ['clean'],
+  ],
+}
+
+const FORMATS = ['bold', 'italic', 'underline', 'list', 'align', 'link']
 
 interface RichTextEditorProps {
   value: string
@@ -28,26 +42,14 @@ export function RichTextEditor({
     <div className={cn('flex flex-col gap-1', className)}>
       {label && <span className="text-sm font-medium text-gray-700">{label}</span>}
       <div className={cn('rounded-lg overflow-hidden', error ? 'ring-2 ring-red-500' : '')}>
-        <Editor
-          apiKey={process.env.NEXT_PUBLIC_TYINYMCE_KEY}
+        <ReactQuill
+          theme="snow"
           value={value}
-          onEditorChange={onChange}
-          init={{
-            height,
-            menubar: false,
-            placeholder,
-            plugins: [
-              'advlist', 'autolink', 'lists', 'link', 'charmap',
-              'searchreplace', 'visualblocks', 'code',
-              'insertdatetime', 'table', 'wordcount',
-            ],
-            toolbar:
-              'undo redo | blocks | bold italic forecolor | ' +
-              'alignleft aligncenter alignright | bullist numlist | ' +
-              'link | removeformat | code',
-            content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
-            branding: false,
-          }}
+          onChange={onChange}
+          modules={MODULES}
+          formats={FORMATS}
+          placeholder={placeholder}
+          style={{ height }}
         />
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}

@@ -338,7 +338,7 @@ export default function HomePage() {
               
               {/* Est. pill */}
               <div className="absolute top-5 right-5 bg-[#EBD279] text-[#0d4a25] px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                Est. 2020
+                Est. 2019
               </div>
             </div>
 

@@ -131,23 +131,29 @@ export default function ExecutiveDetailPage({ params }: { params: Promise<{ id: 
 
       <section className="py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-10">
-            <div className="md:col-span-2">
+          <div className="grid md:grid-cols-3 gap-8 md:gap-10 items-start">
+
+            {/* Bio — left 2/3 */}
+            <div className="md:col-span-2 min-w-0">
               <h2 className="text-2xl font-bold text-gray-900 font-serif mb-5">Biography</h2>
-              {exec.bio ? (
-                <p className="text-gray-600 leading-relaxed text-lg">{exec.bio}</p>
+              {exec?.member?.bio ? (
+                <div
+                  className="prose prose-sm sm:prose max-w-none text-gray-600 leading-relaxed wrap-break-word [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-primary [&_a]:underline"
+                  dangerouslySetInnerHTML={{ __html: exec.member.bio }}
+                />
               ) : (
                 <p className="text-gray-400 italic">No biography available.</p>
               )}
             </div>
 
-            <div className="space-y-6">
+            {/* Sidebar — right 1/3 */}
+            <div className="min-w-0 space-y-6">
               <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">Quick Info</h3>
                 <dl className="space-y-3">
                   <div>
                     <dt className="text-xs text-gray-400 uppercase tracking-wide">Position</dt>
-                    <dd className="text-sm font-semibold text-[#1a6b3a] mt-0.5">{exec.position}</dd>
+                    <dd className="text-sm font-semibold text-[#1a6b3a] mt-0.5 wrap-break-word">{exec.position}</dd>
                   </div>
                   {sport && (
                     <div>
@@ -171,6 +177,7 @@ export default function ExecutiveDetailPage({ params }: { params: Promise<{ id: 
                 </div>
               </Link>
             </div>
+
           </div>
         </div>
       </section>

@@ -30,8 +30,13 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
   const { data: member, isLoading } = useQuery({
     queryKey: ['leadership-profile', slug],
     queryFn: async () => {
-      const bySlug = await getLeadershipBySlug(slug)
-      if (bySlug) return bySlug
+     
+      try {
+        const bySlug = await getLeadershipBySlug(slug)
+        if (bySlug) return bySlug
+      } catch {
+        // not a valid slug — fall through to ID lookup below
+      }
       return getLeadershipMember(slug)
     },
   })

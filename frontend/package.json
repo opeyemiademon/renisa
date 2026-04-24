@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-       "deploy": "scp -r ./src/* root@31.97.213.139:/var/www/renisa/frontend/src",
-   
+    "deploy": "scp -r ./src/* root@31.97.213.139:/var/www/renisa/frontend/src",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -27,6 +26,7 @@
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
     "react-paystack": "^6.0.0",
+    "react-quill-new": "^3.8.3",
     "react-redux": "^9.1.0",
     "react-select": "^5.10.2",
     "recharts": "^2.12.0",

@@ -28,6 +28,7 @@ export const loginMember = async (data: {
           profilePicture
           status
           isAlumni
+          bio
           createdAt
         }
       }

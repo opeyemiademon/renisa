@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, MapPin, Calendar, Hash, Medal } from 'lucide-react'
 import { getPublicMemberProfile } from '@/lib/api_services/memberApiServices'
-import { buildImageUrl, formatDate } from '@/lib/utils'
+import { buildImageUrl, formatDate, formatDateOnly } from '@/lib/utils'
 
 export default function MemberProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -100,12 +100,12 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
                 </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-white font-serif">{fullName}</h1>
-              {member.memberNumber && (
+             {/*  {member.memberNumber && (
                 <p className="text-[#EBD279] text-sm font-medium mt-2 flex items-center gap-1.5 justify-center md:justify-start">
                   <Hash className="w-3.5 h-3.5" />
                   {member.memberNumber}
                 </p>
-              )}
+              )} */}
               {member.state && (
                 <p className="text-white/60 text-sm mt-1 flex items-center gap-1.5 justify-center md:justify-start">
                   <MapPin className="w-3.5 h-3.5" />
@@ -115,7 +115,7 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
               {member.createdAt && (
                 <p className="text-white/50 text-xs mt-1 flex items-center gap-1.5 justify-center md:justify-start">
                   <Calendar className="w-3 h-3" />
-                  Member since {formatDate(member.createdAt)}
+                  Member since {formatDateOnly(member.createdAt)}
                 </p>
               )}
             </div>
@@ -125,11 +125,16 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
 
       <section className="py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-10">
-            <div className="md:col-span-2">
+          <div className="grid md:grid-cols-3 gap-8 md:gap-10 items-start">
+
+            {/* Bio — left 2/3 */}
+            <div className="md:col-span-2 min-w-0">
               <h2 className="text-2xl font-bold text-gray-900 font-serif mb-5">Profile</h2>
               {member.bio ? (
-                <p className="text-gray-600 leading-relaxed text-lg">{member.bio}</p>
+                <div
+                  className="prose prose-sm sm:prose max-w-none text-gray-600 leading-relaxed wrap-break-word [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-primary [&_a]:underline"
+                  dangerouslySetInnerHTML={{ __html: member.bio }}
+                />
               ) : (
                 <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8 text-center">
                   <Medal className="w-10 h-10 mx-auto mb-3 text-[#d4a017] opacity-60" />
@@ -143,7 +148,8 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
               )}
             </div>
 
-            <div className="space-y-6">
+            {/* Sidebar — right 1/3 */}
+            <div className="min-w-0 space-y-6">
               <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">
                   Member Info
@@ -155,12 +161,12 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
                       <dd className="text-sm font-semibold text-gray-900 mt-0.5">{member.sport}</dd>
                     </div>
                   )}
-                  {member.state && (
+                 {/*  {member.state && (
                     <div>
                       <dt className="text-xs text-gray-400 uppercase tracking-wide">State</dt>
                       <dd className="text-sm font-semibold text-gray-900 mt-0.5">{member.state}</dd>
                     </div>
-                  )}
+                  )} */}
                   {member.stateOfOrigin && (
                     <div>
                       <dt className="text-xs text-gray-400 uppercase tracking-wide">State of Origin</dt>
@@ -173,12 +179,12 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
                       <dd className="text-sm font-semibold text-gray-900 mt-0.5 capitalize">{member.gender}</dd>
                     </div>
                   )}
-                  {member.memberNumber && (
+                 {/*  {member.memberNumber && (
                     <div>
                       <dt className="text-xs text-gray-400 uppercase tracking-wide">Member Number</dt>
                       <dd className="text-sm font-semibold text-[#1a6b3a] mt-0.5">{member.memberNumber}</dd>
                     </div>
-                  )}
+                  )} */}
                   <div>
                     <dt className="text-xs text-gray-400 uppercase tracking-wide">Status</dt>
                     <dd className="mt-0.5">

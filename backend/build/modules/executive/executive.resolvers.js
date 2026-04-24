@@ -29,11 +29,11 @@ const executiveResolvers = {
             if (isActive !== undefined)
                 filter.isActive = isActive;
             return await Executive.find(filter)
-                .populate('memberId', 'firstName lastName profilePicture memberNumber')
+                .populate('memberId', 'firstName lastName profilePicture memberNumber bio')
                 .sort({ order: 1 });
         },
         getExecutive: async (_, { id }) => {
-            return await Executive.findById(id).populate('memberId', 'firstName lastName profilePicture memberNumber');
+            return await Executive.findById(id).populate('memberId', 'firstName lastName profilePicture memberNumber bio');
         },
     },
     Mutation: {

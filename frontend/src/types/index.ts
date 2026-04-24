@@ -37,6 +37,7 @@ export interface Member {
   lga: string
   sport: string
   profilePicture?: string
+  bio?: string
   status: MemberStatus
   passwordHash?: string
   isAlumni: boolean
@@ -250,7 +251,7 @@ export interface Executive {
   sport?: string
   bio?: string
   socialLinks?: { platform: string; url: string }[]
-  member?: { sport?: string; firstName?: string; lastName?: string; profilePicture?: string; memberNumber?: string }
+  member?: { sport?: string; firstName?: string; lastName?: string; profilePicture?: string; memberNumber?: string; bio?:string }
   /** Populated member from API, or ID string when creating/updating */
   memberId?: string | { id?: string; sport?: string; firstName?: string; lastName?: string; profilePicture?: string; memberNumber?: string }
   displayOrder: number

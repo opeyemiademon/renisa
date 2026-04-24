@@ -14,7 +14,7 @@ export async function downloadMemberIdCardPdf(
   backElement: HTMLElement,
   fileBaseName: string
 ): Promise<void> {
-  const captureOpts = { scale: 4 as const, backgroundColor: '#ffffff' as const }
+  const captureOpts = { scale: 4 as const, backgroundColor: '#d6f0b2' as const }
 
   const frontPng = await captureIdCardToPngDataUrl(frontElement, captureOpts)
   const backPng = await captureIdCardToPngDataUrl(backElement, captureOpts)

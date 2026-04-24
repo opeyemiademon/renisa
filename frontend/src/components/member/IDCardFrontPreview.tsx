@@ -60,16 +60,20 @@ export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewP
     useEffect(() => {
       let cancelled = false
       setQrSettled(false)
-      QRCode.toDataURL(member.memberNumber || 'RENISA', {
-        width: 42,
+      const profileUrl = member.id
+        ? `https://renisa.ng/members/${member.id}`
+        : member.memberNumber || 'RENISA'
+      QRCode.toDataURL(profileUrl, {
+        width: 200,
         margin: 1,
         color: { dark: '#000000', light: '#f5c518' },
+        errorCorrectionLevel: 'M',
       })
         .then((url) => { if (!cancelled) setQrSrc(url) })
         .catch(() => { if (!cancelled) setQrSrc(null) })
         .finally(() => { if (!cancelled) setQrSettled(true) })
       return () => { cancelled = true }
-    }, [member.memberNumber])
+    }, [member.id, member.memberNumber])
 
     const captureReady = qrSettled && photoLoaded
 

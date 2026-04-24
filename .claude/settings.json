@@ -1,12 +1,13 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm ls *)"
+    ],
     "additionalDirectories": [
       "/Applications/XAMPP/xamppfiles/htdocs/deep_socket/renisa/frontend/src/app/(member)/member/tickets",
       "/Applications/XAMPP/xamppfiles/htdocs/deep_socket/renisa/frontend/src/app/(admin)/admin/tickets",
       "/Applications/XAMPP/xamppfiles/htdocs/deep_socket/renisa/frontend/src/app/(public)/awardees"
-    ],
-    "allow": [
-      "Bash(npm run *)"
     ]
   }
 }
