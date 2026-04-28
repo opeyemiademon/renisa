@@ -8,7 +8,7 @@ import type { Member } from '@/types'
 import { buildImageUrl } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
 import { SearchBar } from '@/components/shared/SearchBar'
-import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { NIGERIAN_STATES, useSports } from '@/lib/nigerianStates'
 
 export default function MembersPage() {
   const [search, setSearch] = useState('')
@@ -24,6 +24,7 @@ export default function MembersPage() {
     queryKey: ['public-members'],
     queryFn: getPublicMembers,
   })
+  const sports = useSports()
 
  
   const filteredMembers = useMemo(() => {
@@ -113,7 +114,7 @@ export default function MembersPage() {
               className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm"
             >
               <option value="">All Sports</option>
-              {SPORTS.map((s) => (
+              {sports.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>

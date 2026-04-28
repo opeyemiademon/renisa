@@ -21,7 +21,7 @@ const sportResolvers = {
         order: count,
         createdBy: context.admin!.id,
       });
-      return { success: true, message: 'Sport created ', data: sport };
+      return { success: true, message: 'Sport created successfully ', data: sport };
     },
 
     updateSport: async (_: any, { id, name, isActive }: any, context: AuthContext) => {

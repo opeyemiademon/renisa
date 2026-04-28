@@ -12,7 +12,7 @@ import { Select } from '@/components/shared/Select'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { generateSlug, buildImageUrl } from '@/lib/utils'
 import { fileToBase64 } from '@/lib/fileUpload'
-import { Editor } from '@tinymce/tinymce-react'
+import { RichTextEditor } from '@/components/shared/RichTextEditor'
 import toast from 'react-hot-toast'
 
 function CreateEventForm() {
@@ -180,24 +180,10 @@ function CreateEventForm() {
       {/* Content */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h3 className="font-semibold text-gray-900">Event Content</h3>
-        <Editor
-          apiKey={process.env.NEXT_PUBLIC_TYINYMCE_KEY}
+        <RichTextEditor
+          label="Content"
           value={form.content}
-          onEditorChange={(content) => setField('content', content)}
-          init={{
-            height: 500,
-            menubar: true,
-            plugins: [
-              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-              'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-              'bold italic forecolor | alignleft aligncenter ' +
-              'alignright alignjustify | bullist numlist outdent indent | ' +
-              'removeformat | help',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-          }}
+          onChange={(v) => setField('content', v)}
         />
       </div>
 
