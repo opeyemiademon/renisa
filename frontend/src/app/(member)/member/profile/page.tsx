@@ -15,7 +15,7 @@ import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { RichTextEditor } from '@/components/shared/RichTextEditor'
 import { useAppSelector, useAppDispatch } from '@/hooks/redux'
 import { updateMemberProfile } from '@/lib/store/authSlice'
-import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { NIGERIAN_STATES, useSports } from '@/lib/nigerianStates'
 import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { buildImageUrl, getInitials } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -44,6 +44,7 @@ export default function MemberProfilePage() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
 
   const set = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }))
+  const sports = useSports()
 
   const updateMutation = useMutation({
     mutationFn: () => {
@@ -96,7 +97,7 @@ export default function MemberProfilePage() {
   if (!member) return null
 
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
-  const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const sportOptions = sports.map((s) => ({ value: s, label: s }))
   const lgaOptions = getLgaOptionsForState(form.stateOfOrigin)
   const memberPositions = [
     ...((executivesData || []) as any[])

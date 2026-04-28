@@ -1,7 +1,7 @@
 import Leadership from './leadership.model.js';
 import { requireAdminAuth } from '../../middleware/auth.js';
 import { findLeadershipGroupBySlugParam } from '../../utils/leadershipGroupSlug.js';
-const MEMBER_POPULATE = 'firstName lastName profilePicture memberNumber sport state';
+const MEMBER_POPULATE = 'firstName lastName profilePicture memberNumber sport state bio';
 const populate = (q) => q
     .populate('groupId', 'name slug')
     .populate('memberId', MEMBER_POPULATE);

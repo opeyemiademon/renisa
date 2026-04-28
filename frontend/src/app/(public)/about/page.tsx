@@ -161,7 +161,7 @@ export default function AboutPage() {
             <div className="relative">
               <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
                 <img
-                  src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80&auto=format&fit=crop"
+                  src={historyMeta.image ? buildImageUrl(historyMeta.image) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80&auto=format&fit=crop'}
                   alt="Nigerian sports heritage"
                   className="w-full h-full object-cover"
                 />
@@ -178,7 +178,7 @@ export default function AboutPage() {
             </div>
 
             {/* Right — content */}
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-[#1a6b3a] rounded-xl">
                   <History className="w-6 h-6 text-white" />
@@ -188,7 +188,7 @@ export default function AboutPage() {
 
               {historyMeta.content ? (
                 <div
-                  className="prose prose-lg max-w-none text-gray-600"
+                  className="prose prose-lg max-w-none text-gray-600 overflow-hidden wrap-break-word"
                   dangerouslySetInnerHTML={{ __html: historyMeta.content }}
                 />
               ) : (

@@ -10,7 +10,7 @@ import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
-import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { NIGERIAN_STATES, useSports } from '@/lib/nigerianStates'
 import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { useAppDispatch } from '@/hooks/redux'
 import { setCredentials } from '@/lib/store/authSlice'
@@ -64,6 +64,7 @@ export default function RegistrationPage() {
 
   const set = (field: keyof FormData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }))
+  const sports = useSports()
 
   const checkCode = async () => {
     if (!form.memberCode.trim()) return toast.error('Enter your member code')
@@ -141,7 +142,7 @@ export default function RegistrationPage() {
   })
 
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
-  const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const sportOptions = sports.map((s) => ({ value: s, label: s }))
   const lgaOptions = getLgaOptionsForState(form.stateOfOrigin)
 
   const progressWidth = ((step - 1) / (STEPS.length - 1)) * 100

@@ -32,7 +32,7 @@ export default function EventDetailPage() {
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-gray-500 text-lg mb-4">This article could not be found or is not published.</p>
-          <Link href="/events" className="text-[#1a6b3a] font-medium hover:underline">
+          <Link href="/events" className="text-primary font-medium hover:underline">
             ← Back to Events
           </Link>
         </div>
@@ -51,20 +51,20 @@ export default function EventDetailPage() {
             alt={event.title}
             className="w-full h-full object-cover opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
         </div>
       )}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
-          <Link href="/events" className="flex items-center gap-2 text-[#1a6b3a] hover:text-[#0d4a25] text-sm font-medium">
+          <Link href="/events" className="flex items-center gap-2 text-primary hover:text-[#0d4a25] text-sm font-medium">
             <ArrowLeft className="w-4 h-4" />
             Back to Events
           </Link>
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-2 text-gray-500 hover:text-[#1a6b3a] text-sm"
+            className="flex items-center gap-2 text-gray-500 hover:text-primary text-sm"
           >
             <Share2 className="w-4 h-4" />
             Share
@@ -87,14 +87,14 @@ export default function EventDetailPage() {
           )}
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 font-serif leading-tight mb-6">{event.title}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 font-serif leading-tight mb-6 wrap-break-word">{event.title}</h1>
 
         {event.excerpt && (
-          <p className="text-lg text-gray-600 leading-relaxed mb-8 border-l-4 border-[#d4a017] pl-4 italic">{event.excerpt}</p>
+          <p className="text-lg text-gray-600 leading-relaxed mb-8 border-l-4 border-[#d4a017] pl-4 italic wrap-break-word">{event.excerpt}</p>
         )}
 
         <div
-          className="rich-text prose max-w-none text-gray-700"
+          className="rich-text prose max-w-none text-gray-700 overflow-hidden wrap-break-word"
           dangerouslySetInnerHTML={{ __html: event.content || '<p></p>' }}
         />
 

@@ -35,6 +35,7 @@ const CMS_SECTIONS = [
     key: 'history',
     label: 'History',
     fields: [
+      { key: 'image', label: 'History Image', type: 'image' },
       { key: 'content', label: 'History Content', type: 'richtext' },
     ],
   },

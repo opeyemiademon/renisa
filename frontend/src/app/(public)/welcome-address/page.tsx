@@ -103,9 +103,9 @@ export default function WelcomeAddressPage() {
           </div>
 
           {bodyHtml.includes('<') ? (
-            <div className="prose prose-lg max-w-none rich-text text-gray-600" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+            <div className="prose prose-lg max-w-none rich-text text-gray-600 overflow-hidden wrap-break-word" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
           ) : paragraphs?.length ? (
-            <div className="prose prose-lg max-w-none space-y-6">
+            <div className="prose prose-lg max-w-none space-y-6 overflow-hidden wrap-break-word">
               {paragraphs.map((para, i) => (
                 <p key={i} className={`leading-relaxed ${i === paragraphs.length - 1 ? 'text-gray-700 font-semibold' : 'text-gray-600'}`}>
                   {para}
@@ -113,7 +113,7 @@ export default function WelcomeAddressPage() {
               ))}
             </div>
           ) : bodyHtml ? (
-            <div className="prose prose-lg max-w-none space-y-6 text-gray-600 whitespace-pre-wrap">{bodyHtml}</div>
+            <div className="prose prose-lg max-w-none space-y-6 text-gray-600 whitespace-pre-wrap overflow-hidden wrap-break-word">{bodyHtml}</div>
           ) : (
             <p className="text-gray-500 text-center py-8">
               The full welcome address will appear here once it is published in the admin site content (section{' '}

@@ -343,7 +343,7 @@ export default function HomePage() {
             </div>
 
             {/* Text */}
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-10 bg-[#EBD279]" />
                 <p className="text-[#d4a017] font-semibold text-sm uppercase tracking-widest">
@@ -353,7 +353,7 @@ export default function HomePage() {
 
               {aboutMeta.content ? (
                 <div
-                  className="prose prose-gray max-w-none mb-7 text-base"
+                  className="prose prose-gray max-w-none mb-7 text-base overflow-hidden wrap-break-word"
                   dangerouslySetInnerHTML={{ __html: aboutMeta.content }}
                 />
               ) : (
@@ -431,7 +431,7 @@ export default function HomePage() {
             </div>
 
             {/* Quote preview */}
-            <div className="lg:pl-4 mt-8 lg:mt-0">
+            <div className="lg:pl-4 mt-8 lg:mt-0 min-w-0">
               <div className="flex items-center gap-3 mb-5">
                 <div className="h-px w-10 bg-[#EBD279]" />
                 <p className="text-[#d4a017] font-semibold text-sm uppercase tracking-widest">
@@ -453,7 +453,7 @@ export default function HomePage() {
 
               {welcomeMeta.preview ? (
                 <div
-                  className="text-gray-600 leading-relaxed mb-8 prose prose-sm max-w-none"
+                  className="text-gray-600 leading-relaxed mb-8 prose prose-sm max-w-none overflow-hidden wrap-break-word"
                   dangerouslySetInnerHTML={{ __html: welcomeMeta.preview }}
                 />
               ) : (

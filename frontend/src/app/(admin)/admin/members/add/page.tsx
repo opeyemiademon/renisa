@@ -11,7 +11,7 @@ import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
 import { Button } from '@/components/shared/Button'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
-import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { NIGERIAN_STATES, useSports } from '@/lib/nigerianStates'
 import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { fileToBase64 } from '@/lib/fileUpload'
 import toast from 'react-hot-toast'
@@ -28,7 +28,7 @@ export default function AdminAddMemberPage() {
 
   const set = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }))
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
-  const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const sportOptions = useSports().map((s) => ({ value: s, label: s }))
   const lgaOptions = getLgaOptionsForState(form.stateOfOrigin)
 
   const handlePhotoCapture = async (file: File) => {

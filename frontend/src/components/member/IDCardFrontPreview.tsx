@@ -218,9 +218,9 @@ export const IDCardFrontPreview = forwardRef<HTMLDivElement, IDCardFrontPreviewP
                 color: GREEN_MID,
                 width: 79,
                 display: 'block',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                whiteSpace: 'normal',
+                wordBreak: 'break-all',
+                lineHeight: 1.4,
               }}
             >
               {member.memberNumber}

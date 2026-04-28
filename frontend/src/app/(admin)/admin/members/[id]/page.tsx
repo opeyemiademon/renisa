@@ -15,7 +15,7 @@ import { ConfirmModal } from '@/components/shared/ConfirmModal'
 import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { PageLoader } from '@/components/shared/Spinner'
 import { buildImageUrl, formatDate, formatCurrency } from '@/lib/utils'
-import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { NIGERIAN_STATES, useSports } from '@/lib/nigerianStates'
 import { getLgaOptionsForState } from '@/lib/nigerianLgas'
 import { fileToBase64 } from '@/lib/fileUpload'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
@@ -72,7 +72,7 @@ export default function MemberDetailPage() {
       middleName: m.middleName || '',
       phone: m.phone || '',
       alternatePhone: m.alternatePhone || '',
-      dateOfBirth: m.dateOfBirth ? new Date(formatDate(m.dateOfBirth)).toISOString().split('T')[0] : '',
+      dateOfBirth: (() => { if (!m.dateOfBirth) return ''; const d = new Date(m.dateOfBirth); return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0] })(),
       gender: m.gender || '',
       address: m.address || '',
       city: m.city || '',
@@ -148,12 +148,14 @@ export default function MemberDetailPage() {
     onError: (err: Error) => toast.error(err.message),
   })
 
+  const sports = useSports()
+
   if (isLoading) return <PageLoader />
   if (!member) return <div className="text-gray-400 text-center py-10">Member not found</div>
 
   const m = member as any
   const stateOptions = NIGERIAN_STATES.map((s) => ({ value: s, label: s }))
-  const sportOptions = SPORTS.map((s) => ({ value: s, label: s }))
+  const sportOptions = sports.map((s) => ({ value: s, label: s }))
   const lgaOptions = getLgaOptionsForState(editForm.stateOfOrigin || '')
   const availablePlatforms = SOCIAL_PLATFORMS.filter(
     (p) => !socialLinks.some((l) => l.platform === p.value)
@@ -184,12 +186,12 @@ export default function MemberDetailPage() {
           >
             {m.status === 'active' ? 'Suspend' : 'Activate'}
           </Button>
-          {!m.isAlumni && (
+         {/*  {!m.isAlumni && (
             <Button variant="secondary" size="sm" iconLeft={<GraduationCap className="w-4 h-4" />}
               onClick={() => setConfirmAction('alumni')}>
               Mark Alumni
             </Button>
-          )}
+          )} */}
         </div>
       </div>
 

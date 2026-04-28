@@ -1,3 +1,6 @@
+import { useQuery } from '@tanstack/react-query'
+import { getSports } from '@/lib/api_services/sportApiServices'
+
 export const NIGERIAN_STATES = [
   'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
   'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe', 'Imo',
@@ -7,13 +10,16 @@ export const NIGERIAN_STATES = [
 ]
 
 
-export const SPORTS = [
 
-  'Athletics', 'Badminton', 'Baseball/Softball', 'Basketball', 'Boxing', 'Chess', 'Cricket', 'Cycling', 'Football', 'Gymnastics', 'Golf', 'Handball', 'Hockey', 'Judo', 'Karate', 'Shooting', 'Squash Racket', 'Table Tennis', 'Taekwondo', 'Tennis', 'Volleyball (Includes Beach Volleyball)', 'Weightlifting', 'Wrestling', 'Scrabble',
-'Powerlifting',  'Swimming', 'Deaf Athletics', 'Para-Soccer',
-  'Abula', 'Ayo', 'Danbe', 'Kokowa', 'Langa',
-  'Darts', 'Fives', 'Rugby (15s, 10s, & 7s)', 'Rowing/Yachting', 'Kung Fu', 'Kickboxing',
-] 
+
+export function useSports(): string[] {
+  const { data } = useQuery({
+    queryKey: ['sports'],
+    queryFn: () => getSports(true),
+    staleTime: 300_000,
+  })
+  return Array.isArray(data) ? data.map((s) => s.name) : []
+}
 
 
 

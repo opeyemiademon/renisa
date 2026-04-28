@@ -62,6 +62,8 @@ import ticketTypeDefs from './modules/ticket/ticket.typeDefs.js';
 import ticketResolvers from './modules/ticket/ticket.resolvers.js';
 import contactMessageTypeDefs from './modules/contactMessage/contactMessage.typeDefs.js';
 import contactMessageResolvers from './modules/contactMessage/contactMessage.resolvers.js';
+import sportTypeDefs from './modules/sport/sport.typeDefs.js';
+import sportResolvers from './modules/sport/sport.resolvers.js';
 const JSONScalar = new GraphQLScalarType({
     name: 'JSON',
     description: 'The JSON scalar type represents JSON objects',
@@ -112,6 +114,7 @@ export const schema = makeExecutableSchema({
         memberNotificationTypeDefs,
         ticketTypeDefs,
         contactMessageTypeDefs,
+        sportTypeDefs,
     ],
     resolvers: [
         { JSON: JSONScalar },
@@ -146,6 +149,7 @@ export const schema = makeExecutableSchema({
         memberNotificationResolvers,
         ticketResolvers,
         contactMessageResolvers,
+        sportResolvers,
     ],
 });
 //# sourceMappingURL=schema.js.map

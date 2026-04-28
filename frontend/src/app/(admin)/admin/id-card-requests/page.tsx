@@ -171,6 +171,7 @@ export default function IDCardRequestsPage() {
   const [pdfExport, setPdfExport] = useState<{ member: Member; photoUrl: string } | null>(null)
   const [pdfWorking, setPdfWorking] = useState(false)
   const exportPosition = useMemberPosition(pdfExport?.member.id)
+  const previewPosition = useMemberPosition(previewModal?.memberId?.id)
 
   const setField = (f: keyof FilterState, v: string) => setFilter((p) => ({ ...p, [f]: v }))
   const hasActiveFilters = Object.values(appliedFilter).some(Boolean)
@@ -555,62 +556,24 @@ export default function IDCardRequestsPage() {
       {/* Card Preview Modal */}
       <Modal isOpen={!!previewModal} onClose={() => setPreviewModal(null)} title="ID Card Preview" size="lg">
         {previewModal && (() => {
-          const hasFront = !!previewModal.generatedCardFront
-          const hasBack = !!previewModal.generatedCardBack
-          if (hasFront || hasBack) {
-            return (
-              <div className="space-y-3">
-                <p className="text-xs text-gray-500">
-                  Showing the card exactly as submitted by the member.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-5 items-center justify-center py-2 overflow-x-auto">
-                  {hasFront && (
-                    <div className="shrink-0">
-                      <p className="text-xs text-gray-400 text-center mb-2">Front</p>
-                      <img
-                        src={buildImageUrl(previewModal.generatedCardFront)}
-                        alt="ID Card Front"
-                        style={{ width: 336, height: 212, borderRadius: 7, boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}
-                      />
-                    </div>
-                  )}
-                  {hasBack && (
-                    <div className="shrink-0">
-                      <p className="text-xs text-gray-400 text-center mb-2">Back</p>
-                      <img
-                        src={buildImageUrl(previewModal.generatedCardBack)}
-                        alt="ID Card Back"
-                        style={{ width: 336, height: 212, borderRadius: 7, boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          }
-          // Fallback: live render using the preview components
           const m = previewModal.memberId
           if (!m) return <p className="text-sm text-gray-500 text-center py-6">No preview available for this request.</p>
           const liveCardMember = buildMemberForIdCardPreview(m)
           const livePhotoUrl = resolvePhotoSrc(previewModal.photo)
           return (
-            <div className="space-y-3">
-              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                Stored card images not found — showing live render from current settings.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-5 items-center justify-center py-2 overflow-x-auto">
-                <div className="shrink-0">
-                  <p className="text-xs text-gray-400 text-center mb-2">Front</p>
-                  <IDCardFrontPreview
-                    member={liveCardMember}
-                    photoUrl={livePhotoUrl || undefined}
-                    settings={previewSettings}
-                  />
-                </div>
-                <div className="shrink-0">
-                  <p className="text-xs text-gray-400 text-center mb-2">Back</p>
-                  <IDCardBackPreview member={liveCardMember} settings={previewSettings} />
-                </div>
+            <div className="flex flex-col sm:flex-row gap-5 items-center justify-center py-2 overflow-x-auto">
+              <div className="shrink-0">
+                <p className="text-xs text-gray-400 text-center mb-2">Front</p>
+                <IDCardFrontPreview
+                  member={liveCardMember}
+                  photoUrl={livePhotoUrl || undefined}
+                  settings={previewSettings}
+                  position={previewPosition || undefined}
+                />
+              </div>
+              <div className="shrink-0">
+                <p className="text-xs text-gray-400 text-center mb-2">Back</p>
+                <IDCardBackPreview member={liveCardMember} settings={previewSettings} />
               </div>
             </div>
           )

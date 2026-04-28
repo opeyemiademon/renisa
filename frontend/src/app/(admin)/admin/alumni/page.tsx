@@ -9,7 +9,7 @@ import { Button } from '@/components/shared/Button'
 import { SearchBar } from '@/components/shared/SearchBar'
 import { Select } from '@/components/shared/Select'
 import { buildImageUrl, formatDate, downloadCSV } from '@/lib/utils'
-import { NIGERIAN_STATES, SPORTS } from '@/lib/nigerianStates'
+import { NIGERIAN_STATES, useSports } from '@/lib/nigerianStates'
 import toast from 'react-hot-toast'
 
 export default function AlumniPage() {
@@ -24,6 +24,7 @@ export default function AlumniPage() {
   })
 
   const rawAlumni = (data || []) as any[]
+  const sports = useSports()
 
   const filteredData = useMemo(() => {
     let rows = rawAlumni as any[]
@@ -49,7 +50,7 @@ export default function AlumniPage() {
 
   const sportOptions = [
     { value: '', label: 'All Sports' },
-    ...SPORTS.map((s) => ({ value: s, label: s })),
+    ...sports.map((s) => ({ value: s, label: s })),
   ]
 
   const handleExport = () => {

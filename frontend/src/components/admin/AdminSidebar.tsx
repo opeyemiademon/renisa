@@ -74,6 +74,7 @@ const navItems: NavItem[] = [
       { label: 'Events', href: '/admin/events', icon: Calendar },
       { label: 'Gallery', href: '/admin/gallery', icon: Image },
       { label: 'CMS', href: '/admin/website', icon: FileText },
+      { label: 'Sports List', href: '/admin/sports', icon: Trophy },
     ],
   },
   { label: 'Communications', href: '/admin/communications', icon: MessageSquare },
