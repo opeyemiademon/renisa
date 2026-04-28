@@ -31,7 +31,7 @@ import { Input } from '@/components/shared/Input'
 import { buildImageUrl, formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-/** Safely resolve a photo src that may be a base64 dataURL, a full URL, or a relative path. */
+
 function resolvePhotoSrc(photo?: string | null): string {
   if (!photo) return ''
   if (photo.startsWith('data:') || photo.startsWith('http')) return photo
