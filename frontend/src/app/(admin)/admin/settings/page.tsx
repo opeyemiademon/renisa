@@ -10,7 +10,6 @@ import { Modal } from '@/components/shared/Modal'
 import { ConfirmModal } from '@/components/shared/ConfirmModal'
 import { Badge } from '@/components/shared/Badge'
 import { useAppSelector } from '@/hooks/redux'
-import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import graphqlClient from '@/lib/api_services/graphqlClient'
 
@@ -78,7 +77,7 @@ export default function SettingsPage() {
   const { data: admins, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: getAdminUsers,
-    enabled: adminUser?.role === 'super_admin',
+    enabled: adminUser?.role === 'superadmin',
   })
 
   const createMutation = useMutation({
@@ -184,7 +183,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Admin Users (Super Admin only) */}
-      {adminUser?.role === 'super_admin' && (
+      {adminUser?.role === 'superadmin' && (
         <div className="bg-white rounded-xl border border-gray-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div className="flex items-center gap-3">
