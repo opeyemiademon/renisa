@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Camera, User } from 'lucide-react'
 import Link from 'next/link'
 import { getLeadershipMember, updateLeadershipMember, getLeadershipGroups } from '@/lib/api_services/leadershipApiServices'
+import { uploadFile } from '@/lib/api_services/uploadApiService'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
+import { PhotoCaptureModal } from '@/components/shared/PhotoCaptureModal'
 import { PageLoader } from '@/components/shared/Spinner'
 import { NIGERIAN_STATES } from '@/lib/nigerianStates'
 import { buildImageUrl } from '@/lib/utils'
@@ -25,6 +27,15 @@ export default function EditLeadershipMemberPage() {
     order: string; isActive: boolean; isCurrent: boolean; tenure: string;
   } | null>(null)
   const [linkedMember, setLinkedMember] = useState<any>(null)
+  const [isNonMember, setIsNonMember] = useState(false)
+
+  // Non-member fields
+  const [nonMemberName, setNonMemberName] = useState('')
+  const [nonMemberBio, setNonMemberBio] = useState('')
+  const [nonMemberPhoto, setNonMemberPhoto] = useState('')
+  const [photoPreview, setPhotoPreview] = useState('')
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
 
   const setField = (f: string, v: any) => setForm((p: any) => ({ ...p, [f]: v }))
 
@@ -39,12 +50,14 @@ export default function EditLeadershipMemberPage() {
     enabled: !!id,
   })
 
-  // Populate form when data loads (avoids deprecated onSuccess)
   useEffect(() => {
     if (!memberData) return
     const data = memberData as any
     const groupId = data.groupId?.id || data.group?.id || (typeof data.groupId === 'string' ? data.groupId : '') || ''
-    setLinkedMember(data.memberId || data.member || null)
+    const linked = data.memberId || data.member || null
+    const hasLinkedMember = linked && typeof linked === 'object' && linked.id
+    setLinkedMember(hasLinkedMember ? linked : null)
+    setIsNonMember(!hasLinkedMember)
     setForm({
       groupId,
       position: data.position || data.title || '',
@@ -54,7 +67,26 @@ export default function EditLeadershipMemberPage() {
       isCurrent: data.isCurrent !== false,
       tenure: data.tenure || '',
     })
+    if (!hasLinkedMember) {
+      setNonMemberName(data.nonMemberName || '')
+      setNonMemberBio(data.nonMemberBio || '')
+      setNonMemberPhoto(data.nonMemberPhoto || '')
+      if (data.nonMemberPhoto) setPhotoPreview(buildImageUrl(data.nonMemberPhoto))
+    }
   }, [memberData])
+
+  const handlePhotoCapture = async (file: File) => {
+    setPhotoPreview(URL.createObjectURL(file))
+    setUploadingPhoto(true)
+    try {
+      const res = await uploadFile(file, undefined, 'leadership')
+      setNonMemberPhoto(res.url)
+    } catch {
+      toast.error('Photo upload failed')
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: () => updateLeadershipMember(id, {
@@ -65,6 +97,11 @@ export default function EditLeadershipMemberPage() {
       isActive: form!.isActive,
       isCurrent: form!.isCurrent,
       tenure: form!.tenure || undefined,
+      ...(isNonMember ? {
+        nonMemberName,
+        nonMemberPhoto: nonMemberPhoto || undefined,
+        nonMemberBio: nonMemberBio || undefined,
+      } : {}),
     }),
     onSuccess: () => {
       toast.success('Leadership member updated')
@@ -80,6 +117,7 @@ export default function EditLeadershipMemberPage() {
   const groupOptions = (groups || []).map((g: any) => ({ value: g.id, label: g.name }))
   const selectedGroup = groups?.find((g: any) => g.id === form.groupId)
   const isStateGroup = selectedGroup?.slug === 'state-executives'
+  const isDirectorate = selectedGroup?.slug === 'directorate'
 
   const stateOptions = [
     { value: '', label: 'Select state' },
@@ -97,8 +135,8 @@ export default function EditLeadershipMemberPage() {
         <h2 className="text-xl font-semibold text-gray-900">Edit Leadership Member</h2>
       </div>
 
-      {/* Linked member — read-only */}
-      {memberObj && (
+      {/* Linked member — read-only (member entry) */}
+      {!isNonMember && memberObj && (
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Linked Member</p>
           <div className="flex items-center gap-3">
@@ -121,6 +159,57 @@ export default function EditLeadershipMemberPage() {
         </div>
       )}
 
+      {/* Non-member details — editable */}
+      {isDirectorate && isNonMember && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900">Non-member Details</h3>
+            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Non-member</span>
+          </div>
+
+          {/* Photo */}
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Photo</p>
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-8 h-8 text-gray-300" />
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowPhotoModal(true)}
+                loading={uploadingPhoto}
+                iconLeft={<Camera className="w-4 h-4" />}
+              >
+                {photoPreview ? 'Change Photo' : 'Capture or Upload Photo'}
+              </Button>
+            </div>
+          </div>
+
+          <Input
+            label="Full Name *"
+            placeholder="e.g. Dr. John Doe"
+            value={nonMemberName}
+            onChange={(e) => setNonMemberName(e.target.value)}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+            <textarea
+              rows={4}
+              placeholder="Brief biography or description..."
+              value={nonMemberBio}
+              onChange={(e) => setNonMemberBio(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Role & group fields */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h3 className="font-semibold text-gray-900">Role Information</h3>
@@ -136,7 +225,7 @@ export default function EditLeadershipMemberPage() {
           label="Position / Role"
           value={form.position}
           onChange={(e) => setField('position', e.target.value)}
-          placeholder="e.g. President"
+          placeholder="e.g. Director"
         />
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -189,11 +278,18 @@ export default function EditLeadershipMemberPage() {
         <Button
           onClick={() => mutation.mutate()}
           loading={mutation.isPending}
-          disabled={!form.position}
+          disabled={!form.position || uploadingPhoto || (isNonMember && !nonMemberName)}
         >
           Save Changes
         </Button>
       </div>
+
+      <PhotoCaptureModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onCapture={handlePhotoCapture}
+        title="Capture Directorate Photo"
+      />
     </div>
   )
 }

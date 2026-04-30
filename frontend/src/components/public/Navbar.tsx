@@ -15,6 +15,7 @@ const leadershipLinks = [
 
 const mediaLinks = [
   { label: 'Gallery', href: '/gallery' },
+    { label: 'Video', href: '/videos' },
   { label: 'Event', href: '/events' },
   { label: 'Awardees', href: '/awardees' },
   { label: 'Games', href: '#' }
@@ -26,6 +27,7 @@ const navLinks = [
   { label: 'Members', href: '/members' },
   { label: 'Leadership', href: '/leadership', children: leadershipLinks },
   { label: 'Donation', href: '/donation' },
+  { label: 'Contact', href: '/contact' },
   { label: 'More', href: '/gallery', children: mediaLinks },
 ]
 

@@ -12,21 +12,21 @@ const populate = (q: any) =>
 
 const leadershipResolvers = {
   Leadership: {
-    // Derive name and photo from linked member at resolve time
+    // Derive name and photo from linked member or non-member fields
     name: (parent: any) => {
       const m = parent.memberId;
       if (m && typeof m === 'object') return `${m.firstName} ${m.lastName}`;
-      return parent.name || '';
+      return parent.nonMemberName || parent.name || '';
     },
     profilePicture: (parent: any) => {
       const m = parent.memberId;
       if (m && typeof m === 'object') return m.profilePicture || null;
-      return parent.profilePicture || null;
+      return parent.nonMemberPhoto || parent.profilePicture || null;
     },
     photo: (parent: any) => {
       const m = parent.memberId;
       if (m && typeof m === 'object') return m.profilePicture || null;
-      return parent.profilePicture || null;
+      return parent.nonMemberPhoto || parent.profilePicture || null;
     },
     title: (parent: any) => parent.position,
     group: (parent: any) => parent.groupId,
@@ -59,15 +59,21 @@ const leadershipResolvers = {
   Mutation: {
     createLeadership: async (_: any, { data }: { data: any }, context: AuthContext) => {
       requireAdminAuth(context);
+      if (!data.memberId && !data.nonMemberName) {
+        throw new Error('Either a member or a non-member name is required');
+      }
       const doc = await Leadership.create({
         groupId: data.groupId,
-        memberId: data.memberId,
+        memberId: data.memberId || null,
         position: data.position,
         order: data.order ?? 0,
         tenure: data.tenure,
         state: data.state,
         isActive: data.isActive !== false,
         isCurrent: data.isCurrent !== false,
+        nonMemberName: data.nonMemberName,
+        nonMemberPhoto: data.nonMemberPhoto,
+        nonMemberBio: data.nonMemberBio,
         createdBy: context.admin!.id,
       });
       const populated = await populate(Leadership.findById(doc._id));
@@ -84,6 +90,9 @@ const leadershipResolvers = {
       if (data.state !== undefined) update.state = data.state;
       if (data.isActive !== undefined) update.isActive = data.isActive;
       if (data.isCurrent !== undefined) update.isCurrent = data.isCurrent;
+      if (data.nonMemberName !== undefined) update.nonMemberName = data.nonMemberName;
+      if (data.nonMemberPhoto !== undefined) update.nonMemberPhoto = data.nonMemberPhoto;
+      if (data.nonMemberBio !== undefined) update.nonMemberBio = data.nonMemberBio;
       const leadership = await populate(Leadership.findByIdAndUpdate(id, update, { new: true }));
       if (!leadership) throw new Error('Leadership member not found');
       return { success: true, message: 'Leadership member updated', data: leadership };

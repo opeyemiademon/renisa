@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 declare const Leadership: mongoose.Model<{
     isActive: boolean;
-    memberId: mongoose.Types.ObjectId;
     order: number;
     groupId: mongoose.Types.ObjectId;
     position: string;
@@ -9,10 +8,13 @@ declare const Leadership: mongoose.Model<{
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     slug?: string | null | undefined;
+    memberId?: mongoose.Types.ObjectId | null | undefined;
     tenure?: string | null | undefined;
+    nonMemberName?: string | null | undefined;
+    nonMemberPhoto?: string | null | undefined;
+    nonMemberBio?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {}, {}, mongoose.Document<unknown, {}, {
     isActive: boolean;
-    memberId: mongoose.Types.ObjectId;
     order: number;
     groupId: mongoose.Types.ObjectId;
     position: string;
@@ -20,12 +22,15 @@ declare const Leadership: mongoose.Model<{
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     slug?: string | null | undefined;
+    memberId?: mongoose.Types.ObjectId | null | undefined;
     tenure?: string | null | undefined;
+    nonMemberName?: string | null | undefined;
+    nonMemberPhoto?: string | null | undefined;
+    nonMemberBio?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, {}, {
     timestamps: true;
 }> & {
     isActive: boolean;
-    memberId: mongoose.Types.ObjectId;
     order: number;
     groupId: mongoose.Types.ObjectId;
     position: string;
@@ -33,7 +38,11 @@ declare const Leadership: mongoose.Model<{
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     slug?: string | null | undefined;
+    memberId?: mongoose.Types.ObjectId | null | undefined;
     tenure?: string | null | undefined;
+    nonMemberName?: string | null | undefined;
+    nonMemberPhoto?: string | null | undefined;
+    nonMemberBio?: string | null | undefined;
 } & mongoose.DefaultTimestampProps & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -42,7 +51,6 @@ declare const Leadership: mongoose.Model<{
     timestamps: true;
 }, {
     isActive: boolean;
-    memberId: mongoose.Types.ObjectId;
     order: number;
     groupId: mongoose.Types.ObjectId;
     position: string;
@@ -50,10 +58,13 @@ declare const Leadership: mongoose.Model<{
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     slug?: string | null | undefined;
+    memberId?: mongoose.Types.ObjectId | null | undefined;
     tenure?: string | null | undefined;
+    nonMemberName?: string | null | undefined;
+    nonMemberPhoto?: string | null | undefined;
+    nonMemberBio?: string | null | undefined;
 } & mongoose.DefaultTimestampProps, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     isActive: boolean;
-    memberId: mongoose.Types.ObjectId;
     order: number;
     groupId: mongoose.Types.ObjectId;
     position: string;
@@ -61,12 +72,15 @@ declare const Leadership: mongoose.Model<{
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     slug?: string | null | undefined;
+    memberId?: mongoose.Types.ObjectId | null | undefined;
     tenure?: string | null | undefined;
+    nonMemberName?: string | null | undefined;
+    nonMemberPhoto?: string | null | undefined;
+    nonMemberBio?: string | null | undefined;
 } & mongoose.DefaultTimestampProps>, {}, mongoose.MergeType<mongoose.DefaultSchemaOptions, {
     timestamps: true;
 }>> & mongoose.FlatRecord<{
     isActive: boolean;
-    memberId: mongoose.Types.ObjectId;
     order: number;
     groupId: mongoose.Types.ObjectId;
     position: string;
@@ -74,7 +88,11 @@ declare const Leadership: mongoose.Model<{
     state?: string | null | undefined;
     createdBy?: mongoose.Types.ObjectId | null | undefined;
     slug?: string | null | undefined;
+    memberId?: mongoose.Types.ObjectId | null | undefined;
     tenure?: string | null | undefined;
+    nonMemberName?: string | null | undefined;
+    nonMemberPhoto?: string | null | undefined;
+    nonMemberBio?: string | null | undefined;
 } & mongoose.DefaultTimestampProps> & {
     _id: mongoose.Types.ObjectId;
 } & {

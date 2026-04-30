@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, UserPlus, Hash, GraduationCap,
   CreditCard, ListChecks, Vote, Crown, Network, Trophy, Heart,
   IdCard, Settings, Calendar, Image, FileText, MessageSquare, Mail,
-  ChevronDown, LogOut, Banknote, Gift, UserCog, Medal, Bell, LifeBuoy
+  ChevronDown, LogOut, Banknote, Gift, UserCog, Medal, Bell, LifeBuoy, Film
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -73,6 +73,7 @@ const navItems: NavItem[] = [
       { label: 'Hero Slides', href: '/admin/hero-slides', icon: Image },
       { label: 'Events', href: '/admin/events', icon: Calendar },
       { label: 'Gallery', href: '/admin/gallery', icon: Image },
+      { label: 'Videos', href: '/admin/videos', icon: Film },
       { label: 'CMS', href: '/admin/website', icon: FileText },
       { label: 'Sports List', href: '/admin/sports', icon: Trophy },
     ],

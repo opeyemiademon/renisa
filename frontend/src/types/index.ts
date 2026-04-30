@@ -15,7 +15,7 @@ export type EventStatus = 'draft' | 'published' | 'archived'
 export type CommunicationType = 'email' | 'sms' | 'both'
 export type DonationMode = 'physical' | 'monetary' | 'both'
 export type DonationStatus = 'pending' | 'acknowledged' | 'verified'
-export type UserRole = 'admin' | 'executive' | 'super_admin'
+export type UserRole = 'superadmin' | 'admin' | 'content_manager'
 
 // ==================== Member ====================
 
@@ -212,12 +212,35 @@ export interface LeadershipMember {
   tenureStart?: string
   tenureEnd?: string
   isCurrent: boolean
+  nonMemberName?: string
+  nonMemberPhoto?: string
+  nonMemberBio?: string
   socialLinks?: {
     twitter?: string
     linkedin?: string
     facebook?: string
     instagram?: string
   }
+  createdAt: string
+  updatedAt: string
+}
+
+// ==================== Video ====================
+
+export type VideoStatus = 'draft' | 'published' | 'archived'
+
+export interface Video {
+  id: string
+  title: string
+  slug: string
+  description?: string
+  videoUrl: string
+  thumbnailUrl?: string
+  category?: string
+  status: VideoStatus
+  isFeatured: boolean
+  views: number
+  publishedAt?: string
   createdAt: string
   updatedAt: string
 }

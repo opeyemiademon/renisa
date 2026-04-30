@@ -5,10 +5,10 @@ const leadershipTypeDefs = gql`
     id: ID!
     groupId: LeadershipGroup!
     group: LeadershipGroup
-    memberId: Member!
+    memberId: Member
     member: Member
     slug: String
-    # Derived at resolve-time from member
+    # Derived at resolve-time from member or non-member fields
     name: String!
     profilePicture: String
     photo: String
@@ -19,6 +19,9 @@ const leadershipTypeDefs = gql`
     state: String
     isActive: Boolean!
     isCurrent: Boolean!
+    nonMemberName: String
+    nonMemberPhoto: String
+    nonMemberBio: String
     createdBy: AdminUser
     createdAt: String!
     updatedAt: String!
@@ -32,13 +35,16 @@ const leadershipTypeDefs = gql`
 
   input CreateLeadershipInput {
     groupId: ID!
-    memberId: ID!
+    memberId: ID
     position: String!
     order: Int
     tenure: String
     state: String
     isActive: Boolean
     isCurrent: Boolean
+    nonMemberName: String
+    nonMemberPhoto: String
+    nonMemberBio: String
   }
 
   input UpdateLeadershipInput {
@@ -49,6 +55,9 @@ const leadershipTypeDefs = gql`
     state: String
     isActive: Boolean
     isCurrent: Boolean
+    nonMemberName: String
+    nonMemberPhoto: String
+    nonMemberBio: String
   }
 
   input ReorderLeadershipInput {

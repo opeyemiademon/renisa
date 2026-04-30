@@ -8,6 +8,7 @@ const MEMBER_FIELDS = `
   memberId { id firstName lastName profilePicture memberNumber sport state bio }
   name profilePicture photo title position order
   state tenure isCurrent isActive
+  nonMemberName nonMemberPhoto nonMemberBio
   createdAt updatedAt
 `
 

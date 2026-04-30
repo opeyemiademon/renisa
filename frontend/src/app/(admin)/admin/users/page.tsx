@@ -8,10 +8,13 @@ import { getAllUsers, deleteAdminUser, updateAdminUser } from '@/lib/api_service
 import { Button } from '@/components/shared/Button'
 import toast from 'react-hot-toast'
 import { formatDate } from '@/lib/utils'
+import { useAppSelector } from '@/hooks/redux'
 
 export default function UsersPage() {
   const queryClient = useQueryClient()
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const { adminUser } = useAppSelector((s) => s.auth)
+  const isSuperAdmin = adminUser?.role === 'superadmin'
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -62,9 +65,11 @@ export default function UsersPage() {
           <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
           <p className="text-gray-500 mt-1">Manage admin users and their permissions</p>
         </div>
-        <Link href="/admin/users/add">
-          <Button iconLeft={<Plus className="w-4 h-4" />}>Add User</Button>
-        </Link>
+        {isSuperAdmin && (
+          <Link href="/admin/users/add">
+            <Button iconLeft={<Plus className="w-4 h-4" />}>Add User</Button>
+          </Link>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -115,11 +120,12 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
-                        onClick={() => toggleStatusMutation.mutate({ id: user.id, isActive: !user.isActive })}
+                        disabled={!isSuperAdmin}
+                        onClick={() => isSuperAdmin && toggleStatusMutation.mutate({ id: user.id, isActive: !user.isActive })}
                         className={`px-2 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full ${
                           user.isActive
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                            ? 'bg-green-100 text-green-800' + (isSuperAdmin ? ' hover:bg-green-200' : ' cursor-default')
+                            : 'bg-red-100 text-red-800' + (isSuperAdmin ? ' hover:bg-red-200' : ' cursor-default')
                         }`}
                       >
                         {user.isActive ? (
@@ -137,19 +143,23 @@ export default function UsersPage() {
                       {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link href={`/admin/users/edit/${user.id}`}>
-                          <button className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50">
-                            <Edit className="w-4 h-4" />
+                      {isSuperAdmin ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/admin/users/edit/${user.id}`}>
+                            <button className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50">
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          </Link>
+                          <button
+                            onClick={() => setDeleteId(user.id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
-                        </Link>
-                        <button
-                          onClick={() => setDeleteId(user.id)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                   </tr>
                 ))

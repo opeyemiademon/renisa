@@ -55,14 +55,16 @@ export default function AboutPage() {
   return (
     <div className="bg-white">
       {/* Hero — background image with dark green overlay */}
-      <section className="relative py-28 overflow-hidden">
-        {/* Background image */}
-        <img
-          src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80&auto=format&fit=crop"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+      <section className="relative py-28">
+        {/* Background image — clipped to section bounds without hiding section content */}
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80&auto=format&fit=crop"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </div>
         {/* Dark green overlay — two layers for depth */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0d4a25]/95 via-[#1a6b3a]/85 to-[#0d4a25]/90" />
         {/* Subtle gold accent bar at top */}
@@ -77,7 +79,7 @@ export default function AboutPage() {
           </h1>
           {aboutMeta.content ? (
             <div
-              className="text-white/85 max-w-2xl mx-auto text-lg leading-relaxed prose prose-invert"
+              className="text-white/85 max-w-2xl mx-auto text-lg leading-relaxed prose prose-invert w-full overflow-hidden"
               dangerouslySetInnerHTML={{ __html: aboutMeta.content }}
             />
           ) : (
@@ -158,29 +160,26 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-start">
 
             {/* Left — image */}
-            <div className="relative">
+            <div className="relative pb-10">
               <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
                 <img
                   src={historyMeta.image ? buildImageUrl(historyMeta.image) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80&auto=format&fit=crop'}
                   alt="Nigerian sports heritage"
                   className="w-full h-full object-cover"
                 />
-                {/* Subtle green tint overlay */}
                 <div className="absolute inset-0 bg-[#0d4a25]/20" />
               </div>
-              {/* Decorative gold badge */}
-              <div className="absolute -bottom-5 -right-5 w-28 h-28 rounded-2xl bg-[#0d4a25] shadow-xl flex flex-col items-center justify-center">
-                <span className="text-[#d4a017] text-3xl font-extrabold font-serif leading-none">20+</span>
+              <div className="absolute -bottom-2 -right-2 sm:-bottom-5 sm:-right-5 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#0d4a25] shadow-xl flex flex-col items-center justify-center">
+                <span className="text-[#d4a017] text-3xl font-extrabold font-serif leading-none">7</span>
                 <span className="text-white/80 text-xs mt-1 text-center leading-tight px-2">Years of Legacy</span>
               </div>
-              {/* Gold corner accents */}
               <div className="absolute -top-3 -left-3 w-12 h-12 rounded-tl-2xl border-t-2 border-l-2 border-[#d4a017]" />
             </div>
 
             {/* Right — content */}
-            <div className="min-w-0">
+            <div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-[#1a6b3a] rounded-xl">
+                <div className="p-3 bg-[#1a6b3a] rounded-xl shrink-0">
                   <History className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 font-serif">Our History</h2>
@@ -188,7 +187,11 @@ export default function AboutPage() {
 
               {historyMeta.content ? (
                 <div
-                  className="prose prose-lg max-w-none text-gray-600 overflow-hidden wrap-break-word"
+                  className={[
+                    'prose prose-lg max-w-none text-gray-600',
+                    '**:max-w-full [&_img]:w-full',
+                    'wrap-break-word',
+                  ].join(' ')}
                   dangerouslySetInnerHTML={{ __html: historyMeta.content }}
                 />
               ) : (

@@ -101,7 +101,7 @@ export function Footer() {
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Our Executives', href: '/executives' },
                 { label: 'Leadership', href: '/leadership' },
-                { label: 'Awardees', href: '/awardees' },
+                { label: 'Contact Us', href: '/contact' },
                 { label: 'Donate', href: '/donation' }
               ].map((link) => (
                 <li key={link.href}>
@@ -149,9 +149,9 @@ export function Footer() {
             reserved.
           </p>
           <div className="flex gap-4">
-            <Link href="/contact" className="text-white/50 hover:text-white/80 text-xs transition-colors">
+         {/*    <Link href="/contact" className="text-white/50 hover:text-white/80 text-xs transition-colors">
               Contact Us
-            </Link>
+            </Link> */}
 
             <Link href="/privacy" className="text-white/50 hover:text-white/80 text-xs transition-colors">
               Privacy Policy

@@ -121,6 +121,7 @@ export default function HomePage() {
       position: e.title || e.position,
       sport: e.sport || e.member?.sport || sportMid || '',
       photo: e.photo || e.profilePicture,
+      mid:e.member?.id
     }
   })
   const featuredEvents = (eventsData || [])
@@ -166,7 +167,6 @@ export default function HomePage() {
         { label: 'Gallery photos', value: '—', icon: <Trophy className="w-5 h-5" /> },
         { label: 'Honours recorded', value: '—', icon: <Star className="w-5 h-5" /> },
       ]
-
 
   return (
     <div className="bg-white">
@@ -521,7 +521,7 @@ export default function HomePage() {
               <p className="col-span-full text-center text-white/60 py-8">Leadership roster will appear here once published.</p>
             )}
             {displayExecutives.map((exec, i) => (
-              <div key={exec.id} className="group text-center">
+              <a href={`/members/${exec.mid}`} key={exec.id} className="group text-center">
                 {/* Photo ring */}
                 <div className="relative w-32 h-32 sm:w-36 sm:h-36 mx-auto mb-4">
                   {/* Animated outer ring */}
@@ -563,7 +563,7 @@ export default function HomePage() {
                 {exec.sport && (
                   <p className="text-white/35 text-xs mt-0.5">{exec.sport}</p>
                 )}
-              </div>
+              </a>
             ))}
           </div>
 
