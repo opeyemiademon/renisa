@@ -84,4 +84,4 @@ jobs:
           script: |
             cd /var/www/renisa/backend
             sudo systemctl restart nginx
-            pm2 restart renisa-back
+            pm2 restart renisa-bk

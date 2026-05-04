@@ -8,6 +8,7 @@ import {
   ArrowRight, Trophy, Users, Calendar, Star,
   ChevronRight, Heart, ChevronLeft, Medal, Quote,
 } from 'lucide-react'
+
 import { getAllExecutives } from '@/lib/api_services/executiveApiServices'
 import { getFeaturedEvents } from '@/lib/api_services/eventApiServices'
 import { getGallery } from '@/lib/api_services/galleryApiServices'
@@ -16,6 +17,7 @@ import { getHeroSlides } from '@/lib/api_services/heroSlideApiServices'
 import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
 import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
 import { formatDate, buildImageUrl } from '@/lib/utils'
+import { cleanHtml } from '@/components/public/Navbar'
 
 /** Shown only when no hero slides exist and no CMS hero is configured. */
 const PLACEHOLDER_HERO_SLIDE = {
@@ -167,6 +169,8 @@ export default function HomePage() {
         { label: 'Gallery photos', value: '—', icon: <Trophy className="w-5 h-5" /> },
         { label: 'Honours recorded', value: '—', icon: <Star className="w-5 h-5" /> },
       ]
+
+
 
   return (
     <div className="bg-white">
@@ -354,12 +358,12 @@ export default function HomePage() {
               {aboutMeta.content ? (
                 <div
                   className="prose prose-gray max-w-none mb-7 text-base overflow-hidden wrap-break-word"
-                  dangerouslySetInnerHTML={{ __html: aboutMeta.content }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(aboutMeta.content) }}
                 />
               ) : (
                 <>
                   <p className="text-gray-600 leading-relaxed mb-4 text-base">
-                    RENISA is a national body established to promote the welfare, unity,
+                    RENISA  is a national body established to promote the welfare, unity,
                     physical well-being, and continued engagement of retired Nigerian athletes
                     who have served the nation with distinction at national and international levels.
                   </p>
@@ -401,86 +405,90 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════
           PRESIDENT'S WELCOME ADDRESS PREVIEW
       ═══════════════════════════════════════════════════════ */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+  <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="grid lg:grid-cols-2 gap-12 items-center">
 
-            {/* Photo + name card */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="relative">
-                {/* Large photo */}
-                <div className="w-72 h-80 rounded-2xl overflow-hidden shadow-2xl bg-[#1a6b3a] flex items-center justify-center">
-                  {presidentExec?.photo ? (
-                    <img
-                      src={presidentExec.photo.startsWith('https') ? presidentExec.photo : buildImageUrl(presidentExec.photo)}
-                      alt={presidentExec.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-[#EBD279] text-6xl font-bold">{presidentExec?.name?.charAt(0) || 'R'}</span>
-                  )}
-                </div>
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[#0d4a25] text-white rounded-xl px-6 py-3 shadow-xl whitespace-nowrap text-center min-w-[200px]">
-                  <p className="font-bold text-sm font-serif">{presidentExec?.name || 'National President'}</p>
-                  <p className="text-[#EBD279] text-[10px] uppercase tracking-widest mt-0.5">{presidentExec?.position || 'Leadership'}</p>
-                </div>
-                {/* Gold accent ring */}
-                <div className="absolute -top-3 -left-3 w-16 h-16 rounded-full border-2 border-[#EBD279] opacity-40" />
-                <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-full bg-[#EBD279]/20 border border-[#EBD279]" />
-              </div>
-            </div>
-
-            {/* Quote preview */}
-            <div className="lg:pl-4 mt-8 lg:mt-0 min-w-0">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-[#EBD279]" />
-                <p className="text-[#d4a017] font-semibold text-sm uppercase tracking-widest">
-                  President's Message
-                </p>
-              </div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 font-serif leading-tight mb-6"
-                style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
-                A Welcome Address from the National President
-              </h2>
-
-              {/* Pull quote */}
-              <div className="relative pl-5 border-l-4 border-[#EBD279] mb-6">
-                <Quote className="absolute -top-1 -left-1 w-4 h-4 text-[#d4a017]" />
-                <p className="text-gray-500 italic text-lg leading-relaxed">
-                  &ldquo;{welcomeMeta.quote || 'Retirement from active competition does not mean retirement from impact.'}&rdquo;
-                </p>
-              </div>
-
-              {welcomeMeta.preview ? (
-                <div
-                  className="text-gray-600 leading-relaxed mb-8 prose prose-sm max-w-none overflow-hidden wrap-break-word"
-                  dangerouslySetInnerHTML={{ __html: welcomeMeta.preview }}
-                />
-              ) : (
-                <>
-                  <p className="text-gray-600 leading-relaxed mb-3">
-                    On behalf of the Board of Trustees, the National Executive Council, and the entire membership
-                    of RENISA, I am delighted to extend a warm welcome to you athletes, supporters, partners,
-                    and friends who share in our collective passion for Nigerian sports excellence.
-                  </p>
-                  <p className="text-gray-600 leading-relaxed mb-8">
-                    RENISA was founded on the belief that those who gave their youth, health, and talent to
-                    represent Nigeria on the world stage deserve to be celebrated and remembered long after their
-                    active careers have ended…
-                  </p>
-                </>
-              )}
-
-              <Link href="/welcome-address">
-                <button className="bg-[#0d4a25] hover:bg-[#1a6b3a] text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center gap-2 shadow-md">
-                  Read Full Address <ChevronRight className="w-4 h-4" />
-                </button>
-              </Link>
-            </div>
-
+      {/* Photo + name card */}
+      <div className="flex justify-center lg:justify-end">
+        <div className="relative">
+          {/* Large photo */}
+          <div className="w-72 h-80 rounded-2xl overflow-hidden shadow-2xl bg-[#1a6b3a] flex items-center justify-center">
+            {presidentExec?.photo? (
+              <img
+                src={presidentExec.photo.startsWith('https')? presidentExec.photo : buildImageUrl(presidentExec.photo)}
+                alt={presidentExec.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-[#EBD279] text-6xl font-bold">{presidentExec?.name?.charAt(0) || 'R'}</span>
+            )}
           </div>
+          {/* FIX 1: Removed whitespace-nowrap, added break-words and max-w-full */}
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[#0d4a25] text-white rounded-xl px-6 py-3 shadow-xl text-center min-w-[200px] max-w-[280px] break-words">
+            <p className="font-bold text-sm font-serif">{presidentExec?.name || 'National President'}</p>
+            <p className="text-[#EBD279] text-[10px] uppercase tracking-widest mt-0.5 break-words">{presidentExec?.position || 'Leadership'}</p>
+          </div>
+          {/* Gold accent ring */}
+          <div className="absolute -top-3 -left-3 w-16 h-16 rounded-full border-2 border-[#EBD279] opacity-40" />
+          <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-full bg-[#EBD279]/20 border border-[#EBD279]" />
         </div>
-      </section>
+      </div>
+
+      {/* Quote preview - FIX 2: min-w-0 already here, good */}
+      <div className="lg:pl-4 mt-8 lg:mt-0 min-w-0">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px w-10 bg-[#EBD279]" />
+          <p className="text-[#d4a017] font-semibold text-sm uppercase tracking-widest">
+            President's Message
+          </p>
+        </div>
+        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 font-serif leading-tight mb-6 break-words"
+          style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
+          A Welcome Address from the National President
+        </h2>
+
+        {/* Pull quote */}
+        <div className="relative pl-5 border-l-4 border-[#EBD279] mb-6">
+          <Quote className="absolute -top-1 -left-1 w-4 h-4 text-[#d4a017]" />
+          <p className="text-gray-500 italic text-lg leading-relaxed break-words">
+            &ldquo;{cleanHtml(welcomeMeta.quote) || 'Retirement from active competition does not mean retirement from impact.'}&rdquo;
+          </p>
+        </div>
+
+      {welcomeMeta.preview? (
+  <div className=" w-full h-48 p-4 overflow-hidden ">
+    <div
+      className="text-gray-600 leading-relaxed h-full overflow-y-auto pr-2 break-words"
+      dangerouslySetInnerHTML={{ __html: cleanHtml(welcomeMeta.preview) }}
+    />
+  </div>
+) : (
+          <>
+            <p className="text-gray-600 leading-relaxed mb-3 break-words">
+              On behalf of the Board of Trustees, the National Executive Council, and the entire membership
+              of RENISA, I am delighted to extend a warm welcome to you athletes, supporters, partners,
+              and friends who share in our collective passion for Nigerian sports excellence.
+            </p>
+            <p className="text-gray-600 leading-relaxed mb-8 break-words">
+              RENISA was founded on the belief that those who gave their youth, health, and talent to
+              represent Nigeria on the world stage deserve to be celebrated and remembered long after their
+              active careers have ended…
+            </p>
+          </>
+        )}
+
+        <Link href="/welcome-address">
+          <button className="bg-[#0d4a25] hover:bg-[#1a6b3a] text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center gap-2 shadow-md">
+            Read Full Address <ChevronRight className="w-4 h-4" />
+          </button>
+        </Link>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
       {/* ═══════════════════════════════════════════════════════
           NATIONAL EXECUTIVE COUNCIL — New premium style

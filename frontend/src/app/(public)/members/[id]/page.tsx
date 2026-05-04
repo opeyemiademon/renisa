@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, MapPin, Calendar, Hash, Medal } from 'lucide-react'
 import { getPublicMemberProfile } from '@/lib/api_services/memberApiServices'
 import { buildImageUrl, formatDate, formatDateOnly } from '@/lib/utils'
+import { cleanHtml } from '@/components/public/Navbar'
 
 export default function MemberProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -133,7 +134,7 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
               {member.bio ? (
                 <div
                   className="prose prose-sm sm:prose max-w-none text-gray-600 leading-relaxed wrap-break-word [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-primary [&_a]:underline"
-                  dangerouslySetInnerHTML={{ __html: member.bio }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(member.bio) }}
                 />
               ) : (
                 <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8 text-center">

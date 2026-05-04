@@ -5,6 +5,7 @@ import { Trophy, Target, Eye, History, Users, Star, Calendar, Medal, HeartHandsh
 import { getPublicSiteStats } from '@/lib/api_services/publicSiteApiServices'
 import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
 import { buildImageUrl } from '@/lib/utils'
+import { cleanHtml } from '@/components/public/Navbar'
 
 export default function AboutPage() {
   const { data: siteStats } = useQuery({
@@ -80,7 +81,7 @@ export default function AboutPage() {
           {aboutMeta.content ? (
             <div
               className="text-white/85 max-w-2xl mx-auto text-lg leading-relaxed prose prose-invert w-full overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: aboutMeta.content }}
+              dangerouslySetInnerHTML={{ __html: cleanHtml(aboutMeta.content) }}
             />
           ) : (
             <p className="text-white/85 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -120,7 +121,7 @@ export default function AboutPage() {
               {missionMeta.mission ? (
                 <div
                   className="text-gray-600 leading-relaxed prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: missionMeta.mission }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(missionMeta.mission) }}
                 />
               ) : (
                 <p className="text-gray-600 leading-relaxed">
@@ -140,7 +141,7 @@ export default function AboutPage() {
               {missionMeta.vision ? (
                 <div
                   className="text-gray-600 leading-relaxed prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: missionMeta.vision }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(missionMeta.vision) }}
                 />
               ) : (
                 <p className="text-gray-600 leading-relaxed">
@@ -192,7 +193,7 @@ export default function AboutPage() {
                     '**:max-w-full [&_img]:w-full',
                     'wrap-break-word',
                   ].join(' ')}
-                  dangerouslySetInnerHTML={{ __html: historyMeta.content }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(historyMeta.content) }}
                 />
               ) : (
                 <div className="prose prose-lg max-w-none text-gray-600">

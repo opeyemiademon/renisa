@@ -8,6 +8,7 @@ import type { Executive } from '@/types'
 import { getSiteContent } from '@/lib/api_services/siteContentApiServices'
 import { buildImageUrl } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
+import { cleanHtml } from '@/components/public/Navbar'
 
 export default function WelcomeAddressPage() {
   const { data: executives, isLoading: execLoading } = useQuery({
@@ -103,7 +104,7 @@ export default function WelcomeAddressPage() {
           </div>
 
           {bodyHtml.includes('<') ? (
-            <div className="prose prose-lg max-w-none rich-text text-gray-600 overflow-hidden wrap-break-word" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+            <div className="prose prose-lg max-w-none rich-text text-gray-600 overflow-hidden wrap-break-word" dangerouslySetInnerHTML={{ __html: cleanHtml(bodyHtml) }} />
           ) : paragraphs?.length ? (
             <div className="prose prose-lg max-w-none space-y-6 overflow-hidden wrap-break-word">
               {paragraphs.map((para, i) => (
@@ -113,7 +114,7 @@ export default function WelcomeAddressPage() {
               ))}
             </div>
           ) : bodyHtml ? (
-            <div className="prose prose-lg max-w-none space-y-6 text-gray-600 whitespace-pre-wrap overflow-hidden wrap-break-word">{bodyHtml}</div>
+            <div className="prose prose-lg max-w-none space-y-6 text-gray-600 whitespace-pre-wrap overflow-hidden wrap-break-word">{cleanHtml(bodyHtml)}</div>
           ) : (
             <p className="text-gray-500 text-center py-8">
               The full welcome address will appear here once it is published in the admin site content (section{' '}

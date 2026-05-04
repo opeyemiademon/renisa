@@ -7,6 +7,7 @@ import { getLeadershipBySlug, getLeadershipMember } from '@/lib/api_services/lea
 import { buildImageUrl, formatDate } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
 import type { LeadershipMember } from '@/types'
+import { cleanHtml } from './Navbar'
 
 interface LeadershipProfileProps {
   slug: string
@@ -169,7 +170,7 @@ export function LeadershipProfile({ slug, backHref, backLabel }: LeadershipProfi
                   className="prose prose-sm sm:prose max-w-none text-gray-600 leading-relaxed break-words
                     [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5
                     [&_a]:text-[#1a6b3a] [&_a]:underline"
-                  dangerouslySetInnerHTML={{ __html: bioText.replace(/\n/g, '<br/>') }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(bioText).replace(/\n/g, '<br/>') }}
                 />
               ) : (
                 <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8 text-center">

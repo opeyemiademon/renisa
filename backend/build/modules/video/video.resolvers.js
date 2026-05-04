@@ -61,7 +61,7 @@ const videoResolvers = {
             const video = await Video.findByIdAndDelete(id);
             if (!video)
                 throw new Error('Video not found');
-            return { success: true, message: 'Video deleted' };
+            return { success: true, message: 'Video successfully deleted' };
         },
         publishVideo: async (_, { id }, context) => {
             requireAdminAuth(context);

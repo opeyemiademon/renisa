@@ -10,6 +10,7 @@ import { Badge } from '@/components/shared/Badge'
 import toast from 'react-hot-toast'
 
 import { useParams } from 'next/navigation'
+import { cleanHtml } from '@/components/public/Navbar'
 
 export default function EventDetailPage() {
 
@@ -95,8 +96,7 @@ export default function EventDetailPage() {
 
         <div
           className="rich-text prose max-w-none text-gray-700 overflow-hidden wrap-break-word"
-          dangerouslySetInnerHTML={{ __html: event.content || '<p></p>' }}
-        />
+                   dangerouslySetInnerHTML={{ __html: cleanHtml(event.content) || '<p></p>' }}/>
 
         <div className="mt-12 pt-6 border-t border-gray-200 text-sm text-gray-400">
           Published {formatDate(event.createdAt)}

@@ -7,6 +7,7 @@ import { ArrowLeft, Award, Twitter, Facebook, Linkedin, Globe, Mail, Phone } fro
 import { getExecutive } from '@/lib/api_services/executiveApiServices'
 import { buildImageUrl } from '@/lib/utils'
 import { PageLoader } from '@/components/shared/Spinner'
+import { cleanHtml } from '@/components/public/Navbar'
 
 const SocialIcon = ({ platform }: { platform: string }) => {
   const map: Record<string, React.ReactNode> = {
@@ -139,7 +140,7 @@ export default function ExecutiveDetailPage({ params }: { params: Promise<{ id: 
               {exec?.member?.bio ? (
                 <div
                   className="prose prose-sm sm:prose max-w-none text-gray-600 leading-relaxed wrap-break-word [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-primary [&_a]:underline"
-                  dangerouslySetInnerHTML={{ __html: exec.member.bio }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(exec.member.bio).replace(/\n/g, '<br/>') }}
                 />
               ) : (
                 <p className="text-gray-400 italic">No biography available.</p>

@@ -6,6 +6,9 @@ import { usePathname } from 'next/navigation'
 import { ChevronDown, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+    export   const cleanHtml = (html:any) => {
+  return html?.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
 const leadershipLinks = [
   { label: 'Board of Trustees', href: '/leadership/board-of-trustees' },
   { label: 'National Executives', href: '/executives' },
